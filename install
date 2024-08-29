@@ -1,0 +1,48 @@
+#!/bin/bash
+
+set -eu
+
+## prepare
+PWD=$(pwd)
+WORK_DIR=~/work_dotfile
+
+if [ ! -d ${WORK_DIR} ]; then
+  mkdir -p ${WORK_DIR}
+fi
+cd ${WORK_DIR}
+
+#if [ "$(uname)" == 'Darwin' ]; then
+#  # nothing
+#elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
+if [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
+  # if redhat
+  if which yum >/dev/null 2>&1; then
+    sudo yum install -y unzip
+  fi
+  # if ubuntu
+  if which apt-get >/dev/null 2>&1; then
+    sudo apt-get install -y unzip
+  fi
+  # if archlinux
+  if which pacman >/dev/null 2>&1; then
+    sudo pacman -S --noconfirm unzip
+  fi
+elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
+  echo "Your platform ($(uname -a)) is not supported."
+  exit 1
+fi
+
+DOTFILEDIR=$WORK_DIR/dotfiles-main
+if [ ! -d ${DOTFILEDIR} ]; then
+  dotfile_github_url=https://github.com/dsisnero/doms_dotfiles/archive/main.zip
+  curl -sOL $dotfile_github_url
+  unzip main.zip
+fi
+
+cd $DOTFILEDIR
+
+bin/setup
+bin/deploy $@
+
+## finish
+cd $PWD

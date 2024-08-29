@@ -1,0 +1,25 @@
+# vim: set ft=zsh:
+
+if [[ -z "${PIP_SITE_LOCATION}" ]]; then
+  export PIP_SITE_LOCATION=$(pip show -f powerline-status | grep Location | awk '{print $2}')
+  echo "Please set env: export PIP_SITE_LOCATION=$PIP_SITE_LOCATION"
+fi
+
+source ~/repos/github.com/dsisnero/doms_dotfiles/config/.zshrc
+<% if node[:platform] == 'osx' or node[:platform] == 'darwin' -%>
+source ~/repos/github.com/dsisnero/doms_dotfiles/config/zsh/.zshrc_osx
+<% else -%>
+source ~/repos/github.com/dsisnero/doms_dotfiles/config/zsh/.zshrc_unix
+  <%- if node[:is_wsl] -%>
+source ~/repos/github.com/dsisnero/doms_dotfiles/config/zsh/.zshrc_wsl
+  <%- end -%>
+<% end -%>
+
+<%- if node[:is_wsl] -%>
+alias explorer='/mnt/c/Windows/explorer.exe'
+<%- end -%>
+
+# profiling
+if (which zprof > /dev/null 2>&1) ;then
+  # zprof
+fi

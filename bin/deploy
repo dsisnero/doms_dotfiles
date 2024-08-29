@@ -1,0 +1,25 @@
+#!/bin/bash
+# Homebrew does not allow sudo.
+
+# set -x #debug
+set -eu
+
+./bin/setup
+
+mitamae() {
+  cookbooks=$@
+  cmd="bin/mitamae local --shell /bin/bash -l debug lib/recipe_helper.rb $cookbooks"
+  case "$(uname)" in
+    "Darwin")  bin/mitamae local $cookbooks ;;
+    # *) $cmd ;;
+    # *) sudo -i bash -c "cd $(pwd) && $cmd" ;; # -iつけてるとcurrent-context is not setと表示される
+    *) sudo bash -c "cd $(pwd) && $cmd" ;;
+  esac
+}
+
+if [ "$#" = "0" ]; then
+  mitamae lib/recipe.rb
+else
+  # echo "mitamae $(./bin/normalize_cookbooks $@)"
+  mitamae $(./bin/normalize_cookbooks $@)
+fi

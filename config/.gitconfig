@@ -1,0 +1,152 @@
+[init]
+	templatedir = ~/repos/github.com/dsisnero/doms_dotfiles/config/git/templates
+
+[core]
+	attributesfile = ~/repos/github.com/dsisnero/doms_dotfiles/config/git/.gitattributes_global
+	excludesfile   = ~/repos/github.com/dsisnero/doms_dotfiles/config/git/.gitignore_global # defaultは~/.config/git/ignore
+	autocrlf = input
+	quotepath = false
+	precomposeunicode = true
+	commentChar = ";"
+
+[user "ssh://git@gitlab.com/"]
+	name = Dominic Sisneros
+	email = dsisnero@gmail.com
+[user "https://gitlab.com/"]
+	name = Dominic Sisneros
+	email = dsisnero@gmail.com
+[user "http://gitlab.com/"]
+	name = Dominic Sisneros
+	email = dsisnero@gmail.com
+[user "ssh://git@github.com/"]
+	name = Dominic Sisneros
+	email = dsisnero@gmail.com
+[user "https://github.com/"]
+	name = Dominic Sisneros
+	email = dsisnero@gmail.com
+[user "http://github.com/"]
+	name = Dominic Sisneros
+	email = dsisnero@gmail.com
+
+[color]
+	status = auto
+	diff = auto
+	branch = auto
+	interactive = auto
+	grep = auto
+	ui = auto
+
+[alias]
+  # ショートカット系
+	ps = push
+	pl = pull
+	ft = fetch
+	ad = add
+	chk = checkout
+	st = status --short --branch					# ステータスを短く。ブランチ名付き
+	sh = show
+	sw = switch
+	cm = commit
+	df = diff
+	lg = log
+	gr = grep
+	tg = tag
+	br = branch
+
+	create-trackingbranch=!git checkout -t $(git branch -r | peco)
+	change-branch=!git checkout $(git branch | peco)
+	chbr=!git checkout $(git branch | peco)
+	change-tag=!git checkout $(git tag | peco)
+	chtg=!git checkout $(git tag | peco)
+
+  chk-first=!git checkout $(git log --oneline | tail -1 | awk '{print $1}')
+  chk-next=!git checkout $(git log --oneline ORIG_HEAD | tail -$(($(git log --oneline | wc | awk '{print $1}')+1)) | head -1 | awk '{print $1}')
+  df-prev=!git diff $(git log --oneline -2 | awk '{print $1}' | tac | paste - -)
+# ref) http://yuroyoro.hatenablog.com/entry/20101008/1286531851
+# ref) http://qiita.com/yuya_presto/items/ef199e08021dea777715
+	add-modified = !git add $(git status --short | peco | sed s/"^..."//)				# 変更を全てadd
+	commit-modified-all = commit -a							# 変更を全てadd
+	commit-fix = commit -a --amend							# 直前のコミットを修正
+	cmm = commit -a
+	cmf = commit -a --amend
+
+	# branch
+	bra = branch -a	# 全てのbranch
+
+	# log関連
+	wc = whatchanged         # logに変更されたファイルも一緒に出す
+	ls = log --stat          # logに変更されたファイルも一緒に出す
+	lp = log -p              # diffも一緒に出す
+	la = log --pretty=\"format:%ad %h (%an): %s\" --date=short  # ざっくりログ出す
+
+	# diff関連
+	diff-staged = diff --staged         # 同上(1.6.1移行)
+	dfs = diff --staged         # 同上(1.6.1移行)
+	dw = diff --color-words    # 単語単位でいろつけてdiff
+	ls-changed = diff --name-only
+	# mergeの際にconflictが起きたファイルを編集
+	edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; vim `f`"
+	# mergeの際にconflictが起きたファイルをadd
+	add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
+
+  # リベース中コミット
+	rebasing-commit = "!f='$(git rev-parse --git-dir)/rebase-apply/patch'; if [ -f '$f' ]; then git show $(head -n1 '$f'); else echo 'Heh?'; fi"
+
+	clone = clone --recursive # cloneする時にsubmoduleも取得
+  graph = log --graph -10 --branches --remotes --tags  --format=format:'%Cgreen%h %Creset %<(75,trunc)%s (%cN, %cr) %Cred%d' --date-order
+	oneline = log --pretty=oneline
+
+	pp=!git pull && git push
+  precommit = diff --cached --diff-algorithm=minimal -w
+  unstage = reset -q HEAD --
+	uncommit = reset --mixed HEAD~
+	amend = commit --amend
+  discard = checkout --
+  unmerged = diff --name-only --diff-filter=U
+  add-detail = add -p
+
+	tags = tag
+	branches = branch -a
+  stashes = stash list
+  remotes = remote -v
+
+	ranking = shortlog -s -n --no-merges
+  prjroot = rev-parse --show-toplevel
+  dotgit = rev-parse --git-dir
+  current-branch = !git branch | grep '*' | sed 's/* //'
+  rm-merged-branch = !git branch --merged | grep -v '*' | xargs git branch -D
+
+  # log
+	# logは試行錯誤中
+	glog = log --graph --decorate --oneline
+	glog1 = log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --graph
+  glog2 = log --pretty='format:%C(yellow)%h %C(green)%cd %C(reset)%s %C(red)%d %C(cyan)[%an]' --date=iso
+	glog3 = log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --date=relative
+	lgg= log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --date=relative --graph
+	lgg-all= log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --date=relative --graph --branches
+	lgv= log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --date=relative
+
+[push]
+	default = simple
+
+[pull]
+	ff = only
+	rebase = merges
+
+[diff]
+  tool = nvimdiff
+# [difftool]
+#   prompt = false
+[difftool "nvimdiff"]
+  cmd = "nvim -R -d -c \"wincmd l\" -d \"$LOCAL\" \"$REMOTE\""
+[merge]
+  ff = false
+  tool = nvimdiff
+[mergetool]
+  prompt = true
+[mergetool "nvimdiff"]
+  cmd = "nvim -d -c \"4wincmd w | wincmd J\" \"$LOCAL\" \"$BASE\" \"$REMOTE\"  \"$MERGED\""
+
+[log]
+	decorate = auto
+

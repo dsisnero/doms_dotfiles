@@ -1,0 +1,16 @@
+#!/usr/bin/env zsh
+# vim: set ft=zsh:
+if [[ $- != *i* ]]; then
+  return
+fi
+
+#########################################
+# ssh-agent
+/usr/bin/keychain -q --nogui ~/.ssh/id_rsa
+
+source ~/.keychain/${HOST}-sh
+#########################################
+
+if [[ -f ~/repos/github.com/dylanaraps/neofetch/neofetch ]]; then
+  ~/repos/github.com/dylanaraps/neofetch/neofetch
+fi

@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -eu
+
+## setup mitamae
+if [ "$(uname)" == 'Darwin' ]; then
+  OS='Mac'
+  MITAMAE_URL=https://github.com/itamae-kitchen/mitamae/releases/download/v1.12.7/mitamae-x86_64-darwin
+elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
+  OS='Linux'
+  MITAMAE_URL=https://github.com/itamae-kitchen/mitamae/releases/download/v1.12.7/mitamae-x86_64-linux
+  if test -f /etc/os-release; then
+    if grep 'Arch Linux' /etc/os-release>/dev/null; then
+      which unzip >/dev/null 2>&1 || sudo pacman -S --noconfirm unzip
+    elif grep 'Ubuntu' /etc/os-release>/dev/null; then
+      which unzip >/dev/null 2>&1 || sudo apt install -y unzip
+    fi
+  fi
+elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
+  OS='Cygwin'
+  echo "Your platform ($(uname -a)) is not supported."
+  exit 1
+else
+  echo "Your platform ($(uname -a)) is not supported."
+  exit 1
+fi
+
+if [ ! -e bin ]; then
+  mkdir -p bin
+fi
+
+if [ ! -e bin/mitamae ]; then
+  curl -s -L ${MITAMAE_URL} -o bin/mitamae
+  chmod +x bin/mitamae
+fi

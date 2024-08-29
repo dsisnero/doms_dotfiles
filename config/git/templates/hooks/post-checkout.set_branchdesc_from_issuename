@@ -1,0 +1,113 @@
+#!/usr/bin/env perl
+#
+# git branch configにticket名を設定する
+# .git/hooks/post-checkout に配置する。
+# 環境変数REDMINE_URLが設定されている場合にticket名からタイトルを取得してくる
+# 実行権限を与える必要がある。 例) chmod +x .git/hooks/post-checkout
+#
+# Required: Environment
+#   REDMINE_URL: ${REDMINE_URL}/issues でチケット一覧が見れる形式のもの（protocol, issues以前のpath含む）
+#   REDMINE_API_KEY: REDMINEのapi access key
+#
+# いい感じに一覧で見るコマンド
+# git config --list | grep '^branch\..*description=' | sed 's/^branch\.\(.*\)\.description=\(.*#[0-9]*\) \(.*\)$/\1 \x1b[32m\2\x1b[0m \3/g'
+
+use Encode;
+use JSON;
+use LWP::Simple;
+
+binmode(STDOUT, ":utf8");
+binmode(STDIN, ":utf8");
+
+# 各自のredmine apiキー
+my $API_KEY = %ENV{REDMINE_API_KEY};
+# redmineのURL
+my $REDMINE_URL = %ENV{REDMINE_URL};
+# 説明を表示したくないブランチ名
+my @NOT_COVERED_BRANCHES = (master, release, develop, hotfix);
+
+# 未設定ならとくに何もなし
+if ($API_KEY eq '' || $REDMINE_URL eq '') {
+  exit 0;
+}
+
+sub escape_command {
+  ($cmd) = @_;
+  my $escaped = $cmd;
+  # $escaped =~ s/([\&\;\`\'\\\"\|\*\?\~\<\>\^\(\)\[\]\{\}\$\n\r])/\\$1/g;
+  $escaped =~ s/([\&\;\`\\\|\*\?\~\<\>\^\[\]\{\}\$\n\r])/\\$1/g;
+  # print "raw: ${cmd}\n";
+  # print "escaped ${escaped}\n";
+  return $escaped;
+}
+
+sub shellcmd {
+  ($cmd) = @_;
+  my $escaped_cmd = escape_command($cmd);
+  my $ret = qx/$escaped_cmd/;
+  if ($? eq 0) {
+    chomp($ret);
+    return decode('utf-8', $ret);
+  } else {
+    return undef;
+  }
+}
+
+ # ブランチ名からチケット番号を抜き出す関数
+sub get_issue_no {
+  # feature/#0000
+  # feature/0000/brach_name
+  ($branch_name) = @_;
+  my $matchtime = $branch_name =~ /feature\/#?(\d+)/;
+  my $result = $1;
+
+  if ($result eq '') {
+    return undef;
+  }
+  return $result;
+}
+
+my $branch_name = shellcmd('git rev-parse --abbrev-ref HEAD');
+
+if (grep { $_ eq $branch_name } @NOT_COVERED_BRANCHES) {
+  print "$branch_name branch is not covered.\n";
+  exit 0;
+}
+
+my $description = shellcmd("git config branch.${branch_name}.description");
+my $issue_id = get_issue_no($branch_name);
+
+if ($issue_id eq '') {
+  # print "issue_id is null\n";
+  exit 0;
+}
+
+sub get_issue_url {
+  ($issue_id) = @_;
+  return "${REDMINE_URL}/issues/${issue_id}";
+}
+
+sub get_ticket_name {
+  ($issue_id) = @_;
+  my $baseurl = get_issue_url($issue_id);
+  my $uri = "${baseurl}.json?key=${API_KEY}";
+  my $json = get($uri) or die "Couldn't get {$uri}!";
+  my $hash = decode_json($json);
+  my $subject = $hash->{'issue'}->{'subject'};
+  my $tracker = $hash->{'issue'}->{'tracker'}->{'name'};
+  return "${tracker} #${issue_id} ${subject}";
+}
+
+if ($description ne '') {
+  my $issue_url = get_issue_url($issue_id);
+  print "\033[35m${description}\033[0m\n";
+  print "\033[32m${issue_url}\033[0m\n";
+} else {
+  my $ticket_name = get_ticket_name($issue_id);
+  my $issue_url = get_issue_url($issue_id);
+  shellcmd("git config --local branch.${branch_name}.description '${ticket_name}'");
+  print "Add description: ${branch_name} \033[35m${ticket_name}\033[0m\n";
+  print "\033[32m${issue_url}\033[0m\n";
+}
+
+exit 0;
