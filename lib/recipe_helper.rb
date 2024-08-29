@@ -89,6 +89,16 @@
       "su - #{user} -c \"cd ${PWD} && #{cmd}\""
     end
   end
+  
+  def github_versions(repo)
+    require 'net/http'
+    require 'json'
+
+    uri = URI("https://api.github.com/repos/#{repo}/tags")
+    response = Net::HTTP.get(uri)
+    tags = JSON.parse(response)
+    tags.map { |tag| tag['name'] }
+  end
 end
 
 ::MItamae::ResourceContext.class_eval do
