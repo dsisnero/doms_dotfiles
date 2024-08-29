@@ -20,13 +20,13 @@
     user_bin = "#{home}/.local/bin"
 
     node.reverse_merge!(
-      user: user,
-      group: group,
-      home: home,
-      user_bin: user_bin,
-      repos: repos,
-      dotfile_repos: dotfile_repos,
-      is_wsl: is_wsl,
+      user:,
+      group:,
+      home:,
+      user_bin:,
+      repos:,
+      dotfile_repos:,
+      is_wsl:,
       go_root: "#{home}/.asdf/shims/"
     )
   end
@@ -60,17 +60,18 @@
   end
 
   def include_cookbook(name)
-    root_dir = File.expand_path("../..", __FILE__)
-    include_recipe File.join(root_dir, "cookbooks", name, "default")
+    root_dir = File.expand_path('..', __dir__)
+    include_recipe File.join(root_dir, 'cookbooks', name, 'default')
   end
 
   def include_role(name)
-    root_dir = File.expand_path("../..", __FILE__)
-    include_recipe File.join(root_dir, "roles", name, "default")
+    root_dir = File.expand_path('..', __dir__)
+    include_recipe File.join(root_dir, 'roles', name, 'default')
   end
 
   def has_package?(name)
-    result = run_command("dpkg-query -f '${Status}' -W #{name.shellescape} | grep -E '^(install|hold) ok installed$'", error: false)
+    result = run_command("dpkg-query -f '${Status}' -W #{name.shellescape} | grep -E '^(install|hold) ok installed$'",
+                         error: false)
     result.exit_status == 0
   end
 
@@ -89,29 +90,30 @@
       "su - #{user} -c \"cd ${PWD} && #{cmd}\""
     end
   end
-  
-  def github_versions(repo)
-    require 'net/http'
-    require 'json'
 
-    uri = URI("https://api.github.com/repos/#{repo}/tags")
-    response = Net::HTTP.get(uri)
-    tags = JSON.parse(response)
-    tags.map { |tag| tag['name'] }
+  def github_versions(repo)
+    http_request('/tmp/versions.json') do
+      url "https://api.github.com/repos/#{repo}/tags.json"
+    end
+    json = File.read('/tmp/versions.json')
+    MItamae.logger.info("github_json:\n#{json}")
+    versions = JSON.parse(json).map { |tag| tag['name'] }
+    MItamae.logger.info("github_versions:\n#{versions}")
+    versions
   end
 end
 
 ::MItamae::ResourceContext.class_eval do
   def sudo(user)
-    if node[:platform] == "darwin" || node[:platform] == "osx"
-      ""
+    if node[:platform] == 'darwin' || node[:platform] == 'osx'
+      ''
     else
       "sudo -u #{user} -i "
     end
   end
 
   def run_as(user, cmd)
-    if node[:platform] == "darwin" || node[:platform] == "osx"
+    if node[:platform] == 'darwin' || node[:platform] == 'osx'
       cmd
     else
       "su - #{user} -c \"cd ${PWD} && #{cmd}\""
@@ -162,6 +164,8 @@ end
 define :get_bin_github_release, version: nil, version_cmd: nil, version_str: nil, release_artifact_url: nil do
   target_name = params[:name]
   version = params[:version]
+
+  version = params[:version]
   version_cmd = params[:version_cmd]
   version_str = params[:version_str]
   release_url = params[:release_artifact_url]
@@ -179,50 +183,49 @@ define :get_bin_github_release, version: nil, version_cmd: nil, version_str: nil
 end
 
 define :github_binary, version: nil, repository: nil, archive: nil,
-  binary_path: nil, version_cmd: nil, version_str: nil do
-cmd = params[:name]
-bin_path = "#{node[:user_bin]}/#{cmd}"
-binary_path = params[:binary_path]
-archive = params[:archive]
-version_cmd = params[:version_cmd]
-version_str = params[:version_str]
-user = node[:user]
-test_cmd = "test -f #{bin_path}"
-# add version test test_cmd
-url = "https://github.com/#{params[:repository]}/releases/download/#{params[:version]}/#{archive}"
+                       binary_path: nil, version_cmd: nil, version_str: nil do
+  cmd = params[:name]
+  bin_path = "#{node[:user_bin]}/#{cmd}"
+  binary_path = params[:binary_path]
+  archive = params[:archive]
+  version_cmd = params[:version_cmd]
+  version_str = params[:version_str]
+  version = params[:version] || github_versions(params[:repository])[0]
+  user = node[:user]
+  test_cmd = "test -f #{bin_path}"
+  # add version test test_cmd
+  url = "https://github.com/#{params[:repository]}/releases/download/#{version}/#{archive}"
 
-if archive.end_with?('.zip')
-  package 'unzip' do
-    not_if 'which unzip'
+  if archive.end_with?('.zip')
+    package 'unzip' do
+      not_if 'which unzip'
+    end
+    extract = 'unzip -o'
+  elsif archive.end_with?('.tar.gz')
+    extract = 'tar xvzf'
+  elsif archive.end_with?('.appimage')
+    extract = 'ls '
+    params[:binary_path] = archive
+    url = "https://github.com/#{params[:repository]}/releases/latest/download/#{archive}"
+  else
+    raise "unexpected ext archive: #{archive}"
   end
-  extract = 'unzip -o'
-elsif archive.end_with?('.tar.gz')
-  extract = 'tar xvzf'
-elsif archive.end_with?('.appimage')
-  extract = 'ls '
-  params[:binary_path] = archive
-  url = "https://github.com/#{params[:repository]}/releases/latest/download/#{archive}"
-else
-  raise "unexpected ext archive: #{archive}"
-end
 
-directory node[:user_bin] do
-  owner node[:user]
-end
+  directory node[:user_bin] do
+    owner node[:user]
+  end
 
-execute "curl -fSL -o /tmp/#{archive} #{url}" do
-  not_if "test -f #{bin_path}"
-end
+  execute "curl -fSL -o /tmp/#{archive} #{url}" do
+    not_if "test -f #{bin_path}"
+  end
 
-execute "#{extract} /tmp/#{archive}" do
-  not_if "test -f #{bin_path}"
-  cwd '/tmp'
-end
-execute "mv /tmp/#{params[:binary_path] || cmd} #{bin_path} && chmod +x #{bin_path} && chown #{user}:#{user} #{bin_path}" do
-  not_if "#{test_cmd}"
-end
-
-
+  execute "#{extract} /tmp/#{archive}" do
+    not_if "test -f #{bin_path}"
+    cwd '/tmp'
+  end
+  execute "mv /tmp/#{params[:binary_path] || cmd} #{bin_path} && chmod +x #{bin_path} && chown #{user}:#{user} #{bin_path}" do
+    not_if "#{test_cmd}"
+  end
 end
 
 define :yay do
