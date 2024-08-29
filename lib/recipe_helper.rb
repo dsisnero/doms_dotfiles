@@ -92,14 +92,13 @@
   end
 
   def github_versions(repo)
-    http_request('/tmp/versions.json') do
-      url "https://api.github.com/repos/#{repo}/tags.json"
-    end
-    json = File.read('/tmp/versions.json')
-    MItamae.logger.info("github_json:\n#{json}")
-    versions = JSON.parse(json).map { |tag| tag['name'] }
-    MItamae.logger.info("github_versions:\n#{versions}")
-    versions
+    require 'net/http'
+    require 'json'
+
+    uri = URI("https://api.github.com/repos/#{repo}/tags")
+    response = Net::HTTP.get(uri)
+    tags = JSON.parse(response)
+    tags.map { |tag| tag['name'] }
   end
 end
 
