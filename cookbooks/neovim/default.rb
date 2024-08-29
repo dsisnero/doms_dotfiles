@@ -1,7 +1,7 @@
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
 define :neovim_make_install do
-  execute 'install neovim' do
+  execute "install neovim" do
     command <<-EOCMD
       BASEPATH=/usr/src
       cd $BASEPATH
@@ -15,43 +15,44 @@ define :neovim_make_install do
       make -j4 CMAKE_BUILD_TYPE=Release
       make && sudo make install
     EOCMD
+    not_if "test -f /usr/local/bin/nvim"
   end
 end
 
 case node[:platform]
-when 'debian', 'ubuntu', 'mint'
-  package 'ninja-build'
-  package 'gettext'
-  package 'libtool'
-  package 'libtool-bin'
-  package 'autoconf'
-  package 'automake'
-  package 'cmake'
-  package 'g++'
-  package 'pkg-config'
-  package 'unzip'
-  package 'curl'
-  package 'doxygen'
+when "debian", "ubuntu", "mint"
+  package "ninja-build"
+  package "gettext"
+  package "libtool"
+  package "libtool-bin"
+  package "autoconf"
+  package "automake"
+  package "cmake"
+  package "g++"
+  package "pkg-config"
+  package "unzip"
+  package "curl"
+  package "doxygen"
 
   neovim_make_install :install
 
-when 'fedora', 'redhat', 'amazon'
-  package 'libtool'
-  package 'autoconf'
-  package 'automake'
-  package 'cmake'
-  package 'gcc'
-  package 'gcc-c++'
-  package 'make'
-  package 'pkgconfig'
-  package 'unzip'
+when "fedora", "redhat", "amazon"
+  package "libtool"
+  package "autoconf"
+  package "automake"
+  package "cmake"
+  package "gcc"
+  package "gcc-c++"
+  package "make"
+  package "pkgconfig"
+  package "unzip"
 
   neovim_make_install :install
 
-when 'osx', 'darwin'
-  package 'nvim'
-when 'arch'
-  package 'neovim'
-when 'opensuse'
+when "osx", "darwin"
+  package "nvim"
+when "arch"
+  package "neovim"
+when "opensuse"
 else
 end

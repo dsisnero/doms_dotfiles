@@ -38,12 +38,12 @@ remote_file "#{home}/.gitconfig" do
   not_if "test -e #{home}/.gitconfig"
 end
 
-template "#{home}/.config/nvim/init.vim" do
-  source "templates/init.vim.erb"
-  owner user
-  group group
-  not_if "test -e #{home}/.config/nvim/init.vim"
-end
+# template "#{home}/.config/nvim/init.vim" do
+#   source "templates/init.vim.erb"
+#   owner user
+#   group group
+#   not_if "test -e #{home}/.config/nvim/init.vim"
+# end
 
 template "#{home}/.zlogin" do
   source "templates/.zlogin.erb"
@@ -145,8 +145,8 @@ dotfile ".spacemacs.d"
 dotfile ".config/Code/User/settings.json"
 dotfile ".ctags"
 dotfile ".config/ctags"
-dotfile ".config/nvim/lua"
-dotfile ".config/nvim/nlsp-settings"
+# dotfile ".config/nvim/lua"
+# dotfile ".config/nvim/nlsp-settings"
 dotfile ".config/lazygit/config.yml"
 dotfile ".config/yamllint"
 dotfile ".config/wezterm"

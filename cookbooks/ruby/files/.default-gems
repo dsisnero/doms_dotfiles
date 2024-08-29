@@ -1,7 +1,8 @@
 bundler
-pry
-pry-doc
+debug
 solargraph
+ruby-lsp
+standardrb
 rubocop
 ruby_parser
 seeing_is_believing

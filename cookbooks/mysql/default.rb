@@ -1,13 +1,13 @@
 include_recipe 'dependency.rb'
 
 node.reverse_merge!({
-  mysql: {
-    major_version: 5,
-    minor_version: 7,
-    root_password: '',
-    root_password: 'D12uM3m4y+',
-  }
-})
+                      mysql: {
+                        major_version: 5,
+                        minor_version: 7,
+                        root_password: '',
+                        root_password: 'D12uM3m4y+'
+                      }
+                    })
 
 major_version = node[:mysql][:major_version]
 minor_version = node[:mysql][:minor_version]
@@ -30,7 +30,7 @@ when 'debian', 'ubuntu', 'mint'
     # end
   else
     service 'mysql' do
-      action [:start, :enable]
+      action %i[start enable]
     end
   end
 
@@ -65,7 +65,7 @@ when 'redhat', 'amazon'
 
   unless node[:is_wsl]
     service 'mysqld' do
-      action [:start, :enable]
+      action %i[start enable]
     end
   end
 
@@ -80,11 +80,10 @@ when 'arch'
 
   unless node[:is_wsl]
     service 'mysqld' do
-      action [:start, :enable]
+      action %i[start enable]
     end
   end
 when 'opensuse'
-else
 end
 
 # cf) https://qiita.com/kotanbo/items/263841bae08044676c83
@@ -92,16 +91,16 @@ end
 new_password = node[:mysql][:root_password]
 
 # password空の場合
-#MItamae.logger.error "new password: #{new_password}"
-execute "initialize on no password" do
-  user "root"
+# MItamae.logger.error "new password: #{new_password}"
+execute 'initialize on no password' do
+  user 'root'
   only_if "mysql -u root -e 'show databases' | grep information_schema"
 
   command <<-EOL
     set -eu
     mysql -u root -e "DELETE FROM mysql.user WHERE User='';"
     mysql -u root -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1');"
-    mysql -u root -e "DROP DATABASE test;"
+    mysql -u root -e "DROP DATABASE IF EXISTS test;"
     mysql -u root -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
     mysql -u root -e "FLUSH PRIVILEGES;"
     mysqladmin password #{new_password} -u root
@@ -109,11 +108,11 @@ execute "initialize on no password" do
 end
 
 # passwordが初期値の場合
-tmp_password_cmd = %Q{grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //'}
-#MItamae.logger.error "password change: $(#{tmp_password_cmd}) -> #{new_password}"
-execute "mysql_secure_installation temp password" do
-  user "root"
-  only_if %Q{test -e /var/log/mysqld.log && mysql -uroot -p"$(#{tmp_password_cmd})" -e 'show databases' | grep 'connect-expired-password\|information_schema'} # パスワードがtemp passwordの場合
+tmp_password_cmd = %(grep "A temporary password is generated" /var/log/mysqld.log | sed -s 's/.*root@localhost: //')
+# MItamae.logger.error "password change: $(#{tmp_password_cmd}) -> #{new_password}"
+execute 'mysql_secure_installation temp password' do
+  user 'root'
+  only_if %{test -e /var/log/mysqld.log && mysql -uroot -p"$(#{tmp_password_cmd})" -e 'show databases' | grep 'connect-expired-password\|information_schema'} # パスワードがtemp passwordの場合
 
   command <<-EOL
         mysqladmin -uroot -p"$(#{tmp_password_cmd})" password '#{new_password}'
@@ -126,12 +125,15 @@ execute 'mysql user add for auth_socket' do
 
   command <<-EOL
     set -eu
-    #mysql -uroot -p'#{new_password}' -e "CREATE USER IF NOT EXISTS '#{node[:user]}'@localhost IDENTIFIED BY '#{new_password}';"
-    mysql -uroot -p'#{new_password}' -e "CREATE USER IF NOT EXISTS '#{node[:user]}'@localhost IDENTIFIED VIA unix_socket;"
+    mysql -uroot -p'#{new_password}' -e "CREATE USER IF NOT EXISTS '#{node[:user]}'@localhost IDENTIFIED BY '#{new_password}';"
+    #mysql -uroot -p'#{new_password}' -e "CREATE USER IF NOT EXISTS '#{node[:user]}'@localhost IDENTIFIED VIA unix_socket;"
     mysql -uroot -p'#{new_password}' -e "GRANT ALL ON *.* TO '#{node[:user]}'@'localhost';"
   EOL
 end
 
-execute 'pip install mycli' do
-  not_if 'which mycli'
+%w[pip pip3].each do |pip|
+  execute '. /etc/profile.d/asdf.sh; pip install mycli' do
+    not_if 'which mycli'
+    only_if ". /etc/profile.d/asdf.sh; which #{pip}>/dev/null"
+  end
 end

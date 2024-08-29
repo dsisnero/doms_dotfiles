@@ -1,12 +1,12 @@
 ::MItamae::RecipeContext.class_eval do
   # node hashのパラメータで必須のものを初期設定する。
   def init_node
-    user = ENV["SUDO_USER"] || ENV["USER"]
+    user = ENV['SUDO_USER'] || ENV['USER']
     case node[:platform]
-    when "osx", "darwin"
-      home = ENV["HOME"]
-      group = "staff"
-    when "arch"
+    when 'osx', 'darwin'
+      home = ENV['HOME']
+      group = 'staff'
+    when 'arch'
       home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
       group = user
     else
@@ -16,12 +16,14 @@
 
     repos = "#{home}/repos"
     dotfile_repos = "#{repos}/github.com/dsisnero/doms_dotfiles"
-    is_wsl = run_command("uname -a | grep -i Microsoft", error: false).exit_status == 0
+    is_wsl = run_command('uname -a | grep -i Microsoft', error: false).exit_status == 0
+    user_bin = "#{home}/.local/bin"
 
     node.reverse_merge!(
       user: user,
       group: group,
       home: home,
+      user_bin: user_bin,
       repos: repos,
       dotfile_repos: dotfile_repos,
       is_wsl: is_wsl,
@@ -31,31 +33,29 @@
 
   def update_package
     case node[:platform]
-    when "arch"
-      execute "yay -Syy"
-    when "osx", "darwin"
-      execute "brew update"
-    when "fedora", "redhat", "amazon"
+    when 'arch'
+      execute 'yay -Syy'
+    when 'osx', 'darwin'
+      execute 'brew update'
+    when 'fedora', 'redhat', 'amazon'
       # execute 'yum update -y' # '区別なし'
-    when "debian", "ubuntu", "mint"
-      execute "apt update -y"
-    when "opensuse"
-    else
+    when 'debian', 'ubuntu', 'mint'
+      execute 'apt update -y'
+    when 'opensuse'
     end
   end
 
   def upgrade_package
     case node[:platform]
-    when "arch"
-      execute "yay -Syu --noconfirm"
-    when "osx", "darwin"
-      execute "brew upgrade"
-    when "fedora", "redhat", "amazon"
-      execute "yum update -y" # 区別なし
-    when "debian", "ubuntu", "mint"
-      execute "apt upgrade -y"
-    when "opensuse"
-    else
+    when 'arch'
+      execute 'yay -Syu --noconfirm'
+    when 'osx', 'darwin'
+      execute 'brew upgrade'
+    when 'fedora', 'redhat', 'amazon'
+      execute 'yum update -y' # 区別なし
+    when 'debian', 'ubuntu', 'mint'
+      execute 'apt upgrade -y'
+    when 'opensuse'
     end
   end
 
@@ -75,15 +75,15 @@
   end
 
   def sudo(user)
-    if node[:platform] == "darwin" || node[:platform] == "osx"
-      ""
+    if node[:platform] == 'darwin' || node[:platform] == 'osx'
+      ''
     else
       "sudo -u #{user} -i "
     end
   end
 
   def run_as(user, cmd)
-    if node[:platform] == "darwin" || node[:platform] == "osx"
+    if node[:platform] == 'darwin' || node[:platform] == 'osx'
       cmd
     else
       "su - #{user} -c \"cd ${PWD} && #{cmd}\""
@@ -112,7 +112,7 @@ end
 # dotfileリポジトリ内へのシンボリックリンク設定
 define :dotfile, source: nil, user: nil do
   dst = File.join(node[:home], params[:name])
-  src = params[:source].nil? ? File.join(node[:dotfile_repos], "config", params[:name]) : parmas[:source]
+  src = params[:source].nil? ? File.join(node[:dotfile_repos], 'config', params[:name]) : parmas[:source]
   user = params[:user].nil? ? params[:user] : node[:user]
   # puts "dst: #{dst}"
   # puts "src: #{src}"
@@ -125,7 +125,7 @@ end
 
 define :get_repo, build: nil do
   reponame = params[:name]
-  user = params[:user].nil? ? ENV["SUDO_USER"] || ENV["USER"] : node[:user]
+  user = params[:user].nil? ? ENV['SUDO_USER'] || ENV['USER'] : node[:user]
 
   execute "get_repo #{reponame}" do
     command "source ~/.asdf/asdf.sh; ghq get -p #{reponame}"
@@ -141,7 +141,7 @@ end
 
 define :go_get do
   reponame = params[:name]
-  version = "latest"
+  version = 'latest'
 
   execute "#{node[:go_root]}/go install #{reponame}@#{version}" do
     user node[:user]
@@ -158,21 +158,61 @@ define :get_bin_github_release, version: nil, version_cmd: nil, version_str: nil
 
   execute "install #{target_name}" do
     command <<-EOCMD
-      WORKDIR=work_#{version}
+    WORKDIR=work_#{version}
 
-      cur=$(pwd)
-      mkdir -p ${WORKDIR}
-      cd ${WORKDIR}
-
-      wget #{release_url} -O #{target_name}
-
-      install #{target_name} /usr/local/bin/#{target_name}
-      cd ${cur}
-      rm -rf ${WORKDIR}
+    cur=$(pwd) mkdir -p ${WORKDIR} cd ${WORKDIR} wget #{release_url} -O #{target_name} install #{target_name} /usr/local/bin/#{target_name} cd ${cur}
+    rm -rf ${WORKDIR}
     EOCMD
 
     not_if "test -e /usr/local/bin/#{target_name} && test \"$(#{version_cmd})\" = \"#{version_str}\""
   end
+end
+
+define :github_binary, version: nil, repository: nil, archive: nil,
+  binary_path: nil, version_cmd: nil, version_str: nil do
+cmd = params[:name]
+bin_path = "#{node[:user_bin]}/#{cmd}"
+binary_path = params[:binary_path]
+archive = params[:archive]
+version_cmd = params[:version_cmd]
+version_str = params[:version_str]
+user = node[:user]
+test_cmd = "test -f #{bin_path}"
+# add version test test_cmd
+url = "https://github.com/#{params[:repository]}/releases/download/#{params[:version]}/#{archive}"
+
+if archive.end_with?('.zip')
+  package 'unzip' do
+    not_if 'which unzip'
+  end
+  extract = 'unzip -o'
+elsif archive.end_with?('.tar.gz')
+  extract = 'tar xvzf'
+elsif archive.end_with?('.appimage')
+  extract = 'ls '
+  params[:binary_path] = archive
+  url = "https://github.com/#{params[:repository]}/releases/latest/download/#{archive}"
+else
+  raise "unexpected ext archive: #{archive}"
+end
+
+directory node[:user_bin] do
+  owner node[:user]
+end
+
+execute "curl -fSL -o /tmp/#{archive} #{url}" do
+  not_if "test -f #{bin_path}"
+end
+
+execute "#{extract} /tmp/#{archive}" do
+  not_if "test -f #{bin_path}"
+  cwd '/tmp'
+end
+execute "mv /tmp/#{params[:binary_path] || cmd} #{bin_path} && chmod +x #{bin_path} && chown #{user}:#{user} #{bin_path}" do
+  not_if "#{test_cmd}"
+end
+
+
 end
 
 define :yay do
@@ -187,7 +227,7 @@ end
 define :install_font do
   name = params[:name]
   # typename = File.extname(name) == 'otf' ? 'OTF' : 'TTF'
-  install_path = "~/.local/share/fonts"
+  install_path = '~/.local/share/fonts'
 
   directory install_path
   execute "cp #{name} #{install_path}"

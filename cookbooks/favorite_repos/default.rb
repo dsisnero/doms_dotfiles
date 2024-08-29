@@ -2,15 +2,15 @@ include_cookbook 'dotfiles'
 include_cookbook 'ghq'
 
 repos = %w[
-  dylanaraps/neofetch
-  mzyy94/RictyDiminished-for-Powerline
-  rupa/z
-  yuru7/HackGen
-  zsh-users/zsh-completions
-  zplug/zplug
-  zk-phi/sky-color-clock
+  # dylanaraps/neofetch
+  # mzyy94/RictyDiminished-for-Powerline
+  # rupa/z
+  # yuru7/HackGen
+  # zsh-users/zsh-completions
+  # zplug/zplug
+  # zk-phi/sky-color-clock
 ]
-repos.each { |name| get_repo name }
+# repos.each { |name| get_repo name }
 
 pip_pkgs = %w[
   powerline-status

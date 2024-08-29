@@ -2,6 +2,7 @@ include_cookbook 'ruby'
 include_cookbook 'python'
 include_cookbook 'yarn'
 include_cookbook 'ghq'
+include_cookbook 'delta'
 
 package 'cmake'
 
