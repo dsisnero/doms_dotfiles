@@ -1,8 +1,8 @@
-include_cookbook 'asdf'
+include_cookbook "asdf"
 
 case node[:platform]
-when 'debian', 'ubuntu', 'mint'
-  %w(
+when "debian", "ubuntu", "mint"
+  %w[
     autoconf
     bison
     build-essential
@@ -15,18 +15,18 @@ when 'debian', 'ubuntu', 'mint'
     libgdbm6
     libgdbm-dev
     libdb-dev
-  ).each {|p| package p }
+  ].each { |p| package p }
 
-when 'arch'
-  %w(
+when "arch"
+  %w[
     base-devel
     libffi
     libyaml
     openssl
     zlib
-  ).each {|p| package p }
+  ].each { |p| package p }
 
-when 'fedora', 'redhat', 'amazon'
-when 'osx', 'darwin'
-when 'opensuse'
+when "fedora", "redhat", "amazon"
+when "osx", "darwin"
+when "opensuse"
 end

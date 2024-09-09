@@ -1,14 +1,14 @@
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
 case node[:platform]
-when 'arch'
+when "arch"
   raise NotImplementedError
-when 'osx', 'darwin'
+when "osx", "darwin"
   raise NotImplementedError
-when 'fedora', 'redhat', 'amazon'
+when "fedora", "redhat", "amazon"
   raise NotImplementedError
-when 'debian', 'ubuntu', 'mint'
-  execute 'install neovide from binaries.' do
+when "debian", "ubuntu", "mint"
+  execute "install neovide from binaries." do
     command <<~EOCMD
       WORKDIR=work_neovide
       mkdir "${WORKDIR}"
@@ -22,7 +22,7 @@ when 'debian', 'ubuntu', 'mint'
       rm -rf "${WORKDIR}"
     EOCMD
   end
-when 'opensuse'
+when "opensuse"
   raise NotImplementedError
 else
   raise NotImplementedError

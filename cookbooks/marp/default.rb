@@ -1,7 +1,6 @@
-
 case node[:platform]
-when 'debian', 'ubuntu', 'mint', 'fedora', 'redhat', 'amazon', 'arch'
-  execute 'install binary' do
+when "debian", "ubuntu", "mint", "fedora", "redhat", "amazon", "arch"
+  execute "install binary" do
     command <<-EOL
       set -eu
       name=marp
@@ -28,9 +27,8 @@ when 'debian', 'ubuntu', 'mint', 'fedora', 'redhat', 'amazon', 'arch'
     not_if "test -e #{node[:home]}/.local/bin/marp"
   end
 
-when 'osx', 'darwin'
-  package 'marp'
+when "osx", "darwin"
+  package "marp"
 
-when 'opensuse'
-else
+when "opensuse"
 end

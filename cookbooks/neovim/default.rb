@@ -54,5 +54,4 @@ when "osx", "darwin"
 when "arch"
   package "neovim"
 when "opensuse"
-else
 end

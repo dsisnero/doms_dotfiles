@@ -1,12 +1,11 @@
 case node[:platform]
-when 'arch'
-  include_cookbook 'yay'
+when "arch"
+  include_cookbook "yay"
 
-  yay 'patch'
+  yay "patch"
 
-when 'osx', 'darwin'
-when 'fedora', 'redhat', 'amazon'
-when 'debian', 'ubuntu', 'mint'
-when 'opensuse'
-else
+when "osx", "darwin"
+when "fedora", "redhat", "amazon"
+when "debian", "ubuntu", "mint"
+when "opensuse"
 end

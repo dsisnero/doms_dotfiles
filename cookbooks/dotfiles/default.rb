@@ -31,18 +31,11 @@ mydir "#{home}/.local/icons"
 
 mydir "#{home}/repos"
 
-remote_file "#{home}/.gitconfig" do
-  source "files/.gitconfig"
-  owner user
-  group group
-  not_if "test -e #{home}/.gitconfig"
-end
-
 # template "#{home}/.config/nvim/init.vim" do
 #   source "templates/init.vim.erb"
 #   owner user
 #   group group
-#   not_if "test -e #{home}/.config/nvim/init.vim"
+# #   not_if "test -e #{home}/.config/nvim/init.vim"
 # end
 
 template "#{home}/.zlogin" do
@@ -139,6 +132,7 @@ execute "git init" do
 end
 
 dotfile ".config/pip"
+dotfile ".config/git/config"
 dotfile ".config/powerline"
 dotfile ".spacemacs"
 dotfile ".spacemacs.d"

@@ -1,14 +1,14 @@
-include_cookbook 'ruby'
-include_cookbook 'python'
-include_cookbook 'yarn'
-include_cookbook 'ghq'
-include_cookbook 'delta'
+include_cookbook "ruby"
+include_cookbook "python"
+include_cookbook "yarn"
+include_cookbook "ghq"
+include_cookbook "delta"
 
-package 'cmake'
+package "cmake"
 
 # ruby
 # gem_package 'neovim'
-execute 'gem install --user-install neovim' do
+execute "gem install --user-install neovim" do
   user node[:user]
   command <<-EOCMD
   . /etc/profile.d/asdf.sh
@@ -44,12 +44,12 @@ end
   # cmds =
   execute "pip3 install --upgrade --user #{pip}" do
     user node[:user]
-    only_if 'which pip3'
+    only_if "which pip3"
   end
 end
 
 # Node.js
-execute 'yarn global add neovim' do
+execute "yarn global add neovim" do
   user node[:user]
   command <<-EOCMD
     . /etc/profile.d/asdf.sh
@@ -76,8 +76,8 @@ execute 'install vimalter' do
 end
 
 # if arch package 'fd'
-package 'fd-find'
-execute 'ln -s $(which fdfind) ~/.local/bin/fd' do
+package "fd-find"
+execute "ln -s $(which fdfind) ~/.local/bin/fd" do
   user node[:user]
-  not_if 'test -f ~/.local/bin/fd'
+  not_if "test -f ~/.local/bin/fd"
 end

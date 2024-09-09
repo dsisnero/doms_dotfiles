@@ -3,13 +3,32 @@ fix: true               # default: false
 parallel: true          # default: false
 format: progress        # default: Standard::Formatter
 ruby_version: 2.7       # default: RUBY_VERSION
-default_ignores: false  # default: true
+default_ignores: true  # default: true
 
 ignore:                 # default: []
-  - 'vendor/**/*'
+  - 'lib/recipe_helper.rb':
+    - Style/Dir
+    - Style/FrozenStringLiteralComment
+    - Style/EnforcedShorthandSyntax
+    - Style/HashSyntax:
+        EnforcedShorthandSyntax: never
+    - Style/HashSyntax:
+        EnforcedShorthandSyntax
 
 plugins:                # default: []
-  - standard-rails
 
 extend_config:                # default: []
-  - .standard_ext.yml
+
+Style/HashSyntax: 
+  EnforcedShorthandSyntax: never 
+#
+# Style/FrozenStringLiteralComment:
+#   Enabled: false
+# Style/Dir:
+#   Enabled: false
+# Style/AsciiComments:
+#   Enabled: false
+#
+# ignore:
+#   - 'test/**/*':
+#     - Layout/AlignHash

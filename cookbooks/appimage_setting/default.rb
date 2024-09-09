@@ -1,6 +1,6 @@
 # install appimage
 
-appimage_root = '~/.appimages'
+appimage_root = "~/.appimages"
 appimage_files = "#{appimage_root}/src"
 appimage_opt = "#{appimage_root}/opt"
 

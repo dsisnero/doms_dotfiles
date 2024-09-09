@@ -1,10 +1,9 @@
-
 case node[:platform]
-when 'debian', 'ubuntu', 'mint'
-  package 'gdebi'
-  package 'libxss1'
+when "debian", "ubuntu", "mint"
+  package "gdebi"
+  package "libxss1"
 
-  execute 'install gitkraken' do
+  execute "install gitkraken" do
     command <<-EOL
       DEB=gitkraken-amd64.deb
       URL=https://release.gitkraken.com/linux/$DEB
@@ -15,12 +14,10 @@ when 'debian', 'ubuntu', 'mint'
     EOL
   end
 
-when 'fedora', 'redhat', 'amazon'
-when 'osx', 'darwin'
-  package 'peco'
+when "fedora", "redhat", "amazon"
+when "osx", "darwin"
+  package "peco"
 
-when 'arch'
-when 'opensuse'
-else
+when "arch"
+when "opensuse"
 end
-

@@ -1,11 +1,11 @@
 case node[:platform]
-when 'debian', 'ubuntu', 'mint', 'fedora', 'redhat', 'amazon'
+when "debian", "ubuntu", "mint", "fedora", "redhat", "amazon"
   # package 'ctags'
 
-  package 'libjansson-dev'
-  get_repo 'universal-ctags/ctags'
+  package "libjansson-dev"
+  get_repo "universal-ctags/ctags"
 
-  execute 'install ctags' do
+  execute "install ctags" do
     command <<-EOL
       set -eu
       WORKDIR=#{node[:home]}/repos/github.com/universal-ctags/ctags
@@ -18,14 +18,13 @@ when 'debian', 'ubuntu', 'mint', 'fedora', 'redhat', 'amazon'
       make
       sudo make install
     EOL
-    not_if 'test -e /usr/local/bin/ctags'
+    not_if "test -e /usr/local/bin/ctags"
   end
 
-when 'osx', 'darwin'
-  #package 'universal-ctags/universal-ctags/universal-ctags'
-  package 'ctags'
-when 'arch'
-  package 'ctags'
-when 'opensuse'
-else
+when "osx", "darwin"
+  # package 'universal-ctags/universal-ctags/universal-ctags'
+  package "ctags"
+when "arch"
+  package "ctags"
+when "opensuse"
 end

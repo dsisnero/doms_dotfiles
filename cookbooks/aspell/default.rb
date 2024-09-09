@@ -1,17 +1,17 @@
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
 case node[:platform]
-when 'arch'
-  package 'aspell'
-  package 'aspell-en'
-when 'osx', 'darwin'
+when "arch"
+  package "aspell"
+  package "aspell-en"
+when "osx", "darwin"
   raise NotImplementedError
-when 'fedora', 'redhat', 'amazon'
+when "fedora", "redhat", "amazon"
   raise NotImplementedError
-when 'debian', 'ubuntu', 'mint'
-  package 'aspell'
-  package 'aspell-en'
-when 'opensuse'
+when "debian", "ubuntu", "mint"
+  package "aspell"
+  package "aspell-en"
+when "opensuse"
   raise NotImplementedError
 else
   raise NotImplementedError
@@ -22,5 +22,5 @@ file "#{node[:home]}/.aspell.conf" do
   owner node[:user]
   group node[:group]
 
-  content 'lang en_US'
+  content "lang en_US"
 end

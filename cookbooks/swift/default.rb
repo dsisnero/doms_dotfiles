@@ -1,9 +1,9 @@
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
 case node[:platform]
-when 'ubuntu'
-    execute 'install swift' do
-      command <<-EOL
+when "ubuntu"
+  execute "install swift" do
+    command <<-EOL
         set -eu
 
         OS_MAJOR_VERSION=16
@@ -24,13 +24,12 @@ when 'ubuntu'
         chown #{node[:user]}:#{node[:group]} -R $swift_path
 
         rm -f $tar
-      EOL
-    end
+    EOL
+  end
 
-when 'debian', 'mint'
-when 'redhat', 'fedora', 'amazon'
-when 'osx', 'darwin'
-when 'arch'
-when 'opensuse'
-else
+when "debian", "mint"
+when "redhat", "fedora", "amazon"
+when "osx", "darwin"
+when "arch"
+when "opensuse"
 end

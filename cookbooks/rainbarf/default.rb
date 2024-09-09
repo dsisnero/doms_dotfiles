@@ -1,11 +1,10 @@
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
 case node[:platform]
-when 'arch'
-  yay 'rainbarf'
-when 'osx', 'darwin'
-when 'fedora', 'redhat', 'amazon'
-when 'debian', 'ubuntu', 'mint'
-when 'opensuse'
-else
+when "arch"
+  yay "rainbarf"
+when "osx", "darwin"
+when "fedora", "redhat", "amazon"
+when "debian", "ubuntu", "mint"
+when "opensuse"
 end

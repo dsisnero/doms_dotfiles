@@ -1,17 +1,17 @@
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
 case node[:platform]
-when 'arch'
+when "arch"
   raise NotImplementedError
-when 'osx', 'darwin'
+when "osx", "darwin"
   raise NotImplementedError
-when 'fedora', 'redhat', 'amazon'
+when "fedora", "redhat", "amazon"
   raise NotImplementedError
-when 'debian', 'ubuntu', 'mint'
-  execute 'add-apt-repository ppa:wslutilities/wslu'
-  execute 'apt update -y'
-  package 'wslu'
-when 'opensuse'
+when "debian", "ubuntu", "mint"
+  execute "add-apt-repository ppa:wslutilities/wslu"
+  execute "apt update -y"
+  package "wslu"
+when "opensuse"
   raise NotImplementedError
 else
   raise NotImplementedError

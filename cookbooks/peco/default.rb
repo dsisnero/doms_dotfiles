@@ -1,10 +1,9 @@
-
 case node[:platform]
-when 'debian', 'ubuntu', 'mint'
-  package 'fzf'
+when "debian", "ubuntu", "mint"
+  package "fzf"
 
   # package 'peco'
-  execute 'install peco' do
+  execute "install peco" do
     command <<~EOCMD
       mkdir work_peco
       pushd work_peco
@@ -17,18 +16,16 @@ when 'debian', 'ubuntu', 'mint'
       rm -rf work_peco
     EOCMD
 
-    not_if 'which peco'
+    not_if "which peco"
   end
-when 'fedora', 'redhat', 'amazon'
-when 'osx', 'darwin'
-  package 'peco'
-  package 'fzf'
+when "fedora", "redhat", "amazon"
+when "osx", "darwin"
+  package "peco"
+  package "fzf"
 
-when 'arch'
-  include_cookbook 'yay'
+when "arch"
+  include_cookbook "yay"
 
-  yay 'peco'
-when 'opensuse'
-else
+  yay "peco"
+when "opensuse"
 end
-

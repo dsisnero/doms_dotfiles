@@ -1,14 +1,14 @@
 # https://code.visualstudio.com/docs/setup/linux
 
 case node[:platform]
-when 'arch'
-  include_cookbook 'yay'
-  yay 'visual-studio-code-bin'
+when "arch"
+  include_cookbook "yay"
+  yay "visual-studio-code-bin"
 
-when 'osx', 'darwin'
-when 'fedora', 'redhat', 'amazon'
-when 'debian', 'ubuntu', 'mint'
-  execute 'add vscode repos' do
+when "osx", "darwin"
+when "fedora", "redhat", "amazon"
+when "debian", "ubuntu", "mint"
+  execute "add vscode repos" do
     command <<-EOL
       curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
       sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
@@ -19,14 +19,12 @@ when 'debian', 'ubuntu', 'mint'
     EOL
   end
 
-  package 'apt-transport-https'
-  execute 'apt update -y'
-  package 'code'
+  package "apt-transport-https"
+  execute "apt update -y"
+  package "code"
 
-when 'opensuse'
-else
+when "opensuse"
 end
-
 
 user = node[:user]
 home = node[:home]

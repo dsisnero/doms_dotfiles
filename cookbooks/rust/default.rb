@@ -1,52 +1,81 @@
 # include_recipe './dependency.rb'
-include_cookbook './asdf'
+# include_cookbook './asdf
 
-# node.reverse_merge!({
-#   rust: {
-#     version: '10.13.0',
-#   }
-# })
+node.reverse_merge!({
+  rust: {
+    version: 'stable',
+    user: node[:user]
+  }
+})
 
-version = 'latest'
-version = node[:rust][:version] unless node[:rust].nil?
-user = node[:user]
-home = node[:home]
+include_recipe "rust::user"
 
-remote_file "#{home}/.default-cargo-crates" do
-  source 'files/.default-cargo-crates'
-  owner user
-  mode '644'
+unless ENV["PATH"].include?("#{node[:home]}/.cargo/bin:")
+  MItamae.logger.info("Prepending ~/.cargo/bin to PATH during this execution")
+  ENV["PATH"] = "#{node[:home]}/.cargo/bin:#{ENV["PATH"]}"
 end
 
-execute 'install asdf-rust' do
-  user user
-  command <<-EOCMD
-    source /etc/profile.d/asdf.sh
-    asdf plugin-add rust https://github.com/code-lever/asdf-rust.git
-  EOCMD
-  not_if "test -d #{home}/.asdf/plugins/rust"
+rustup = "#{node[:home]}/.cargo/bin/rustup"
+cargo_cmd = "#{node[:home]}/.cargo/bin/cargo"
+
+# execute "sudo -E -u #{node[:user]} #{rustup} component add rust-src" do
+#   not_if "sudo -E -u #{node[:user]} #{rustup} component list | grep 'rust-src (installed)' >/dev/null"
+# end
+
+# add RUSTC_WRAPPER to ENV
+unless ENV["RUSTC_WRAPPER"]
+  MItamae.logger.info("adding RUSTC_WRAPPER to ENV during this execution")
+  ENV["RUSTC_WRAPPER"] = "#{node[:home]}/.cargo/bin/sccache"
 end
 
-[
-  { cmd: 'asdf plugin add rust', not_if: 'asdf plugin list | grep rust' },
-  { cmd: "asdf install rust #{version}", not_if: "asdf list rust | grep #{version}" },
-  { cmd: "asdf global rust #{version}" },
-  { cmd: 'asdf reshim rust' }
-].each do |op|
-  source_asdf_and_execute op[:cmd] do
-    user user
-    not_if_ op[:not_if] unless op[:not_if].nil?
+cargo_init = <<~EOS
+  ENV['RUSTC_WRAPPER'] = "#{node[:home]}/.cargo/bin/sccache"
+EOS
+
+# define cargo_install command
+define :cargo, version: nil, locked: true, path: nil, git: nil,
+  features: nil, binname: nil, sscache: true do
+    cargo_name = params[:name]
+    binname = params[:binname] || params[:name]
+    cmd = "#{cargo_init} ;" if params[:sscache]
+    cmd = "#{cargo_cmd} install --verbose"
+    cmd << " --version #{params[:version]}" if params[:version]
+    cmd << " --path #{params[:path]}" if params[:path]
+    cmd << " --git #{params[:git]}" if params[:git]
+    cmd << " --features #{params[:features]}" if params[:features]
+    cmd << " --locked" if params[:locked]
+    cmd << " #{cargo_name}" unless params[:path] || params[:git]
+    execute "installing_cmd" do
+      user node[:user]
+      command cmd
+      not_if %(#{cargo_cmd} install --list | grep "^#{cargo_name} ")
+    end
   end
+
+# add RUSTC_WRAPPER to .bashrc
+execute "add RUSTC_WRAPPER to .bashrc" do
+  command "echo 'export RUSTC_WRAPPER=#{ENV["HOME"]}/.cargo/bin/sccache' >> #{ENV["HOME"]}/.bashrc"
+  command "source #{ENV["HOME"]}/.bashrc"
+  not_if "grep 'export RUSTC_WRAPPER' #{ENV["HOME"]}/.bashrc"
 end
 
-# あとでおいだす
-[
-  'mkdir ~/.local/share/mocword',
-  'wget https://github.com/high-moctane/mocword-data/releases/download/eng20200217/mocword.sqlite.gz -O ~/.local/share/mocword/mocword.sqlite.gz',
-  'gunzip ~/.local/share/mocword/mocword.sqlite.gz'
-].each do |cmd|
-  execute cmd do
-    user user
-    not_if 'test -f ~/.local/share/mocword/mocword.sqlite'
-  end
-end
+# # install helix
+# git "helix" do
+#   repository "https://github.com/helix-editor/helix"
+#   destination "#{ENV["HOME"]}/src/helix"
+#   user node[:user]
+#   revision "HEAD"
+# end
+#
+# execute "helix compile" do
+#   cwd "#{ENV["HOME"]}/src/helix"
+#   user node[:user]
+#   command "#{cargo_cmd} install --path helix-term --locked"
+#   not_if "which hx"
+# end
+#
+# # add HELIX_RUNTIME to .bashrc
+# execute "add HELIX_RUNTIME to .bashrc" do
+#   command "echo 'export HELIX_RUNTIME=#{ENV["HOME"]}/src/helix/runtime' >> #{ENV["HOME"]}/.bashrc"
+#   not_if "grep 'export HELIX_RUNTIME' #{ENV["HOME"]}/.bashrc"
+# end

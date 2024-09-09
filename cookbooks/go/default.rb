@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-include_cookbook 'asdf'
+include_cookbook "asdf"
 
 # version = 'latest'
-version = '1.20'
+version = "1.20"
 
-user = node['user']
-home = node['home']
+user = node["user"]
+home = node["home"]
 
-execute 'install asdf-golang' do
+execute "install asdf-golang" do
   user user
   command <<EOCMD
   . /etc/profile.d/asdf.sh
@@ -17,7 +17,7 @@ EOCMD
   not_if "test -d #{home}/.asdf/plugins/golang"
 end
 
-execute 'install golang' do
+execute "install golang" do
   user user
   command <<EOCMD
   VER=#{version}
@@ -30,5 +30,5 @@ execute 'install golang' do
   fi
   asdf reshim golang
 EOCMD
-  not_if 'test -e ~/.asdf/shims/go'
+  not_if "test -e ~/.asdf/shims/go"
 end

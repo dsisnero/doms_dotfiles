@@ -1,28 +1,26 @@
-
 case node[:platform]
-when 'debian', 'ubuntu', 'mint'
-  package 'avahi-daemon'
-  package 'avahi-utils'
-  package 'libnss-mdns'
+when "debian", "ubuntu", "mint"
+  package "avahi-daemon"
+  package "avahi-utils"
+  package "libnss-mdns"
 
   # for wsl
-  service 'dbus' do
+  service "dbus" do
     action [:start, :enable]
     not_if "#{node[:is_wsl]}"
   end
-when 'fedora', 'redhat', 'amazon'
-  package 'avahi'
-  package 'nss-mdns'
-when 'osx', 'darwin'
-when 'arch'
-  package 'avahi'
-  package 'nss-mdns'
-when 'opensuse'
-else
+when "fedora", "redhat", "amazon"
+  package "avahi"
+  package "nss-mdns"
+when "osx", "darwin"
+when "arch"
+  package "avahi"
+  package "nss-mdns"
+when "opensuse"
 end
 
 unless node[:is_wsl]
-  service 'avahi-daemon' do
+  service "avahi-daemon" do
     action [:start, :enable]
   end
 end

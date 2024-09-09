@@ -1,17 +1,17 @@
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
-version = '3.3.0'
+version = "3.3.0"
 url = "https://www.openssl.org/source/openssl-#{version}.tar.gz"
 
 case node[:platform]
-when 'arch'
+when "arch"
   raise NotImplementedError
-when 'osx', 'darwin'
+when "osx", "darwin"
   raise NotImplementedError
-when 'fedora', 'redhat', 'amazon'
+when "fedora", "redhat", "amazon"
   raise NotImplementedError
-when 'debian', 'ubuntu', 'mint'
-  package 'build-essential'
+when "debian", "ubuntu", "mint"
+  package "build-essential"
 
   execute "openssl #{version}" do
     command <<~EOCMD
@@ -31,7 +31,7 @@ when 'debian', 'ubuntu', 'mint'
       id
     EOCMD
   end
-when 'opensuse'
+when "opensuse"
   raise NotImplementedError
 else
   raise NotImplementedError

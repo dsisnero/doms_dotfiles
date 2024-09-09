@@ -1,7 +1,7 @@
-include_recipe 'dependency.rb'
-include_cookbook './asdf'
+include_recipe "dependency.rb"
+include_cookbook "./asdf"
 
-version = 'latest'
+version = "latest"
 version = node[:deno][:version] unless node[:deno].nil?
 user = node[:user]
 home = node[:home]
@@ -13,10 +13,10 @@ home = node[:home]
 # end
 #
 [
-  { cmd: 'asdf plugin add deno https://github.com/asdf-community/asdf-deno.git',
-    not_if: 'asdf plugin list | grep deno' },
-  { cmd: "asdf install deno #{version}", not_if: "asdf list deno | grep #{version}" },
-  { cmd: "asdf global deno #{version}", not_if: 'which deno' }
+  {cmd: "asdf plugin add deno https://github.com/asdf-community/asdf-deno.git",
+   not_if: "asdf plugin list | grep deno"},
+  {cmd: "asdf install deno #{version}", not_if: "asdf list deno | grep #{version}"},
+  {cmd: "asdf global deno #{version}", not_if: "which deno"}
 ].each do |op|
   source_asdf_and_execute op[:cmd] do
     user user

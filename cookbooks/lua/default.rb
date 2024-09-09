@@ -1,5 +1,5 @@
 # include_recipe './dependency.rb'
-include_cookbook './asdf'
+include_cookbook "./asdf"
 
 # node.reverse_merge!({
 #   lua: {
@@ -7,12 +7,12 @@ include_cookbook './asdf'
 #   }
 # })
 
-version = 'latest'
+version = "latest"
 version = node[:lua][:version] unless node[:lua].nil?
 user = node[:user]
 home = node[:home]
 
-execute 'install asdf-lua' do
+execute "install asdf-lua" do
   user user
   command <<-EOCMD
     source /etc/profile.d/asdf.sh
@@ -22,10 +22,10 @@ execute 'install asdf-lua' do
 end
 
 [
-  { cmd: 'asdf plugin add lua', not_if: 'asdf plugin list | grep lua' },
-  { cmd: "asdf install lua #{version}", not_if: "asdf list lua | grep #{version}" },
-  { cmd: "asdf global lua #{version}" },
-  { cmd: 'asdf reshim lua' }
+  {cmd: "asdf plugin add lua", not_if: "asdf plugin list | grep lua"},
+  {cmd: "asdf install lua #{version}", not_if: "asdf list lua | grep #{version}"},
+  {cmd: "asdf global lua #{version}"},
+  {cmd: "asdf reshim lua"}
 ].each do |op|
   source_asdf_and_execute op[:cmd] do
     user user

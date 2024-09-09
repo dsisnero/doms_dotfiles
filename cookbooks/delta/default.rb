@@ -1,16 +1,16 @@
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
 case node[:platform]
-when 'arch'
+when "arch"
   raise NotImplementedError
-when 'osx', 'darwin'
+when "osx", "darwin"
   raise NotImplementedError
-when 'fedora', 'redhat', 'amazon'
+when "fedora", "redhat", "amazon"
   raise NotImplementedError
 
-when 'debian', 'ubuntu', 'mint'
-  execute 'install delta' do
-    user node['user']
+when "debian", "ubuntu", "mint"
+  execute "install delta" do
+    user node["user"]
 
     command <<~EOCMD
       VERSION=$(curl -s "https://api.github.com/repos/dandavison/delta/releases/latest" | jq -r '.tag_name' | sed 's/v//' )
@@ -21,7 +21,7 @@ when 'debian', 'ubuntu', 'mint'
     EOCMD
   end
 
-when 'opensuse'
+when "opensuse"
   raise NotImplementedError
 else
   raise NotImplementedError

@@ -1,15 +1,15 @@
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
 case node[:platform]
-when 'arch'
-when 'osx', 'darwin'
-when 'fedora', 'redhat', 'amazon'
-when 'debian', 'ubuntu', 'mint'
-  package 'jq'
-when 'opensuse'
+when "arch"
+when "osx", "darwin"
+when "fedora", "redhat", "amazon"
+when "debian", "ubuntu", "mint"
+  package "jq"
+when "opensuse"
 end
 
-execute 'install jqp' do
+execute "install jqp" do
   command <<~EOCMD
     mkdir workjqp
     pushd workjqp

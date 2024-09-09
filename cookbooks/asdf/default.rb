@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
 user = node[:user]
 home = node[:home]
@@ -10,13 +10,13 @@ execute "git clone https://github.com/asdf-vm/asdf.git #{home}/.asdf" do
   not_if "test -e #{home}/.asdf"
 end
 
-file '/etc/profile.d/asdf.sh' do
+file "/etc/profile.d/asdf.sh" do
   content <<EOCONTENT
   export ASDF_DIR=~/.asdf
   source ~/.asdf/asdf.sh
 EOCONTENT
-  not_if 'test -e /etc/profile.d/asdf.sh'
-  mode '644'
+  not_if "test -e /etc/profile.d/asdf.sh"
+  mode "644"
 end
 
 # utilities

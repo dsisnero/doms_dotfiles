@@ -1,7 +1,20 @@
-# `fronzen_string_literal: true`を強制しない
-Style/FrozenStringLiteralComment:
-  Enabled: false
+require:
+  - standard
+  - rubocop-rails
+  - rubocop-rspec
 
-# 日本語コメント許可
-Style/AsciiComments:
-  Enabled: false
+inherit_gem:
+  standard: config/base.yml
+
+AllCops:
+  NewCops: enable
+  Exclude:
+    - node_modules/**/*
+    - public/**/*
+    - vendor/**/*
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+
+Style/HashSyntax:
+  EnforcedShortHandSyntax: never

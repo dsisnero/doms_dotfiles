@@ -1,15 +1,15 @@
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
 case node[:platform]
-when 'arch'
-when 'osx', 'darwin'
-when 'fedora', 'redhat', 'amazon'
-when 'debian', 'ubuntu', 'mint'
+when "arch"
+when "osx", "darwin"
+when "fedora", "redhat", "amazon"
+when "debian", "ubuntu", "mint"
   # リポジトリの追加
-  package 'apt-transport-https'
+  package "apt-transport-https"
 
-  gpg_path = '/etc/apt/trusted.gpg.d/wsl-transdebian.gpg'
-  execute 'gpg' do
+  gpg_path = "/etc/apt/trusted.gpg.d/wsl-transdebian.gpg"
+  execute "gpg" do
     command <<-EOCMD
       wget -O #{gpg_path} https://arkane-systems.github.io/wsl-transdebian/apt/wsl-transdebian.gpg
       chmod a+r #{gpg_path}
@@ -17,7 +17,7 @@ when 'debian', 'ubuntu', 'mint'
     not_if "ls #{gpg_path}"
   end
 
-  source_list_path = '/etc/apt/sources.list.d/wsl-transdebian.list'
+  source_list_path = "/etc/apt/sources.list.d/wsl-transdebian.list"
   # distro = run_command("cat /etc/*-release | grep DISTRIB_CODENAME | sed 's/DISTRIB_CODENAME=//'").stdout.strip
   distro = run_command("lsb_release -a | grep -i codename | awk '{print $2}'").stdout.strip
 
@@ -27,11 +27,10 @@ when 'debian', 'ubuntu', 'mint'
       deb-src https://arkane-systems.github.io/wsl-transdebian/apt/ #{distro} main
     EOCMD
     not_if "ls #{source_list_path}"
-    mode '644'
+    mode "644"
   end
 
   # Genieをインストール
-  execute 'apt-get install -y systemd-genie'
-when 'opensuse'
-else
+  execute "apt-get install -y systemd-genie"
+when "opensuse"
 end

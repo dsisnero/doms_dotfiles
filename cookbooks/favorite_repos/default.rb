@@ -1,16 +1,12 @@
-include_cookbook 'dotfiles'
-include_cookbook 'ghq'
+include_cookbook "dotfiles"
+include_cookbook "ghq"
 
 repos = %w[
-  # dylanaraps/neofetch
-  # mzyy94/RictyDiminished-for-Powerline
-  # rupa/z
-  # yuru7/HackGen
-  # zsh-users/zsh-completions
-  # zplug/zplug
-  # zk-phi/sky-color-clock
+  bundai223/dotfiles
+  fujiwara/isucon11-f
+  itamae-kitchen/mitamae
 ]
-# repos.each { |name| get_repo name }
+repos.each { |name| get_repo name.chomp }
 
 pip_pkgs = %w[
   powerline-status
@@ -26,4 +22,4 @@ pip_pkgs = %w[
   end
 end
 
-package 'fontforge'
+package "fontforge"

@@ -1,11 +1,11 @@
 case node[:platform]
-when 'arch'
-  include_cookbook 'yay'
-  package 'automake'
-  package 'autoconf'
-when 'osx', 'darwin'
-when 'fedora', 'redhat', 'amazon'
-  execute 'install gnu global' do
+when "arch"
+  include_cookbook "yay"
+  package "automake"
+  package "autoconf"
+when "osx", "darwin"
+when "fedora", "redhat", "amazon"
+  execute "install gnu global" do
     command <<-EOCMD
       VERSION=6.6.3
 
@@ -26,7 +26,6 @@ when 'fedora', 'redhat', 'amazon'
       rm -rf $TMP
     EOCMD
   end
-when 'debian', 'ubuntu', 'mint'
-when 'opensuse'
-else
+when "debian", "ubuntu", "mint"
+when "opensuse"
 end

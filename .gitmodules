@@ -1,3 +1,6 @@
 [submodule "plugins/itamae-plugin-recipe-rbenv"]
 	path = plugins/itamae-plugin-recipe-rbenv
 	url = git@github.com:bundai223/itamae-plugin-recipe-rbenv.git
+[submodule "plugins/itamae-plugin-recipe-rust"]
+	path = plugins/itamae-plugin-recipe-rust
+	url = https://github.com/itamae-plugins/itamae-plugin-recipe-rust.git

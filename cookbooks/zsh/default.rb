@@ -1,10 +1,10 @@
-version = '5.7.1'
+version = "5.7.1"
 
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
 case node[:platform]
-when 'debian', 'ubuntu', 'mint', 'fedora', 'redhat', 'amazon'
-  execute 'compile zsh' do
+when "debian", "ubuntu", "mint", "fedora", "redhat", "amazon"
+  execute "compile zsh" do
     command <<-EOL
       VERSION=#{version}
       WORKDIR=work_zsh
@@ -24,34 +24,33 @@ when 'debian', 'ubuntu', 'mint', 'fedora', 'redhat', 'amazon'
       rm -rf ${WORKDIR}
     EOL
 
-    not_if 'test -e /usr/local/bin/zsh'
+    not_if "test -e /usr/local/bin/zsh"
   end
-when 'osx', 'darwin'
-  package 'zsh'
-when 'arch'
-  package 'zsh'
+when "osx", "darwin"
+  package "zsh"
+when "arch"
+  package "zsh"
 
-  execute 'ln -s /usr/bin/zsh /usr/local/bin/zsh' do
-    not_if 'test -e /usr/local/bin/zsh'
+  execute "ln -s /usr/bin/zsh /usr/local/bin/zsh" do
+    not_if "test -e /usr/local/bin/zsh"
   end
-when 'opensuse'
-else
+when "opensuse"
 end
 
-file '/etc/shells' do
+file "/etc/shells" do
   action :edit
-  not_if 'grep /usr/local/bin/zsh /etc/shells > /dev/null'
+  not_if "grep /usr/local/bin/zsh /etc/shells > /dev/null"
   block do |content|
-    content << '/usr/local/bin/zsh'
+    content << "/usr/local/bin/zsh"
   end
 end
 
-file '/etc/zprofile' do
-  content <<EOCONTENT
-for i in /etc/profile.d/*.sh ; do
-    [ -r $i ] && source $i
-done
-EOCONTENT
-  not_if 'test -e /etc/zprofile'
-  mode '644'
+file "/etc/zprofile" do
+  content <<~EOCONTENT
+    for i in /etc/profile.d/*.sh ; do
+        [ -r $i ] && source $i
+    done
+  EOCONTENT
+  not_if "test -e /etc/zprofile"
+  mode "644"
 end

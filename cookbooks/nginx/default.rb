@@ -1,1 +1,1 @@
-package 'nginx'
+package "nginx"

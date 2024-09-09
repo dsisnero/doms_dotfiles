@@ -1,17 +1,17 @@
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
-version = '2.2.5'
-arch = 'x86_64'
+version = "2.2.5"
+arch = "x86_64"
 
 case node[:platform]
-when 'debian', 'mint', 'ubuntu'
+when "debian", "mint", "ubuntu"
   url = "https://releases.hashicorp.com/vagrant/#{version}/vagrant_#{version}_#{arch}.deb"
   filename = "vagrant_#{version}_#{arch}.deb"
 
   cmds = [
-   "curl -O #{url}",
-   "dpkg -i #{filename}",
-   "rm #{filename}"
+    "curl -O #{url}",
+    "dpkg -i #{filename}",
+    "rm #{filename}"
   ]
 
   cmds.each do |cmd|
@@ -20,13 +20,12 @@ when 'debian', 'mint', 'ubuntu'
     end
   end
 
-when 'fedora', 'redhat', 'amazon'
+when "fedora", "redhat", "amazon"
 
-when 'osx', 'darwin'
+when "osx", "darwin"
 
-when 'arch'
-  yay 'vagrant'
+when "arch"
+  yay "vagrant"
 
-when 'opensuse'
-else
+when "opensuse"
 end

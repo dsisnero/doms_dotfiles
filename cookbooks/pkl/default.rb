@@ -1,6 +1,6 @@
 # https://github.com/apple/pkl.git
 
-include_recipe 'dependency.rb'
+include_recipe "dependency.rb"
 
 case node["kernel"]["machine"]
 when "x86_64"
@@ -13,14 +13,13 @@ end
 [
   "wget -q #{url} -O pkl",
   "chmod +x pkl",
-  "mv pkl ~/.local/bin/",
+  "mv pkl ~/.local/bin/"
 ].map do |cmd|
   execute cmd do
-    user node['user']
+    user node["user"]
     not_if "test -e ~/.local/bin/pkl"
   end
 end
-
 
 # case node[:platform]
 # when 'arch'
