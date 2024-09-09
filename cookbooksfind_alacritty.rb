@@ -9,4 +9,4 @@ end
 share_dir = "#{home}/.local/share"
 local_app_dir = "#{share_dir}/applications"
 
-find_alacritty_desktop = run_command("fd -e desktop alacritty", cwd: "#{home}/.cargo").stdout.chomp
+find_alacritty_desktop = run_command("find . -name '*.desktop' -exec grep -l 'alacritty' {} +", cwd: "#{home}/.cargo").stdout.chomp
