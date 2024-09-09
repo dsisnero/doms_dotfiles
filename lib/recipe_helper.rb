@@ -127,7 +127,7 @@ end
 define :dotfile, source: nil, user: nil do
   dst = File.join(node[:home], params[:name])
   src = params[:source].nil? ? File.join(node[:dotfile_repos], "config", params[:name]) : parmas[:source]
-  user = params[:user].nil? ? params[:user] : node[:user]
+  user = params[:user].nil? ? node[:user] : params[:user]
   # puts "dst: #{dst}"
   # puts "src: #{src}"
 
