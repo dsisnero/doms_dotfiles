@@ -13,10 +13,10 @@ end
 
 execute "install asdf-ruby" do
   user user
-  command <<-EOS
-. /etc/profile.d/asdf.sh
-asdf plugin-add ruby https://github.com/asdf-vm/asdf-ruby.git
-EOS
+  command <<~EOS
+    . /etc/profile.d/asdf.sh
+    asdf plugin-add ruby https://github.com/asdf-vm/asdf-ruby.git
+  EOS
   not_if "test -d #{home}/.asdf/plugins/ruby"
 end
 
@@ -31,4 +31,3 @@ end
     not_if_ op[:not_if] unless op[:not_if].nil?
   end
 end
-

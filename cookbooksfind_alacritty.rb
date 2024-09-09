@@ -1,4 +1,3 @@
-
 home = node[:home]
 user = node[:user]
 cargo "alacritty" do

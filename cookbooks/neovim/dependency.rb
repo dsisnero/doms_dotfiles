@@ -61,7 +61,7 @@ end
 # execute 'cpanm Neovim::Ext'
 
 # go_get 'github.com/tennashi/vimalter'
-execute 'install vimalter' do
+execute "install vimalter" do
   command <<-EOCMD
     mkdir work_vimalter
     cd work_vimalter
@@ -72,7 +72,7 @@ execute 'install vimalter' do
     rm -rf work_vimalter
   EOCMD
   user node[:user]
-  not_if 'test -f ~/.local/bin/vimalter'
+  not_if "test -f ~/.local/bin/vimalter"
 end
 
 # if arch package 'fd'

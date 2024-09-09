@@ -22,14 +22,11 @@ end
 
 execute "install python" do
   user user
-  command <<-EOS
-VER=#{python_version}
-. #{home}/.asdf/asdf.sh
-asdf install python ${VER}
-asdf global python ${VER}
-EOS
+  command <<~EOS
+    VER=#{python_version}
+    . #{home}/.asdf/asdf.sh
+    asdf install python ${VER}
+    asdf global python ${VER}
+  EOS
   not_if "test -d #{home}/.asdf/shims/python"
 end
-
-
-
