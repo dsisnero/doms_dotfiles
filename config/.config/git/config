@@ -141,12 +141,14 @@
 	rebase = merges
 
 [diff]
+	colorMoved = default
   tool = nvimdiff
 # [difftool]
 #   prompt = false
 [difftool "nvimdiff"]
   cmd = "nvim -R -d -c \"wincmd l\" -d \"$LOCAL\" \"$REMOTE\""
 [merge]
+	conflictstyle = diff3
   ff = false
   tool = nvimdiff
 [mergetool]
@@ -165,20 +167,22 @@
     diffFilter = delta --color-only --features=interactive
 
 [delta]
-    features = decorations
-  side-by-side = true
-
-[delta "interactive"]
-    keep-plus-minus-markers = false
+    features = side-by-side line-numbers decorations
+    syntax-theme = Dracula
+    plus-style = syntax "#003800"
+    minus-style = syntax "#3f0001"
 
 [delta "decorations"]
-    commit-decoration-style = blue ol
-    commit-style = raw
-    file-style = omit
-    hunk-header-decoration-style = blue box
-    hunk-header-file-style = red
-    hunk-header-line-number-style = "#067a00"
-    hunk-header-style = file line-number syntax
+    commit-decoration-style = bold yellow box ul
+    file-style = bold yellow ul
+    file-decoration-style = none
+    hunk-header-decoration-style = cyan box ul
+
+[delta "line-numbers"]
+    line-numbers-left-style = cyan
+    line-numbers-right-style = cyan
+    line-numbers-minus-style = 124
+    line-numbers-plus-style = 28
 
 [credential]
 	helper = 
