@@ -61,6 +61,7 @@ include_cookbook "helix"
 
 cargo "simple-completion-language-server" do
   git "https://github.com/estin/simple-completion-language-server.git"
+  features "citation"
 end
 
 include_cookbook "wezterm"
