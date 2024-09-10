@@ -47,6 +47,7 @@ end
 cargo "bottom"
 cargo "broot"
 cargo "du-dust"
+cargo "zoxide"
 
 include_cookbook "perl"
 # include_cookbook 'perl' if not %w(ubuntu debian).include?(node[:platform])
