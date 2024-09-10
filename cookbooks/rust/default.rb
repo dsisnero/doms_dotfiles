@@ -84,3 +84,18 @@ file "#{home}/.bashrc" do
     content << %(export RUSTC_WRAPPER=#{cargo_bin_dir}/.sccache)
   end
 end
+file "#{home}/.zshrc" do
+  action :edit
+  not_if "grep 'source $HOME/.cargo/env' #{home}/.zshrc"
+  block do |content|
+    content << "source $HOME/.cargo/env"
+  end
+end
+
+file "#{home}/.zshrc" do
+  action :edit
+  not_if "grep 'export RUSTC_WRAPPER' #{home}/.zshrc"
+  block do |content|
+    content << %(export RUSTC_WRAPPER=#{cargo_bin_dir}/.sccache)
+  end
+end
