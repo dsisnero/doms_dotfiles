@@ -507,6 +507,7 @@ autoload -Uz colors && colors
 
 # source ~/.local/lib/python3.10/site-packages/powerline/bindings/zsh/powerline.zsh
 # export PIP_SITE_LOCATION=$(pip show -f powerline-status | grep Location | awk '{print $2}')
+export PIP_SITE_LOCATION=/home/dominic/.asdf/installs/python/3.12.6/lib/python3.12/site-packages
 source ${PIP_SITE_LOCATION}/powerline/bindings/zsh/powerline.zsh
 
 #}}}
@@ -538,6 +539,9 @@ fi
 
 # direnv
 which direnv >/dev/null && eval "$(direnv hook zsh)"
+
+# starship
+eval "$(starship init zsh)"
 
 [[ "$COLORTERM" == (24bit|truecolor) || "${terminfo[colors]}" -eq '16777216' ]] || zmodload zsh/nearcolor
 
