@@ -134,6 +134,8 @@ end
 dotfile ".config/pip"
 dotfile ".config/git/config"
 dotfile ".config/powerline"
+dotfile ".config/broot"
+dotfile ".config/solargraph"
 dotfile ".spacemacs"
 dotfile ".spacemacs.d"
 dotfile ".config/Code/User/settings.json"
