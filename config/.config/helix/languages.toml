@@ -1,0 +1,264 @@
+[language-server.scls]
+command = "simple-completion-language-server"
+
+[language-server.scls.config]
+max_completion_items = 20     # set max completion results len for each group: words, snippets, unicode-input
+snippets_first = true         # completions will return before snippets by default
+feature_words = true          # enable completion by word
+feature_snippets = true       # enable snippets
+feature_unicode_input = true  # enable "unicode input"
+feature_paths = true          # enable path completion
+
+[[sources]] # list of sources to load
+name = "friendly-snippets"                                  # optional name shown on snippet description
+git = "https://github.com/rafamadriz/friendly-snippets.git" # git repo with snippets collections
+
+# write logs to /tmp/completion.log
+[language-server.scls.environment]
+RUST_LOG = "info,simple-completion-langauge-server=info"
+LOG_FILE = "d:/tmp/completion.log"
+
+
+[language-server.rust-analyzer.config]
+ check = { command = "clippy", features = "all" }
+ diagnostics = { experimental = { enable = true } }
+ hover = { actions = { enable = true } }
+ typing = { autoClosingAngleBrackets = { enable = true } }
+ cargo = { allFeatures = true }
+ procMacro = { enable = true }
+
+ [language-server.llm-ls]
+ command = "llm-ls"
+ timeout = 5
+ 
+[language-sever.ltex]
+command = "ltex-ls"
+
+[language-server.buck2]
+command = "buck2"
+args = ["--lsp"]
+
+[language-server.solargraph.config.solargraph]
+diagnostics = true
+formatting = false
+
+[language-server.yaml-language-server.config.yaml]
+format = { enable = true }
+validation = true
+
+[language-server.yaml-language-server.config.yaml.schemas]
+"https://json.schemastore.org/github-workflow.json" = ".github/workflows/*.{yml,yaml}"
+"https://raw.githubusercontent.com/ansible-community/schemas/main/f/ansible-tasks.json" = "roles/{tasks,handlers}/*.{yml,yaml}"
+
+[language-server.ruby-lsp]
+command = "ruby-lsp"
+args = ["--debug"]
+
+[language-server.ruby-lsp.config]
+formatter = "rubocop"
+experimentalFeaturesEnabled = true
+
+[language-server.ruby-lsp.config.enabledFeatures]
+codeActions = true
+codeLens = true
+completion = true
+definition = true
+diagnostics = true
+documentHighlights = true
+documentLink = true
+documentSymbols = true
+foldingRanges = true
+formatting = true
+hover = true
+inlayHint = true
+onTypeFormatting = true
+selectionRanges = true
+semanticHighlighting = true
+signatureHelp = true
+typeHierarchy = true
+workspaceSymbol = true
+
+[language-server.ruby-lsp.config.featuresConfiguration.inlayHint]
+implicitHashValue = true
+implicitRescue = true
+
+[language-server.ruby-lsp.config.indexing]
+excludedPatterns = [ "path/to/excluded/file.rb" ]
+includedPatterns = [ "path/to/included/file.rb" ]
+excludedGems = [ "gem1", "gem2", "etc." ]
+excludedMagicComments = [ "compiled:true" ]
+
+[language-server.rubocop]
+command = "bundle"
+args = ["exec", "rubocop", "--lsp"]
+# [language-server.ruby-lsp.initializationOptions]
+# enabledFeatures = {codeActions = true, diagnostics = true,documentHighlights = true,documentLink = true, documentSymbols = true,
+# foldinfRanges = true, formatting = true,hover = true, inlayHint = true,onTypeFormatting = true,selectionRanges = true,semanticHighlighting = true,
+# completion = true}
+
+
+[language-server.standardrb]
+command = "standardrb"
+args = ["--lsp" ]
+
+[language-server.standardrb.config.standardrb]
+formatting = true
+
+[[language]]
+name = "asciidoc"
+scope = "source.adoc"
+file-types = ["adoc"]
+language-servers = ["ltex", "scls"]
+roots = []
+
+[[language]]
+name = "ruby"
+roots = ["Gemfile", "Rakefile", "Gemfile.lock"]
+# language-servers = ["standardrb", {name  = "solargraph", except-features = ["format", "diagnostics"]}]
+language-servers = ["ruby-lsp", "scls", "rubocop"]
+auto-format = true
+
+[language.debugger]
+name = "rdbg"
+transport = "tcp"
+command = "rdbg.bat"
+args = [ "--open", "--stop-at-load",  "-c", "--", "{0}", "{1}"]
+port-arg = "--port {}"
+
+[[language.debugger.templates]]
+name = "debug file"
+request = "launch"
+completion = [{ name = "file", completion = "filename", default = "."}]
+args = {}
+
+
+[[language.debugger.templates]]
+name = "attach"
+request = "attach"
+completion = [{name = "port", completion = "port"}]
+args = {localfs = true, port = "{0}"}
+
+[[language]]
+name = "starlark"
+scope = "source.starlark"
+injection-regex = "(starlark|bzl|bazel)"
+file-types = ["bzl", "bazel", "star", { glob = "BUCK"},{ glob = "BUILD" }, { glob = "BUILD.*" }, { glob = "Tiltfile" }]
+language-servers = [ "buck2" ]
+roots = [".buckconfig", "MODULE.bazel", "WORKSPACE", "WORKSPACE.bazel"]
+comment-token = "#"
+indent = { tab-width = 4, unit = "    " }
+grammar = "python"
+
+[[language]]
+name = "crystal"
+formatter = { command = "ameba", args = ["--fix ${INPUT}"]}
+language-servers = [ "scls"]
+
+[language.debugger]
+name = "lldb-vscode"
+transport = "stdio"
+command = "lldb-vscode"
+
+[[language.debugger.templates]]
+name = "binary"
+request = "launch"
+completion = [ {name = "binary", completion = "filename"}]
+args = { program = "{0}", initCommands = ["command script import c:/windows_home/.local/share/crystal/crystal_formatters.py"]}
+
+[[language]]
+name = "rust"
+
+[language.debugger]
+name = "lldb-vscode"
+transport = "stdio"
+command = "lldb-vscode"
+
+[[language.debugger.templates]]
+name = "binary"
+request = "launch"
+completion = [ { name = "binary", completion = "filename" } ]
+args = { program = "{0}", initCommands = [ "command script import c:/windows_home/.config/llvm/lldb_vscode_rustc_primer.py" ] }
+
+[language-server.deno]
+command = "deno"
+args = ["lsp"]
+
+[language-server.emmet-ls]
+ command = "emmet-ls"
+args = [ "--stdio" ]
+
+[language-server.eslint]
+command = "vscode-eslint-language-server"
+args = ["--stdio"]
+
+[language-server.eslint.config]
+codeActionsOnSave = { mode = "all", "source.fixAll.eslint" = true }
+format = { enable = true }
+nodePath = ""
+quiet = false
+rulesCustomizations = []
+run = "onType"
+validate = "on"
+experimental = {}
+problems = { shortenToSingleLine = false }
+
+[language-server.eslint.config.codeAction]
+disableRuleComment = { enable = true, location = "separateLine" }
+showDocumentation = { enable = false }
+
+[language-server.vscode-json-language-server.config]
+json = { validate = { enable = true }, format = { enable = true } }
+provideFormatter = true
+
+[language-server.vscode-css-language-server.config]
+css = { validate = { enable = true } }
+scss = { validate = { enable = true } }
+less = { validate = { enable = true } }
+provideFormatter = true
+
+
+[[language]]
+name = "typescript"
+language-servers = [ "typescript-language-server", "eslint", "emmet-ls" ]
+# formatter = { command = "prettier", args = [ "--parser", "typescript" ] }
+formatter = { command = "dprint", args = [ "fmt", "--stdin", "typescript" ] }
+auto-format = true
+
+[[language]]
+name = "tsx"
+language-servers = [ "deno", "eslint", "emmet-ls" ]
+# formatter = { command = "prettier", args = [ "--parser", "typescript" ] }
+formatter = { command = "dprint", args = [ "fmt", "--stdin", "tsx" ] }
+auto-format = true
+
+[[language]]
+name = "javascript"
+language-servers = [ "typescript-language-server", "eslint", "emmet-ls" ]
+# formatter = { command = "prettier", args = [ "--parser", "typescript" ] }
+formatter = { command = "dprint", args = [ "-c", "c:/windows_home/.config/dprint/dprint.json","fmt", "--stdin", "javascript" ] }
+auto-format = true
+
+[[language]]
+name = "jsx"
+language-servers = [ "typescript-language-server", "eslint", "emmet-ls" ]
+# formatter = { command = "prettier", args = [ "--parser", "typescript" ] }
+formatter = { command = "dprint", args = [ "-c", "c:/windows_home/.config/dprint/dprint.json","fmt", "--stdin", "jsx" ] }
+auto-format = true
+
+[[language]]
+name = "json"
+# formatter = { command = "prettier", args = [ "--parser", "json" ] }
+formatter = { command = "dprint", args = [ "-c", "c:/windows_home/.config/dprint/dprint.json","fmt", "--stdin", "json" ] }
+auto-format = true
+
+[[language]]
+name = "html"
+language-servers = [ "vscode-html-language-server", "emmet-ls" ]
+formatter = { command = 'prettier', args = ["--parser", "html"] }
+auto-format = true
+
+[[language]]
+name = "css"
+language-servers = [ "vscode-css-language-server", "emmet-ls" ]
+formatter = { command = 'prettier', args = ["--parser", "css"] }
+auto-format = true
