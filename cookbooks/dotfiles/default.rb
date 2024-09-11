@@ -38,6 +38,11 @@ mydir "#{home}/repos"
 #   group group
 # #   not_if "test -e #{home}/.config/nvim/init.vim"
 # end
+template "#{home}/.git-config.local" do
+  source "templates/.git-config.local.erb"
+  owner user
+  group group
+end
 
 template "#{home}/.zlogin" do
   source "templates/.zlogin.erb"

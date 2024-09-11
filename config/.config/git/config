@@ -10,7 +10,7 @@
 	commentChar = ";"
 
 [include]
- path = .git-config.local
+ path = ~/.git-config.local
 
 [ghq]
 	user = dsisnero
