@@ -1,16 +1,19 @@
-<% if node[:platform] = 'windows' -%>
+<% if node[:platform] == 'ubuntu' -%>
+[credential]
+	helper = 
+	helper = /usr/local/bin/git-credential-manager
+	credentialStore = secretservice
+<%- elsif node[:platform] == 'windows' -%>
 [credential]
 	helper = 
 	helper = git-credential-manager
 	credentialStore = wincred.h
-[credential "https://dev.azure.com"]
-	useHttpPath = true
-<% else -%>
+<%- else -%>
 [credential]
     helper = 
     helper = git-credential-manager-core
     credentialStore = secretservice
+<%- end -%>
 [credential "https://dev.azure.com"]
     useHttpPath = true
-<% end -%>
 	
