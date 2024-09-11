@@ -9,6 +9,9 @@
 	precomposeunicode = true
 	commentChar = ";"
 
+[include]
+ path = .git-config.local
+
 [ghq]
 	user = dsisnero
 	root = ~/repos
@@ -184,12 +187,6 @@
     line-numbers-minus-style = 124
     line-numbers-plus-style = 28
 
-[credential]
-	helper = 
-	helper = /usr/local/bin/git-credential-manager
-	credentialStore = secretservice
-[credential "https://dev.azure.com"]
-	useHttpPath = true
 [user]
 	email = dsisnero@gmail.com
 	name = Dominic Sisneros
