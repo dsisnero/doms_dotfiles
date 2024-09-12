@@ -1,4 +1,5 @@
-theme = "amberwood"
+# theme = "amberwood"
+theme = "nord-night"
 
 [editor]
 line-number = "relative"
@@ -6,6 +7,8 @@ mouse = true
 rulers = [80]
 bufferline = "multiple"
 completion-trigger-len = 1
+# Highlight all lines with a cursor
+cursorline = true
 # auto-pairs = false
 
 [editor.soft-wrap]
@@ -15,8 +18,13 @@ max-indent-retain = 0
 wrap-indicator = "|"
 
 [editor.lsp]
+auto-signature-help = true
 display-messages = true
 display-inlay-hints = true
+
+[editor.indent-guides]
+character = "╎"
+render = true
 
 [editor.file-picker]
 hidden = false
@@ -29,6 +37,6 @@ o = "file_picker_in_current_buffer_directory"
 
 
 [editor.statusline]
-left = ["mode", "spinner", "file-name", "file-type", "total-line-numbers", "file-encoding"]
+left = ["mode", "spinner", "version-control", "file-name", "file-type", "total-line-numbers", "file-encoding"]
 center = []
 right = ["selections", "primary-selection-length", "position", "position-percentage", "spacer", "diagnostics", "workspace-diagnostics", "version-control"]

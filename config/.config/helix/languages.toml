@@ -115,7 +115,7 @@ roots = []
 name = "ruby"
 roots = ["Gemfile", "Rakefile", "Gemfile.lock"]
 # language-servers = ["standardrb", {name  = "solargraph", except-features = ["format", "diagnostics"]}]
-language-servers = ["ruby-lsp", "scls", "rubocop"]
+language-servers = ["ruby-lsp", "scls", "rubocop", "solargraph"]
 auto-format = true
 
 [language.debugger]
