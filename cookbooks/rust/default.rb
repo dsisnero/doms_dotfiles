@@ -79,6 +79,14 @@ end
 
 file "#{home}/.bashrc" do
   action :edit
+  not_if "grep 'zoxide init bash' #{home}/.bashrc"
+  block do |content|
+    content << %(eval "$(zoxide init bash)")
+  end
+end
+
+file "#{home}/.bashrc" do
+  action :edit
   not_if "grep 'export RUSTC_WRAPPER' #{home}/.bashrc"
   block do |content|
     content << %(export RUSTC_WRAPPER=#{cargo_bin_dir}/.sccache)

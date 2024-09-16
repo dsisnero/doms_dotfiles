@@ -518,7 +518,7 @@ _Z_DATA=~/.config/zsh/z/.z
 if [[ $OSTYPE == darwin* ]]; then
   . `brew --prefix`/etc/profile.d/z.sh
 else
-  . ~/repos/github.com/rupa/z/z.sh
+  # . ~/repos/github.com/rupa/z/z.sh
 fi
 # precmd_z () {
 #   z --add "$(pwd -P)"
@@ -542,6 +542,9 @@ which direnv >/dev/null && eval "$(direnv hook zsh)"
 
 # starship
 eval "$(starship init zsh)"
+
+# zoxide
+eval "$(zoxide init zsh)"
 
 [[ "$COLORTERM" == (24bit|truecolor) || "${terminfo[colors]}" -eq '16777216' ]] || zmodload zsh/nearcolor
 
