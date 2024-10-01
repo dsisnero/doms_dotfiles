@@ -29,6 +29,7 @@ def discover_distro_repo
   end
 end
 
+# Determine the distribution repository
 distro_repo = discover_distro_repo
 
 # Install Crystal based on the package manager
