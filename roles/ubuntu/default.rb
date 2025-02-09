@@ -40,6 +40,7 @@ package "x11-apps"
 package "x11-utils"
 package "x11-xserver-utils"
 package "fonts-ipafont"
+package "aria2"
 
 include_role("base")
 

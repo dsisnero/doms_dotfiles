@@ -12,6 +12,7 @@ include_cookbook "git"
 include_cookbook "git-secrets"
 include_cookbook "go"
 include_cookbook "ghq"
+include_cookbook "rpi_imager"
 
 include_cookbook "rust"
 
@@ -22,6 +23,7 @@ cargo "cargo-watch"
 cargo "fd-find"
 
 cargo "fnm"
+include_cookbook "ollama"
 
 file "#{home}/.bashrc" do
   action :edit
@@ -35,6 +37,7 @@ cargo "exa"
 cargo "git-delta"
 cargo "ripgrep"
 cargo "starship"
+cargo "hyperfine"
 
 file "#{home}/.bashrc" do
   action :edit
@@ -56,6 +59,7 @@ include_cookbook "python"
 include_cookbook "nodejs"
 include_cookbook "yarn"
 include_cookbook "alacritty"
+include_cookbook "crystal"
 
 include_cookbook "helix"
 

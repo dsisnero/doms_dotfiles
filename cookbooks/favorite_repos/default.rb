@@ -6,6 +6,7 @@ repos = %w[
   fujiwara/isucon11-f
   itamae-kitchen/mitamae
   AstroNvim/astrocommunity
+  llvm/llvm-project
 ]
 repos.each { |name| get_repo name.chomp }
 
