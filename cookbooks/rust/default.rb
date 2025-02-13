@@ -26,6 +26,12 @@ unless ENV["PATH"].include?(cargo_bin_dir)
   ENV["PATH"] = "#{cargo_bin_dir}:#{ENV["PATH"]}"
 end
 
+execute "install sccache" do
+  user user
+  command "#{cargo_env} cargo install sccache --locked"
+  not_if { File.exist? "#{cargo_bin_dir}/sccache" }
+end
+
 # execute "install rust-src" do
 #   user user
 #   not_if do
@@ -89,7 +95,7 @@ file "#{home}/.bashrc" do
   action :edit
   not_if "grep 'export RUSTC_WRAPPER' #{home}/.bashrc"
   block do |content|
-    content << %(export RUSTC_WRAPPER=#{cargo_bin_dir}/.sccache)
+    content << %(export RUSTC_WRAPPER=#{cargo_bin_dir}/sccache)
   end
 end
 file "#{home}/.zshrc" do
@@ -104,6 +110,6 @@ file "#{home}/.zshrc" do
   action :edit
   not_if "grep 'export RUSTC_WRAPPER' #{home}/.zshrc"
   block do |content|
-    content << %(export RUSTC_WRAPPER=#{cargo_bin_dir}/.sccache)
+    content << %(export RUSTC_WRAPPER=#{cargo_bin_dir}/sccache)
   end
 end
