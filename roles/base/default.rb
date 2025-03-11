@@ -3,24 +3,31 @@ node.reverse_merge!({
     root_password: "D12uM3m4y+"
   }
 })
-
+package "pass"
 home = node[:home]
-
 include_cookbook "sudo_nopassword"
 include_cookbook "dotfiles"
 include_cookbook "git"
 include_cookbook "git-secrets"
+include_cookbook "mise"
 include_cookbook "go"
 include_cookbook "ghq"
 include_cookbook "rpi_imager"
 
 include_cookbook "rust"
+include_cookbook "treesitter"
 
+cargo "bat"
+cargo "bottom"
+cargo "broot"
 cargo "cargo-edit"
 cargo "cargo-script"
 cargo "cargo-update"
 cargo "cargo-watch"
+cargo "du-dust"
+cargo "exa"
 cargo "fd-find"
+cargo "ouch"
 
 cargo "fnm"
 include_cookbook "ollama"
@@ -32,12 +39,15 @@ file "#{home}/.bashrc" do
   end
   not_if %(grep 'fnm env' #{home}/.bashrc)
 end
-
-cargo "exa"
+cargo "git-cliff"
 cargo "git-delta"
-cargo "ripgrep"
-cargo "starship"
+cargo "grex"
 cargo "hyperfine"
+cargo "oxipng"
+cargo "ripgrep"
+cargo "ripgrep_all"
+cargo "sqlx-cli"
+cargo "starship"
 
 file "#{home}/.bashrc" do
   action :edit
@@ -46,10 +56,8 @@ file "#{home}/.bashrc" do
   end
   not_if %(grep 'starship init' #{home}/.bashrc)
 end
-
-cargo "bottom"
-cargo "broot"
-cargo "du-dust"
+cargo "trippy"
+cargo "watchexec-cli"
 cargo "zoxide"
 
 include_cookbook "perl"

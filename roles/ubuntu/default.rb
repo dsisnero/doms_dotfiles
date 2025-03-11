@@ -17,6 +17,7 @@ end
 execute "sudo apt update"
 execute "sudo apt upgrade -y"
 
+include_role("base")
 # for nokogiri for rails
 package "build-essential"
 package "apt-file"
@@ -41,8 +42,6 @@ package "x11-utils"
 package "x11-xserver-utils"
 package "fonts-ipafont"
 package "aria2"
-
-include_role("base")
 
 # install media packages
 package "ubuntu-restricted-extras"

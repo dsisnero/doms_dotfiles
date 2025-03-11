@@ -1,11 +1,11 @@
 execute "yum update -y"
 
+include_role "base"
 package "wget"
 package "unzip"
 package "vim"
 package "gcc"
 
-include_role "base"
 include_cookbook "mysql"
 include_cookbook "nodejs"
 include_cookbook "yarn"

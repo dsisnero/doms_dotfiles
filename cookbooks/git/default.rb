@@ -1,10 +1,4 @@
 # Create a user-specific temporary directory to avoid permission issues
-directory "#{node[:home]}/.cache/mitamae-tmp" do
-  owner node[:user]
-  group node[:group]
-  mode "700"
-  recursive true
-end
 
 case node[:platform]
 when "debian", "ubuntu", "mint"
@@ -33,8 +27,7 @@ when "debian", "ubuntu", "mint"
   end
 
   # Deploy all hook files
-  hook_dir = File.expand_path('../files/hooks', __FILE__)
-  Dir.glob("#{hook_dir}/*").each do |hook|
+  Dir.glob("files/*").each do |hook|
     basename = File.basename(hook)
     remote_file "#{hooks_dir}/#{basename}" do
       source hook
@@ -42,35 +35,6 @@ when "debian", "ubuntu", "mint"
       user node[:user]
       group node[:group]
       # Use user-specific temporary directory
-      environment TMPDIR: "#{node[:home]}/.cache/mitamae-tmp"
-    end
-  end
-
-  # Configure global hooks path
-  execute "git config --global core.hooksPath '#{hooks_dir}'" do
-    user node[:user]
-    not_if "git config --global core.hooksPath | grep -q '#{hooks_dir}'"
-  end
-
-  # Create XDG-compliant hooks directory
-  hooks_dir = "#{node[:config_home]}/git/hooks"
-  directory hooks_dir do
-    user node[:user]
-    group node[:group]
-    mode "0755"
-  end
-
-  # Deploy all hook files
-  hook_dir = File.expand_path('../files/hooks', __FILE__)
-  Dir.glob("#{hook_dir}/*").each do |hook|
-    basename = File.basename(hook)
-    remote_file "#{hooks_dir}/#{basename}" do
-      source hook
-      mode "0755"
-      user node[:user]
-      group node[:group]
-      # Use user-specific temporary directory
-      environment TMPDIR: "#{node[:home]}/.cache/mitamae-tmp"
     end
   end
 

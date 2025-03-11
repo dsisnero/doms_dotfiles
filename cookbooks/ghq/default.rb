@@ -1,38 +1,22 @@
 # frozen_string_literal: true
 
-include_cookbook "asdf"
+include_cookbook "mise"
 
 version = "latest"
 
 user = node["user"]
 home = node["home"]
 
-execute "install asdf-ghq" do
-  user user
-  command <<EOCMD
-  . /etc/profile.d/asdf.sh
-  asdf plugin add ghq
-EOCMD
-  not_if "test -d #{home}/.asdf/plugins/ghq"
-end
-
 execute "install ghq" do
   user user
   command <<EOCMD
   VER=#{version}
-  . /etc/profile.d/asdf.sh
-  asdf install ghq ${VER}
-  if [ ${VER} = 'latest' ]; then
-    asdf global ghq $(asdf list ghq)
-  else
-    asdf global ghq ${VER}
-  fi
-  asdf reshim ghq
+  mise use -g ghq@${VER} 
 EOCMD
-  not_if "test -e ~/.asdf/shims/ghq"
+  # not_if "test -e ~/.asdf/shims/ghq"
 end
 
-ghq_root = run_command(run_as(user, ". /etc/profile.d/asdf.sh && ghq root")).stdout.chomp
+ghq_root = run_command(run_as(user, "ghq root")).stdout.chomp
 node.reverse_merge!(
   ghq_root: ghq_root
 )

@@ -74,7 +74,6 @@ when "debian", "mint", "ubuntu"
     user user_
     group user_
     mode "755"
-    recursive true
     not_if { File.exist?(fish_config_dir) }
   end
 

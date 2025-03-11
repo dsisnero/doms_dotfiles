@@ -1,6 +1,7 @@
 home = node[:home]
 user = node[:user]
 group = node[:group]
+config_dir = node[:config_home]
 
 define :mydir, mode: "755" do
   dirpath = params[:name]
@@ -16,16 +17,16 @@ mydir "#{home}/.ssh" do
   mode "700"
 end
 
-mydir "#{home}/.config"
-mydir "#{home}/.config/git"
-mydir "#{home}/.config/helix"
-mydir "#{home}/.config/zsh/z"
-mydir "#{home}/.config/nvim"
-mydir "#{home}/.config/spacemacs/layers"
-mydir "#{home}/.config/Code/User"
-mydir "#{home}/.config/dictionary"
-mydir "#{home}/.config/lazygit"
-mydir "#{home}/.config/fish"
+mydir "#{config_dir}"
+mydir "#{config_dir}/git"
+mydir "#{config_dir}/helix"
+mydir "#{config_dir}/zsh/z"
+mydir "#{config_dir}/nvim"
+mydir "#{config_dir}/spacemacs/layers"
+mydir "#{config_dir}/Code/User"
+mydir "#{config_dir}/dictionary"
+mydir "#{config_dir}/lazygit"
+mydir "#{config_dir}/fish"
 mydir "#{home}/.local"
 mydir "#{home}/.local/bin"
 mydir "#{home}/.local/themes"
@@ -34,7 +35,7 @@ mydir "#{home}/.local/icons"
 mydir "#{home}/repos"
 
 # Initialize Fish config with mise setup
-template "#{home}/.config/fish/config.fish" do
+template "#{config_dir}/fish/config.fish" do
   source "templates/fish/config.fish.erb"
   owner user
   group group
@@ -42,14 +43,14 @@ template "#{home}/.config/fish/config.fish" do
   only_if "which fish >/dev/null 2>&1" # Only create if Fish is installed
 end
 
-# template "#{home}/.config/nvim/init.vim" do
+# template "#{config_dir}/nvim/init.vim" do
 #   source "templates/init.vim.erb"
 #   owner user
 #   group group
-# #   not_if "test -e #{home}/.config/nvim/init.vim"
+# #   not_if "test -e #{config_dir}/nvim/init.vim"
 # end
 # Main .gitconfig with platform-specific includes
-template "#{home}/.gitconfig" do
+template "#{config_dir}/git/config" do
   source "templates/git/gitconfig.erb"
   owner user
   group group
@@ -61,10 +62,10 @@ template "#{home}/.gitconfig" do
 end
 
 # Platform-specific config directory
-mydir "#{home}/.config/git/platforms"
+mydir "#{config_dir}/git/platforms"
 
 # Common git configuration
-template "#{home}/.config/git/config.common" do
+template "#{config_dir}/git/config.common" do
   source "templates/git/common_config.erb"
   owner user
   group group
@@ -73,7 +74,7 @@ end
 
 # Platform-specific templates
 %w[darwin linux windows].each do |platform|
-  template "#{home}/.config/git/platforms/#{platform}" do
+  template "#{config_dir}/git/platforms/#{platform}" do
     source "templates/git/platforms/#{platform}.erb"
     owner user
     group group
@@ -82,7 +83,7 @@ end
 end
 
 # WSL template (special case)
-template "#{home}/.config/git/platforms/wsl" do
+template "#{config_dir}/git/platforms/wsl" do
   source "templates/git/platforms/wsl.erb"
   owner user
   group group
@@ -160,8 +161,8 @@ end
 # github_token
 if node[:is_wsl]
   cmds = [
-    "cp /mnt/c/tools/github_token #{home}/.config/git/",
-    "chown #{user}:#{group} #{home}/.config/git/github_token"
+    "cp /mnt/c/tools/github_token #{config_dir}/git/",
+    "chown #{user}:#{group} #{config_dir}/git/github_token"
   ]
 
   cmds.each do |cmd|
@@ -182,33 +183,33 @@ execute "git init" do
   only_if "test -e #{home}/repos/github.com/dsisnero/doms_dotfiles"
 end
 
-dotfile ".config/pip"
-dotfile ".config/git/config"
-dotfile ".config/powerline"
-dotfile ".config/broot"
-dotfile ".config/helix/external-snippets.toml"
-dotfile ".config/helix/languages.toml"
-dotfile ".config/helix/config.toml"
-dotfile ".config/solargraph"
+dotfile "pip"
+dotfile "git/config"
+dotfile "powerline"
+dotfile "broot"
+dotfile "helix/external-snippets.toml"
+dotfile "helix/languages.toml"
+dotfile "helix/config.toml"
+dotfile "solargraph"
 dotfile ".spacemacs"
 dotfile ".spacemacs.d"
-dotfile ".config/Code/User/settings.json"
+dotfile "Code/User/settings.json"
 dotfile ".ctags"
-dotfile ".config/ctags"
-# dotfile ".config/nvim/lua"
-# dotfile ".config/nvim/nlsp-settings"
-dotfile ".config/lazygit/config.yml"
-dotfile ".config/yamllint"
-dotfile ".config/wezterm"
+dotfile "ctags"
+# dotfile "nvim/lua"
+# dotfile "nvim/nlsp-settings"
+dotfile "lazygit/config.yml"
+dotfile "yamllint"
+dotfile "wezterm"
 dotfile ".conkyrc"
 dotfile ".textlintrc"
 # dotfile '.gemrc' # 追加したいオプションができるまでなし
 
 include_cookbook "aspell"
-execute "aspell -d en dump master | aspell -l en expand > #{home}/.config/dictionary/my.dict" do
+execute "aspell -d en dump master | aspell -l en expand > #{config_dir}/dictionary/my.dict" do
   user user
-  cwd "#{home}/.config/dictionary"
-  not_if "test -e #{home}/.config/dictionary/my.dict"
+  cwd "#{config_dir}/dictionary"
+  not_if "test -e #{config_dir}/dictionary/my.dict"
 end
 
 mydir "#{home}/.prh-rules/media"

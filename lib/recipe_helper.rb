@@ -20,7 +20,7 @@
     user_bin = "#{home}/.local/bin"
 
     # Use XDG_CONFIG_HOME if set, otherwise default to ~/.config
-    config_home = ENV.fetch('XDG_CONFIG_HOME', "#{home}/.config")
+    config_home = ENV.fetch("XDG_CONFIG_HOME", "#{home}/.config")
 
     node.reverse_merge!(
       user: user,
@@ -129,7 +129,7 @@ end
 
 # dotfileリポジトリ内へのシンボリックリンク設定
 define :dotfile, source: nil, user: nil do
-  dst = File.join(node[:home], params[:name])
+  dst = File.join(node[:config_home], params[:name])
   src = params[:source].nil? ? File.join(node[:dotfile_repos], "config", params[:name]) : parmas[:source]
   user = params[:user].nil? ? node[:user] : params[:user]
   # puts "dst: #{dst}"
