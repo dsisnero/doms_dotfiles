@@ -22,7 +22,6 @@ when "debian", "ubuntu", "mint"
     user node[:user]
     group node[:group]
     mode "0755"
-    recursive true
   end
 
   # Deploy all hook files
@@ -48,7 +47,6 @@ when "debian", "ubuntu", "mint"
     user node[:user]
     group node[:group]
     mode "0755"
-    recursive true
   end
 
   # Deploy all hook files
