@@ -1,0 +1,57 @@
+<% case @platform %>
+<% when 'darwin' %>
+[credential]
+  helper = osxkeychain
+  credentialStore = gpg
+
+[core]
+  pager = delta
+
+[diff]
+  tool = opendiff
+  colorMoved = default
+
+[merge]
+  tool = opendiff
+  conflictstyle = diff3
+  ff = false
+
+<% when 'arch', 'ubuntu' %>
+[credential]
+  helper = cache --timeout=3600
+  <% if @is_wsl %>
+  helper = /usr/local/bin/git-credential-manager
+  credentialStore = gpg
+  <% end %>
+
+[core]
+  pager = delta
+
+[diff]
+  tool = nvimdiff
+  colorMoved = default
+
+[difftool "nvimdiff"]
+  cmd = "nvim -R -d -c \"wincmd l\" -d \"$LOCAL\" \"$REMOTE\""
+
+[merge]
+  tool = nvimdiff
+  conflictstyle = diff3
+  ff = false
+
+[mergetool]
+  prompt = true
+
+[mergetool "nvimdiff"]
+  cmd = "nvim -d -c \"4wincmd w | wincmd J\" \"$LOCAL\" \"$BASE\" \"$REMOTE\"  \"$MERGED\""
+
+<% if @is_wsl %>
+[credential "https://github.com"]
+  helper = 
+  helper = !/usr/bin/gh auth git-credential
+
+[credential "https://gist.github.com"]
+  helper = 
+  helper = !/usr/bin/gh auth git-credential
+<% end %>
+<% end %>
