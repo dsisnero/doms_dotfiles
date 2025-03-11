@@ -12,6 +12,35 @@ when "debian", "ubuntu", "mint"
   end
 
   package "git"
+  package "git-secrets" do
+    not_if "which git-secrets"
+  end
+
+  # Create XDG-compliant hooks directory
+  hooks_dir = "#{node[:config_home]}/git/hooks"
+  directory hooks_dir do
+    user node[:user]
+    group node[:group]
+    mode "0755"
+    recursive true
+  end
+
+  # Deploy all hook files
+  Dir.glob("#{__dir__}/files/hooks/*").each do |hook|
+    basename = File.basename(hook)
+    remote_file "#{hooks_dir}/#{basename}" do
+      source hook
+      mode "0755"
+      user node[:user]
+      group node[:group]
+    end
+  end
+
+  # Configure global hooks path
+  execute "git config --global core.hooksPath '#{hooks_dir}'" do
+    user node[:user]
+    not_if "git config --global core.hooksPath | grep -q '#{hooks_dir}'"
+  end
 
 when "fedora", "redhat", "amazon"
   package "wget"
