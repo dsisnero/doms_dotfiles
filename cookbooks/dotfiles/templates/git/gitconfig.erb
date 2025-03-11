@@ -1,6 +1,6 @@
 [include]
-  path = ~/.config/git/config.common
-  path = ~/.config/git/platforms/<%= @platform %>
+  path = <%= @config_dir %>/git/config.common
+  path = <%= @config_dir %>/git/platforms/<%= @platform %>
 <% if @is_wsl %>
-  path = ~/.config/git/platforms/wsl
+  path = <%= @config_dir %>/git/platforms/wsl
 <% end %>

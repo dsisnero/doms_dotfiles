@@ -17,24 +17,31 @@ when "debian", "ubuntu", "mint"
   package "git-secrets" do
     not_if "which git-secrets"
   end
-
   # Create XDG-compliant hooks directory
   hooks_dir = "#{node[:config_home]}/git/hooks"
+
+  # Ensure parent git directory exists
+  directory "#{node[:config_home]}/git" do
+    user node[:user]
+    group node[:group]
+    mode "755"
+  end
+
   directory hooks_dir do
     user node[:user]
     group node[:group]
     mode "0755"
   end
 
-  # Deploy all hook files
-  Dir.glob("files/*").each do |hook|
+  # Deploy all hook files from cookbook
+  hook_dir = File.expand_path("../files/hooks", __FILE__)
+  Dir.glob("#{hook_dir}/*").each do |hook|
     basename = File.basename(hook)
     remote_file "#{hooks_dir}/#{basename}" do
-      source hook
+      source "hooks/#{basename}"
       mode "0755"
       user node[:user]
       group node[:group]
-      # Use user-specific temporary directory
     end
   end
 

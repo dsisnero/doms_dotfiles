@@ -57,7 +57,8 @@ template "#{config_dir}/git/config" do
   mode "644"
   variables(
     platform: node[:platform],
-    is_wsl: node[:is_wsl]
+    is_wsl: node[:is_wsl],
+    config_dir: node[:config_home]
   )
 end
 

@@ -1,4 +1,4 @@
 [include]
-  path = ~/.config/git/config.common
-  path = ~/.config/git/platforms/ubuntu
+  path = /home/dominic/.config/git/config.common
+  path = /home/dominic/.config/git/platforms/ubuntu
 
