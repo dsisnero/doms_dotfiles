@@ -25,12 +25,22 @@ mydir "#{home}/.config/spacemacs/layers"
 mydir "#{home}/.config/Code/User"
 mydir "#{home}/.config/dictionary"
 mydir "#{home}/.config/lazygit"
+mydir "#{home}/.config/fish"
 mydir "#{home}/.local"
 mydir "#{home}/.local/bin"
 mydir "#{home}/.local/themes"
 mydir "#{home}/.local/icons"
 
 mydir "#{home}/repos"
+
+# Initialize Fish config with mise setup
+template "#{home}/.config/fish/config.fish" do
+  source "templates/fish/config.fish.erb"
+  owner user
+  group group
+  mode "644"
+  only_if "which fish >/dev/null 2>&1" # Only create if Fish is installed
+end
 
 # template "#{home}/.config/nvim/init.vim" do
 #   source "templates/init.vim.erb"
