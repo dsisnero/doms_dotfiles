@@ -38,10 +38,8 @@ when "debian", "mint", "ubuntu"
     only_if "test -f /etc/apt/sources.list.d/mise.list"
   end
 
-  # Update with retry logic and lock handling
+  # Update with lock handling
   execute "update apt" do
-    retries 3
-    retry_delay 5
     command <<~EOCMD
       while sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1; do
         echo "Waiting for apt lock..."
@@ -51,10 +49,7 @@ when "debian", "mint", "ubuntu"
     EOCMD
   end
 
-  package "mise" do
-    retries 3
-    retry_delay 5
-  end
+  package "mise"
 
   file "#{home_}/.bashrc" do
     action :edit
@@ -70,6 +65,15 @@ when "debian", "mint", "ubuntu"
       content << %[eval "$(mise activate zsh)"]
     end
     not_if %(grep 'mise activate' #{home_}/.zshrc)
+  end
+
+  fish_config_dir = "#{home_}/.config/fish"
+  directory fish_config_dir do
+    user user_
+    group user_
+    mode "755"
+    recursive true
+    not_if { File.exist?(fish_config_dir) }
   end
 
   fish_config = "#{home_}/.config/fish/config.fish"
