@@ -6,6 +6,18 @@ home_ = node[:home]
 case node[:platform]
 when "debian", "mint", "ubuntu"
 
+  # Stop packagekit to avoid lock conflicts
+  service "packagekit" do
+    action [:stop, :disable]
+    only_if "systemctl list-unit-files | grep -q packagekit.service"
+  end
+
+  # Clean up any stale locks
+  execute "cleanup apt locks" do
+    command "sudo rm -f /var/lib/apt/lists/lock /var/lib/dpkg/lock*"
+    only_if "test -f /var/lib/apt/lists/lock || test -f /var/lib/dpkg/lock"
+  end
+
   execute "install mise" do
     command <<~EOCMD
       wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | sudo tee /etc/apt/keyrings/mise-archive-keyring.gpg
@@ -14,9 +26,35 @@ when "debian", "mint", "ubuntu"
     not_if "test -f /etc/apt/sources.list.d/mise.list"
   end
 
-  execute "sudo apt update"
+  # Deduplicate repository entries
+  execute "deduplicate-sources" do
+    command <<~EOCMD
+      # Remove duplicate entries if they exist
+      if [ $(grep -c "mise.jdx.dev" /etc/apt/sources.list.d/mise.list 2>/dev/null || echo 0) -gt 1 ]; then
+        echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg] https://mise.jdx.dev/deb stable main" | \
+          sudo tee /etc/apt/sources.list.d/mise.list >/dev/null
+      fi
+    EOCMD
+    only_if "test -f /etc/apt/sources.list.d/mise.list"
+  end
 
-  package "mise"
+  # Update with retry logic and lock handling
+  execute "update apt" do
+    retries 3
+    retry_delay 5
+    command <<~EOCMD
+      while sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1; do
+        echo "Waiting for apt lock..."
+        sleep 1
+      done
+      sudo apt-get update -o Acquire::Retries=3 -o APT::Get::Always-Include-Phased-Updates=false
+    EOCMD
+  end
+
+  package "mise" do
+    retries 3
+    retry_delay 5
+  end
 
   file "#{home_}/.bashrc" do
     action :edit
@@ -39,7 +77,7 @@ when "debian", "mint", "ubuntu"
   file fish_config do
     action :edit
     block do |content|
-      content << %(mise activate zsh | source")
+      content << %(mise activate fish | source)
     end
     not_if %(grep 'mise activate' #{fish_config})
   end
