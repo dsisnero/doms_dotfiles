@@ -6,8 +6,28 @@
   symlinks = false
   protectNTFS = true
 
+[alias]
+  # PowerShell-powered equivalents
+  change-branch=!git checkout $(git branch | fzf) # Interactive branch switcher using fzf
+  change-tag=!git checkout $(git tag | fzf) # Tag selection with fzf
+  
+  # Commit navigation using PowerShell
+  chk-first=!git checkout $(git log --oneline | Select-Object -Last 1 | ForEach-Object { $_.Split()[0] }) # First commit
+  
+  # VS Code integration
+  edit-unmerged = "!git ls-files --unmerged | ForEach-Object { $_.Substring(2) } | Sort-Object -Unique | % { code $_ }" # Open conflicted files in VS Code
+  
+  # Windows-friendly diff tools
+  difftool = "!f() { git difftool --tool=vscode $@; }; f" # Default to VS Code diff
+
+[difftool "vscode"]
+  cmd = code --wait --diff $LOCAL $REMOTE # VS Code diff command
+
 [difftool "vsdiffmerge"]
   cmd = \"C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/VsDiffMerge.exe\" \"$LOCAL\" \"$REMOTE\" //t
+
+[mergetool "vscode"]
+  cmd = code --wait $MERGED # VS Code merge resolution
 
 [mergetool "vsdiffmerge"]
   cmd = \"C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/VsDiffMerge.exe\" \"$LOCAL\" \"$REMOTE\" \"$BASE\" \"$MERGED\" //m

@@ -1,6 +1,23 @@
 [credential]
   helper = cache --timeout=3600
 
+[alias]
+  # Interactive branch/tag selection (requires peco)
+  create-trackingbranch=!git checkout -t $(git branch -r | peco) # Create tracking branch from remote selection
+  change-branch=!git checkout $(git branch | peco) # Interactive branch switcher
+  change-tag=!git checkout $(git tag | peco) # Checkout tag from interactive list
+  
+  # Commit navigation using shell tools
+  chk-first=!git checkout $(git log --oneline | tail -1 | awk '{print $1}') # Jump to first commit
+  chk-next=!git checkout $(git log --oneline ORIG_HEAD | tail -$(($(git log --oneline | wc | awk '{print $1}')+1)) | head -1 | awk '{print $1}') # Move forward in commit history
+  
+  # Visual file selection for staging
+  add-modified = !git add $(git status --short | peco | sed s/"^..."//) # Select modified files via peco
+  
+  # Merge conflict resolution with Vim
+  edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; vim `f`" # Edit conflicted files in Vim
+  add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`" # Add resolved files
+
 [difftool "nvimdiff"]
   cmd = "nvim -R -d -c \"wincmd l\" -d \"$LOCAL\" \"$REMOTE\""
 

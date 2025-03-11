@@ -27,7 +27,47 @@ if [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
   if which pacman >/dev/null 2>&1; then
     sudo pacman -S --noconfirm unzip
   fi
+  
+  # Install peco if missing
+  if ! command -v peco &> /dev/null; then
+    echo "Installing peco for Linux..."
+    if which apt-get >/dev/null 2>&1; then
+      sudo apt-get install -y peco
+    elif which pacman >/dev/null 2>&1; then
+      sudo pacman -S --noconfirm peco
+    elif which yum >/dev/null 2>&1; then
+      sudo yum install -y peco
+    fi
+  fi
+  
+  # Install neovim for diff tools
+  if ! command -v nvim &> /dev/null; then
+    echo "Installing neovim for diff tools..."
+    if which apt-get >/dev/null 2>&1; then
+      sudo apt-get install -y neovim
+    elif which pacman >/dev/null 2>&1; then
+      sudo pacman -S --noconfirm neovim
+    elif which yum >/dev/null 2>&1; then
+      sudo yum install -y neovim
+    fi
+  fi
 elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
+  echo "Installing Windows tools..."
+  # Check if scoop is installed
+  if ! command -v scoop &> /dev/null; then
+    echo "Installing scoop package manager..."
+    powershell -Command "Set-ExecutionPolicy RemoteSigned -Scope CurrentUser"
+    powershell -Command "iex (new-object net.webclient).downloadstring('https://get.scoop.sh')"
+  fi
+  
+  # Install Windows tools
+  powershell -Command "scoop install fzf git"
+  
+  # Install VS Code if not present
+  if ! command -v code &> /dev/null; then
+    powershell -Command "scoop install vscode"
+  fi
+else
   echo "Your platform ($(uname -a)) is not supported."
   exit 1
 fi

@@ -46,14 +46,15 @@
 	ui = auto
 
 [alias]
+	# Cross-platform core commands
 	ps = push
 	pl = pull
 	ft = fetch
 	ad = add
 	co = checkout
-	st = status --short --branch
+	st = status --short --branch  # Compact status view
 	sh = show
-	sw = switch
+	sw = switch                   # Modern branch switching
 	cm = commit
 	df = diff
 	lg = log
@@ -61,67 +62,68 @@
 	tg = tag
 	br = branch
 
-	create-trackingbranch=!git checkout -t $(git branch -r | peco)
-	change-branch=!git checkout $(git branch | peco)
-	chbr=!git checkout $(git branch | peco)
-	change-tag=!git checkout $(git tag | peco)
-	chtg=!git checkout $(git tag | peco)
-
-  chk-first=!git checkout $(git log --oneline | tail -1 | awk '{print $1}')
-  chk-next=!git checkout $(git log --oneline ORIG_HEAD | tail -$(($(git log --oneline | wc | awk '{print $1}')+1)) | head -1 | awk '{print $1}')
-  df-prev=!git diff $(git log --oneline -2 | awk '{print $1}' | tac | paste - -)
-	add-modified = !git add $(git status --short | peco | sed s/"^..."//)
-	commit-modified-all = commit -a
-	commit-fix = commit -a --amend
-	cmm = commit -a
-	cmf = commit -a --amend
-
-	bra = branch -a
-	wc = whatchanged
-	ls = log --stat
-	lp = log -p
+	# Branch management
+	bra = branch -a               # List all branches
+	
+	# Log visualization
+	wc = whatchanged              # Show what changed in commits
+	ls = log --stat               # Log with file stats
+	lp = log -p                   # Log with patches
 	la = log --pretty=\"format:%ad %h (%an): %s\" --date=short
-
-	diff-staged = diff --staged
-	dfs = diff --staged
-	dw = diff --color-words
-	ls-changed = diff --name-only
-	edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; vim `f`"
-	add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
-
-  rebasing-commit = "!f='$(git rev-parse --git-dir)/rebase-apply/patch'; if [ -f '$f' ]; then git show $(head -n1 '$f'); else echo 'Heh?'; fi"
-
-	clone = clone --recursive
-  graph = log --graph -10 --branches --remotes --tags  --format=format:'%Cgreen%h %Creset %<(75,trunc)%s (%cN, %cr) %Cred%d' --date-order
-	oneline = log --pretty=oneline
-
-	pp=!git pull && git push
-  precommit = diff --cached --diff-algorithm=minimal -w
-  unstage = reset -q HEAD --
-	uncommit = reset --mixed HEAD~
-	amend = commit --amend
-  discard = checkout --
-  unmerged = diff --name-only --diff-filter=U
-  add-detail = add -p
-
-	tags = tag
-	branches = branch -a
-  stashes = stash list
-  remotes = remote -v
-
-	ranking = shortlog -s -n --no-merges
-  prjroot = rev-parse --show-toplevel
-  dotgit = rev-parse --git-dir
-  current-branch = !git branch | grep '*' | sed 's/* //'
-  rm-merged-branch = !git branch --merged | grep -v '*' | xargs git branch -D
-
+	
+	# History visualization
 	glog = log --graph --decorate --oneline
 	glog1 = log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --graph
-  glog2 = log --pretty='format:%C(yellow)%h %C(green)%cd %C(reset)%s %C(red)%d %C(cyan)[%an]' --date=iso
+	glog2 = log --pretty='format:%C(yellow)%h %C(green)%cd %C(reset)%s %C(red)%d %C(cyan)[%an]' --date=iso
 	glog3 = log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --date=relative
 	lgg= log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --date=relative --graph
 	lgg-all= log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --date=relative --graph --branches
 	lgv= log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --date=relative
+	
+	# Basic diff tools
+	diff-staged = diff --staged   # View staged changes
+	dfs = diff --staged           # Shorthand for diff-staged
+	dw = diff --color-words       # Word-level diff
+	ls-changed = diff --name-only # List changed files
+	
+	# Repository info
+	clone = clone --recursive     # Clone with submodules
+	graph = log --graph -10 --branches --remotes --tags  --format=format:'%Cgreen%h %Creset %<(75,trunc)%s (%cN, %cr) %Cred%d' --date-order
+	oneline = log --pretty=oneline
+	
+	# Workflow shortcuts
+	pp=!git pull && git push      # Pull then push
+	precommit = diff --cached --diff-algorithm=minimal -w
+	
+	# Safety features
+	unstage = reset -q HEAD --    # Remove files from staging
+	uncommit = reset --mixed HEAD~ # Undo last commit
+	amend = commit --amend        # Fix last commit
+	discard = checkout --         # Discard changes
+	unmerged = diff --name-only --diff-filter=U
+	add-detail = add -p          # Interactive staging
+	
+	# Information commands
+	tags = tag                    # List tags
+	branches = branch -a          # List branches
+	stashes = stash list          # List stashes
+	remotes = remote -v           # List remotes
+	
+	# Repository analysis
+	ranking = shortlog -s -n --no-merges
+	prjroot = rev-parse --show-toplevel
+	dotgit = rev-parse --git-dir
+	current-branch = !git branch | grep '*' | sed 's/* //'
+	rm-merged-branch = !git branch --merged | grep -v '*' | xargs git branch -D
+	
+	# Commit management
+	commit-modified-all = commit -a
+	commit-fix = commit -a --amend
+	cmm = commit -a
+	cmf = commit -a --amend
+	
+	# Rebase helpers
+	rebasing-commit = "!f='$(git rev-parse --git-dir)/rebase-apply/patch'; if [ -f '$f' ]; then git show $(head -n1 '$f'); else echo 'Heh?'; fi"
 
 [push]
 	default = simple
