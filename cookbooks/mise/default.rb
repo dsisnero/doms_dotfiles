@@ -72,7 +72,7 @@ when "debian", "mint", "ubuntu"
     user user_
     group user_
     mode "755"
-    mkdir_p true  # MItamae's proper recursive directory creation parameter
+    recursive true  # MItamae's proper recursive directory creation parameter
     not_if { File.exist?(fish_config_dir) }
   end
 
