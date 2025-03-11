@@ -1,13 +1,6 @@
 [include]
-  path = ~/.config/git/config
-<% case @platform -%>
-<% when 'darwin' -%>
-  path = ~/.config/git/platforms/darwin
-<% when 'arch', 'ubuntu' -%>
-  path = ~/.config/git/platforms/linux
-<%   if @is_wsl -%>
+  path = ~/.config/git/config.common
+  path = ~/.config/git/platforms/<%= @platform %>
+<% if @is_wsl %>
   path = ~/.config/git/platforms/wsl
-<%   end -%>
-<% when 'windows' -%>
-  path = ~/.config/git/platforms/windows
-<% end -%>
+<% end %>

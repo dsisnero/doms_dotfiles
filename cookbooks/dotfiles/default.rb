@@ -54,23 +54,29 @@ end
 mydir "#{home}/.config/git/platforms"
 
 # Common git configuration
-template "#{home}/.config/git/config" do
+template "#{home}/.config/git/config.common" do
   source "templates/git/common_config.erb"
   owner user
   group group
   mode "644"
 end
 
-# Platform-specific overrides
-template "#{home}/.config/git/platforms/#{node[:platform]}" do
-  source "templates/git/platform_config.erb"
+# Platform-specific templates
+%w[darwin linux windows].each do |platform|
+  template "#{home}/.config/git/platforms/#{platform}" do
+    source "templates/git/platforms/#{platform}.erb"
+    owner user
+    group group
+    mode "644"
+  end
+end
+
+# WSL template (special case)
+template "#{home}/.config/git/platforms/wsl" do
+  source "templates/git/platforms/wsl.erb"
   owner user
   group group
   mode "644"
-  variables(
-    platform: node[:platform],
-    is_wsl: node[:is_wsl]
-  )
 end
 
 template "#{home}/.zlogin" do
