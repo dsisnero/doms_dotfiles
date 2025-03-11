@@ -25,7 +25,8 @@ when "debian", "ubuntu", "mint"
   end
 
   # Deploy all hook files
-  Dir.glob("#{__dir__}/files/hooks/*").each do |hook|
+  hook_dir = File.expand_path('../files/hooks', __FILE__)
+  Dir.glob("#{hook_dir}/*").each do |hook|
     basename = File.basename(hook)
     remote_file "#{hooks_dir}/#{basename}" do
       source hook
@@ -50,7 +51,8 @@ when "debian", "ubuntu", "mint"
   end
 
   # Deploy all hook files
-  Dir.glob("#{__dir__}/files/hooks/*").each do |hook|
+  hook_dir = File.expand_path('../files/hooks', __FILE__)
+  Dir.glob("#{hook_dir}/*").each do |hook|
     basename = File.basename(hook)
     remote_file "#{hooks_dir}/#{basename}" do
       source hook
