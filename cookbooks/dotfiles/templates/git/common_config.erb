@@ -1,0 +1,158 @@
+[init]
+	templatedir = ~/repos/github.com/dsisnero/doms_dotfiles/config/git/templates
+	defaultBranch = main
+
+[core]
+	attributesfile = ~/repos/github.com/dsisnero/doms_dotfiles/config/git/.gitattributes_global
+	excludesfile   = ~/repos/github.com/dsisnero/doms_dotfiles/config/git/.gitignore_global
+	autocrlf = input
+	quotepath = false
+	precomposeunicode = true
+	commentChar = ";"
+
+[ghq]
+	user = dsisnero
+	root = ~/repos
+
+[github]
+	user = dsisnero
+
+[user "ssh://git@gitlab.com/"]
+	name = Dominic Sisneros
+	email = dsisnero@gmail.com
+[user "https://gitlab.com/"]
+	name = Dominic Sisneros
+	email = dsisnero@gmail.com
+[user "http://gitlab.com/"]
+	name = Dominic Sisneros
+	email = dsisnero@gmail.com
+[user "ssh://git@github.com/"]
+	name = Dominic Sisneros
+	email = dsisnero@gmail.com
+[user "https://github.com/"]
+	name = Dominic Sisneros
+	email = dsisnero@gmail.com
+[user "http://github.com/"]
+	name = Dominic Sisneros
+	email = dsisnero@gmail.com
+
+[color]
+	status = auto
+	diff = auto
+	branch = auto
+	interactive = auto
+	grep = auto
+	ui = auto
+
+[alias]
+	ps = push
+	pl = pull
+	ft = fetch
+	ad = add
+	co = checkout
+	st = status --short --branch
+	sh = show
+	sw = switch
+	cm = commit
+	df = diff
+	lg = log
+	gr = grep
+	tg = tag
+	br = branch
+
+	create-trackingbranch=!git checkout -t $(git branch -r | peco)
+	change-branch=!git checkout $(git branch | peco)
+	chbr=!git checkout $(git branch | peco)
+	change-tag=!git checkout $(git tag | peco)
+	chtg=!git checkout $(git tag | peco)
+
+  chk-first=!git checkout $(git log --oneline | tail -1 | awk '{print $1}')
+  chk-next=!git checkout $(git log --oneline ORIG_HEAD | tail -$(($(git log --oneline | wc | awk '{print $1}')+1)) | head -1 | awk '{print $1}')
+  df-prev=!git diff $(git log --oneline -2 | awk '{print $1}' | tac | paste - -)
+	add-modified = !git add $(git status --short | peco | sed s/"^..."//)
+	commit-modified-all = commit -a
+	commit-fix = commit -a --amend
+	cmm = commit -a
+	cmf = commit -a --amend
+
+	bra = branch -a
+	wc = whatchanged
+	ls = log --stat
+	lp = log -p
+	la = log --pretty=\"format:%ad %h (%an): %s\" --date=short
+
+	diff-staged = diff --staged
+	dfs = diff --staged
+	dw = diff --color-words
+	ls-changed = diff --name-only
+	edit-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; vim `f`"
+	add-unmerged = "!f() { git ls-files --unmerged | cut -f2 | sort -u ; }; git add `f`"
+
+  rebasing-commit = "!f='$(git rev-parse --git-dir)/rebase-apply/patch'; if [ -f '$f' ]; then git show $(head -n1 '$f'); else echo 'Heh?'; fi"
+
+	clone = clone --recursive
+  graph = log --graph -10 --branches --remotes --tags  --format=format:'%Cgreen%h %Creset %<(75,trunc)%s (%cN, %cr) %Cred%d' --date-order
+	oneline = log --pretty=oneline
+
+	pp=!git pull && git push
+  precommit = diff --cached --diff-algorithm=minimal -w
+  unstage = reset -q HEAD --
+	uncommit = reset --mixed HEAD~
+	amend = commit --amend
+  discard = checkout --
+  unmerged = diff --name-only --diff-filter=U
+  add-detail = add -p
+
+	tags = tag
+	branches = branch -a
+  stashes = stash list
+  remotes = remote -v
+
+	ranking = shortlog -s -n --no-merges
+  prjroot = rev-parse --show-toplevel
+  dotgit = rev-parse --git-dir
+  current-branch = !git branch | grep '*' | sed 's/* //'
+  rm-merged-branch = !git branch --merged | grep -v '*' | xargs git branch -D
+
+	glog = log --graph --decorate --oneline
+	glog1 = log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --graph
+  glog2 = log --pretty='format:%C(yellow)%h %C(green)%cd %C(reset)%s %C(red)%d %C(cyan)[%an]' --date=iso
+	glog3 = log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --date=relative
+	lgg= log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --date=relative --graph
+	lgg-all= log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --date=relative --graph --branches
+	lgv= log --pretty=format:\"%C(red)%h%Creset %C(cyan)<%an>%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset\" --abbrev-commit --date=relative
+
+[push]
+	default = simple
+
+[pull]
+	ff = only
+	rebase = merges
+
+[log]
+	decorate = auto
+
+[delta]
+    features = side-by-side line-numbers decorations
+    syntax-theme = Dracula
+    plus-style = syntax "#003800"
+    minus-style = syntax "#3f0001"
+
+[delta "decorations"]
+    commit-decoration-style = bold yellow box ul
+    file-style = bold yellow ul
+    file-decoration-style = none
+    hunk-header-decoration-style = cyan box ul
+
+[delta "line-numbers"]
+    line-numbers-left-style = cyan
+    line-numbers-right-style = cyan
+    line-numbers-minus-style = 124
+    line-numbers-plus-style = 28
+
+[user]
+	email = dsisnero@gmail.com
+	name = Dominic Sisneros
+
+[interactive]
+    diffFilter = delta --color-only --features=interactive

@@ -38,10 +38,39 @@ mydir "#{home}/repos"
 #   group group
 # #   not_if "test -e #{home}/.config/nvim/init.vim"
 # end
-template "#{home}/.git-config.local" do
-  source "templates/.git-config.local.erb"
+# Main .gitconfig with platform-specific includes
+template "#{home}/.gitconfig" do
+  source "templates/git/gitconfig.erb"
   owner user
   group group
+  mode "644"
+  variables(
+    platform: node[:platform],
+    is_wsl: node[:is_wsl]
+  )
+end
+
+# Platform-specific config directory
+mydir "#{home}/.config/git/platforms"
+
+# Common git configuration
+template "#{home}/.config/git/config" do
+  source "templates/git/common_config.erb"
+  owner user
+  group group
+  mode "644"
+end
+
+# Platform-specific overrides
+template "#{home}/.config/git/platforms/#{node[:platform]}" do
+  source "templates/git/platform_config.erb"
+  owner user
+  group group
+  mode "644"
+  variables(
+    platform: node[:platform],
+    is_wsl: node[:is_wsl]
+  )
 end
 
 template "#{home}/.zlogin" do
@@ -102,15 +131,15 @@ file "#{home}/.ssh/known_hosts" do
   not_if "test -e #{home}/.ssh/known_hosts"
 end
 
-ssh_targets = %w[gitlab.com github.com]
-ssh_targets.each do |target|
-  execute "ssh-keygen -R #{target}" do
-    user user
-  end
-  execute "ssh-keyscan #{target}>>#{home}/.ssh/known_hosts" do
-    user user
-  end
-end
+# ssh_targets = %w[gitlab.com github.com]
+# ssh_targets.each do |target|
+#   execute "ssh-keygen -R #{target}" do
+#     user user
+#   end
+#   execute "ssh-keyscan #{target}>>#{home}/.ssh/known_hosts" do
+#     user user
+#   end
+# end
 
 # github_token
 if node[:is_wsl]
