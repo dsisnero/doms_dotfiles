@@ -19,11 +19,15 @@
     is_wsl = run_command("uname -a | grep -i Microsoft", error: false).exit_status == 0
     user_bin = "#{home}/.local/bin"
 
+    # Use XDG_CONFIG_HOME if set, otherwise default to ~/.config
+    config_home = ENV.fetch('XDG_CONFIG_HOME', "#{home}/.config")
+
     node.reverse_merge!(
       user: user,
       default_user: user,
       group: group,
       home: home,
+      config_home: config_home,
       user_bin: user_bin,
       repos: repos,
       dotfile_repos: dotfile_repos,

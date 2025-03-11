@@ -514,7 +514,7 @@ source ${PIP_SITE_LOCATION}/powerline/bindings/zsh/powerline.zsh
 
 # for z
 # http://d.hatena.ne.jp/naoya/20130108/1357630895
-_Z_DATA=~/.config/zsh/z/.z
+_Z_DATA=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/z/.z
 if [[ $OSTYPE == darwin* ]]; then
   . `brew --prefix`/etc/profile.d/z.sh
 else

@@ -4,6 +4,8 @@ set -eu
 
 ## prepare
 PWD=$(pwd)
+# Use XDG_CONFIG_HOME if set, otherwise use home directory
+XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 WORK_DIR=~/work_dotfile
 
 if [ ! -d ${WORK_DIR} ]; then
@@ -66,6 +68,11 @@ elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
   # Install VS Code if not present
   if ! command -v code &> /dev/null; then
     powershell -Command "scoop install vscode"
+  fi
+  
+  # Ensure XDG_CONFIG_HOME is set for Windows
+  if [ -z "$XDG_CONFIG_HOME" ]; then
+    echo "export XDG_CONFIG_HOME=\"\$HOME/.config\"" >> "$HOME/.bashrc"
   fi
 else
   echo "Your platform ($(uname -a)) is not supported."

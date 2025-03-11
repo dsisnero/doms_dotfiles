@@ -5,6 +5,8 @@ home_ = node[:home]
 
 case node[:platform]
 when "debian", "mint", "ubuntu"
+  # Get config_home from node attributes
+  config_home = node[:config_home]
 
   # Stop packagekit to avoid lock conflicts
   service "packagekit" do
@@ -67,15 +69,16 @@ when "debian", "mint", "ubuntu"
     not_if %(grep 'mise activate' #{home_}/.zshrc)
   end
 
-  fish_config_dir = "#{home_}/.config/fish"
+  fish_config_dir = "#{config_home}/fish"
   directory fish_config_dir do
     user user_
     group user_
     mode "755"
+    recursive true
     not_if { File.exist?(fish_config_dir) }
   end
 
-  fish_config = "#{home_}/.config/fish/config.fish"
+  fish_config = "#{fish_config_dir}/config.fish"
   file fish_config do
     action :create
     block do |content|
