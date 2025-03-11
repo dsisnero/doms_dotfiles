@@ -1,43 +1,41 @@
+<%# COMMON SETTINGS (all platforms) %>
+[core]
+  pager = delta
+  autocrlf = <%= ['windows', 'wsl'].include?(@platform) ? 'true' : 'input' %>
+
+[diff]
+  colorMoved = default
+  algorithm = histogram
+
+[merge]
+  conflictstyle = diff3
+  ff = false
+
+<%# PLATFORM-SPECIFIC OVERRIDES %>
 <% case @platform %>
 <% when 'darwin' %>
 [credential]
   helper = osxkeychain
   credentialStore = gpg
 
-[core]
-  pager = delta
-
-[diff]
-  tool = opendiff
-  colorMoved = default
+[difftool]
+  prompt = false
 
 [merge]
   tool = opendiff
-  conflictstyle = diff3
-  ff = false
 
 <% when 'arch', 'ubuntu' %>
 [credential]
   helper = cache --timeout=3600
   <% if @is_wsl %>
   helper = /usr/local/bin/git-credential-manager
-  credentialStore = gpg
   <% end %>
-
-[core]
-  pager = delta
-
-[diff]
-  tool = nvimdiff
-  colorMoved = default
 
 [difftool "nvimdiff"]
   cmd = "nvim -R -d -c \"wincmd l\" -d \"$LOCAL\" \"$REMOTE\""
 
 [merge]
   tool = nvimdiff
-  conflictstyle = diff3
-  ff = false
 
 [mergetool]
   prompt = true
@@ -45,7 +43,27 @@
 [mergetool "nvimdiff"]
   cmd = "nvim -d -c \"4wincmd w | wincmd J\" \"$LOCAL\" \"$BASE\" \"$REMOTE\"  \"$MERGED\""
 
-<% if @is_wsl %>
+<% when 'windows' %>
+[credential]
+  helper = manager
+  credentialStore = gpg
+
+[core]
+  symlinks = false
+  protectNTFS = true
+
+[difftool "vsdiffmerge"]
+  cmd = \"C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/VsDiffMerge.exe\" \"$LOCAL\" \"$REMOTE\" //t
+
+[mergetool "vsdiffmerge"]
+  cmd = \"C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer/VsDiffMerge.exe\" \"$LOCAL\" \"$REMOTE\" \"$BASE\" \"$MERGED\" //m
+<% end %>
+
+<%# WSL-SPECIFIC OVERRIDES %>
+<% if @is_wsl && @platform != 'windows' %>
+[credential "https://dev.azure.com"]
+  useHttpPath = true
+
 [credential "https://github.com"]
   helper = 
   helper = !/usr/bin/gh auth git-credential
@@ -53,5 +71,4 @@
 [credential "https://gist.github.com"]
   helper = 
   helper = !/usr/bin/gh auth git-credential
-<% end %>
 <% end %>
