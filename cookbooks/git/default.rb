@@ -1,3 +1,11 @@
+# Create a user-specific temporary directory to avoid permission issues
+directory "#{node[:home]}/.cache/mitamae-tmp" do
+  owner node[:user]
+  group node[:group]
+  mode "700"
+  recursive true
+end
+
 case node[:platform]
 when "debian", "ubuntu", "mint"
   package "software-properties-common"
@@ -33,6 +41,8 @@ when "debian", "ubuntu", "mint"
       mode "0755"
       user node[:user]
       group node[:group]
+      # Use user-specific temporary directory
+      environment TMPDIR: "#{node[:home]}/.cache/mitamae-tmp"
     end
   end
 
@@ -59,6 +69,8 @@ when "debian", "ubuntu", "mint"
       mode "0755"
       user node[:user]
       group node[:group]
+      # Use user-specific temporary directory
+      environment TMPDIR: "#{node[:home]}/.cache/mitamae-tmp"
     end
   end
 
