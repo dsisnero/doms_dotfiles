@@ -72,11 +72,17 @@ when "debian", "mint", "ubuntu"
     user user_
     group user_
     mode "755"
-    recursive true  # MItamae's proper recursive directory creation parameter
     not_if { File.exist?(fish_config_dir) }
   end
 
   fish_config = "#{home_}/.config/fish/config.fish"
+  file fish_config do
+    action :create
+    block do |content|
+      content << %(mise activate fish | source)
+    end
+    not_if { File.exist?(fish_config) }
+  end
 
   file fish_config do
     action :edit
