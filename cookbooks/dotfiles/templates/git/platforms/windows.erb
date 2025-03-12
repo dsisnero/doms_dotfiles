@@ -2,23 +2,13 @@
   helper = manager
   credentialStore = gpg
 
-[core]
-  symlinks = false
-  protectNTFS = true
+[ghq]
+user = dsisnero
+root = d:/repos
 
-[alias]
-  # PowerShell-powered equivalents
-  change-branch=!git checkout $(git branch | fzf) # Interactive branch switcher using fzf
-  change-tag=!git checkout $(git tag | fzf) # Tag selection with fzf
-  
-  # Commit navigation using PowerShell
-  chk-first=!git checkout $(git log --oneline | Select-Object -Last 1 | ForEach-Object { $_.Split()[0] }) # First commit
-  
-  # VS Code integration
-  edit-unmerged = "!git ls-files --unmerged | ForEach-Object { $_.Substring(2) } | Sort-Object -Unique | % { code $_ }" # Open conflicted files in VS Code
-  
-  # Windows-friendly diff tools
-  difftool = "!f() { git difftool --tool=vscode $@; }; f" # Default to VS Code diff
+<!-- [core] -->
+  <!-- symlinks = false -->
+  <!-- protectNTFS = true -->
 
 [difftool "vscode"]
   cmd = code --wait --diff $LOCAL $REMOTE # VS Code diff command

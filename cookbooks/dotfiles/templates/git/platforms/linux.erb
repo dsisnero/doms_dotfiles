@@ -1,6 +1,10 @@
 [credential]
   helper = cache --timeout=3600
 
+[ghq]
+user = dsisnero
+root = ~/repos
+
 [alias]
   # Interactive branch/tag selection (requires peco)
   create-trackingbranch=!git checkout -t $(git branch -r | peco) # Create tracking branch from remote selection
