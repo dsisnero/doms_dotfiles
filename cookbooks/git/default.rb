@@ -137,3 +137,20 @@ execute "git config --global core.hooksPath #{ENV['HOME']}/.config/git/hooks" do
   user node[:user]
   not_if "git config --global --get core.hooksPath | grep -q '#{ENV['HOME']}/.config/git/hooks'"
 end
+# Create git config directory if it doesn't exist
+directory "#{ENV['HOME']}/.config/git/hooks" do
+  action :create
+  mode "0755"
+  recursive true
+end
+
+# Install git hook templates
+template "#{ENV['HOME']}/.config/git/hooks/pre-commit" do
+  source "git/hooks/pre-commit.erb"
+  mode "0755"
+end
+
+template "#{ENV['HOME']}/.config/git/hooks/commit-msg" do
+  source "git/hooks/commit-msg.erb"
+  mode "0755"
+end
