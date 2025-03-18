@@ -1,0 +1,73 @@
+#!/bin/sh
+#
+# Pre-commit hook to run various checks before committing
+
+# Detect platform
+platform="unknown"
+if [ "$(uname)" = "Darwin" ]; then
+  platform="macos"
+elif [ "$(expr substr $(uname -s) 1 5)" = "Linux" ]; then
+  platform="linux"
+elif [ "$(expr substr $(uname -s) 1 10)" = "MINGW32_NT" ]; then
+  platform="windows"
+fi
+
+# Check for trailing whitespace
+if git diff --cached --name-only | xargs grep --with-filename -n "[[:blank:]]$" > /dev/null 2>&1; then
+  echo "ERROR: Trailing whitespace found in staged changes."
+  echo "Please remove trailing whitespace before committing."
+  git diff --cached --name-only | xargs grep --with-filename -n "[[:blank:]]$"
+  exit 1
+fi
+
+# Check for Ruby syntax errors if Ruby files are being committed
+if git diff --cached --name-only | grep -q "\.rb$"; then
+  if command -v ruby >/dev/null 2>&1; then
+    for file in $(git diff --cached --name-only | grep "\.rb$"); do
+      if ! ruby -c "$file" >/dev/null 2>&1; then
+        echo "ERROR: Ruby syntax error in $file"
+        ruby -c "$file"
+        exit 1
+      fi
+    done
+  else
+    echo "WARNING: Ruby not installed, skipping Ruby syntax check"
+  fi
+fi
+
+# Run platform-specific checks
+if [ "$platform" = "macos" ]; then
+  # macOS specific checks
+  echo "Running macOS specific checks..."
+  
+  # Check for large files
+  if git diff --cached --name-only | xargs du -h | grep -E '^[0-9]+M' > /dev/null 2>&1; then
+    echo "WARNING: Large files detected in commit"
+    git diff --cached --name-only | xargs du -h | grep -E '^[0-9]+M'
+  fi
+  
+elif [ "$platform" = "linux" ]; then
+  # Linux specific checks
+  echo "Running Linux specific checks..."
+  
+  # Check for executable shell scripts without shebang
+  for file in $(git diff --cached --name-only | grep -E '\.(sh|bash)$'); do
+    if [ -x "$file" ] && ! grep -q '^#!/' "$file"; then
+      echo "ERROR: Executable shell script $file missing shebang"
+      exit 1
+    fi
+  done
+  
+elif [ "$platform" = "windows" ]; then
+  # Windows specific checks
+  echo "Running Windows specific checks..."
+  
+  # Check for CRLF line endings
+  if git diff --cached --name-only | xargs grep -l $'\r' > /dev/null 2>&1; then
+    echo "WARNING: CRLF line endings detected in:"
+    git diff --cached --name-only | xargs grep -l $'\r'
+  fi
+fi
+
+# All checks passed
+exit 0

@@ -91,3 +91,49 @@ when "arch"
   package "git"
 when "opensuse"
 end
+# Install git package
+package 'git'
+
+# Create git config directory if it doesn't exist
+directory "#{ENV['HOME']}/.config/git" do
+  mode '755'
+  owner node[:user]
+  group node[:group]
+  not_if "test -d #{ENV['HOME']}/.config/git"
+end
+
+# Create git hooks directory
+directory "#{ENV['HOME']}/.config/git/hooks" do
+  mode '755'
+  owner node[:user]
+  group node[:group]
+  not_if "test -d #{ENV['HOME']}/.config/git/hooks"
+end
+
+# Install pre-commit hook
+template "#{ENV['HOME']}/.config/git/hooks/pre-commit" do
+  source 'templates/git/hooks/pre-commit.erb'
+  mode '755'
+  owner node[:user]
+  group node[:group]
+  variables(
+    user: node[:user]
+  )
+end
+
+# Install commit-msg hook
+template "#{ENV['HOME']}/.config/git/hooks/commit-msg" do
+  source 'templates/git/hooks/commit-msg.erb'
+  mode '755'
+  owner node[:user]
+  group node[:group]
+  variables(
+    user: node[:user]
+  )
+end
+
+# Set git global config for hooks path
+execute "git config --global core.hooksPath #{ENV['HOME']}/.config/git/hooks" do
+  user node[:user]
+  not_if "git config --global --get core.hooksPath | grep -q '#{ENV['HOME']}/.config/git/hooks'"
+end

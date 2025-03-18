@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# Commit message hook to enforce commit message standards
+
+# Get the commit message (first argument is the file containing the message)
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Check if the commit message is empty
+if [ -z "$(grep -v '^#' "$COMMIT_MSG_FILE" | tr -d '[:space:]')" ]; then
+  echo "ERROR: Empty commit message"
+  echo "Please provide a meaningful commit message."
+  exit 1
+fi
+
+# Check minimum length (excluding comments)
+commit_length=$(grep -v '^#' "$COMMIT_MSG_FILE" | tr -d '[:space:]' | wc -c)
+if [ "$commit_length" -lt 10 ]; then
+  echo "ERROR: Commit message too short (minimum 10 characters)"
+  echo "Please provide a more descriptive commit message."
+  exit 1
+fi
+
+# Check for conventional commit format (optional, uncomment to enforce)
+# if ! grep -qE '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9-]+\))?: .+' "$COMMIT_MSG_FILE"; then
+#   echo "ERROR: Commit message does not follow conventional commit format"
+#   echo "Format: type(scope): description"
+#   echo "Example: feat(auth): add login functionality"
+#   exit 1
+# fi
+
+# Detect platform for platform-specific checks
+platform="unknown"
+if [ "$(uname)" = "Darwin" ]; then
+  platform="macos"
+elif [ "$(expr substr $(uname -s) 1 5)" = "Linux" ]; then
+  platform="linux"
+elif [ "$(expr substr $(uname -s) 1 10)" = "MINGW32_NT" ]; then
+  platform="windows"
+fi
+
+# Platform-specific commit message checks
+if [ "$platform" = "macos" ]; then
+  # macOS specific checks
+  echo "Running macOS specific commit message checks..."
+  
+elif [ "$platform" = "linux" ]; then
+  # Linux specific checks
+  echo "Running Linux specific commit message checks..."
+  
+elif [ "$platform" = "windows" ]; then
+  # Windows specific checks
+  echo "Running Windows specific commit message checks..."
+  # Windows often has issues with line endings
+  if grep -q $'\r' "$COMMIT_MSG_FILE"; then
+    echo "WARNING: CRLF line endings detected in commit message"
+  fi
+fi
+
+# All checks passed
+exit 0
