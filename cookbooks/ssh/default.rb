@@ -21,21 +21,9 @@ file "#{node[:home]}/.ssh/config" do
   only_if "test -f #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
 end
 
-# Add agent environment file
-file "#{node[:home]}/.ssh/agent_env" do
-  owner node[:user]
-  content <<~EOCFG
-    export SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock
-    export SSH_AGENT_PID=$(pgrep -f "ssh-agent -a")
-  EOCFG
-end
-
 # Start SSH agent with persistent socket
 execute "start ssh-agent" do
   user node[:user]
-  command <<~EOCMD
-    ssh-agent -a #{node[:home]}/.ssh/agent.sock > #{node[:home]}/.ssh/agent_env
-    echo 'export SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock' >> #{node[:home]}/.ssh/agent_env
-  EOCMD
+  command "ssh-agent -a #{node[:home]}/.ssh/agent.sock"
   not_if "test -S #{node[:home]}/.ssh/agent.sock"
 end
