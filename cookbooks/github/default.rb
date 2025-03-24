@@ -55,6 +55,6 @@ end
 # Verify SSH connection
 execute "test GitHub SSH connection" do
   user node[:user]
-  command "ssh -T git@github.com"
+  command "SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh -T git@github.com"
   only_if "test -f #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
 end
