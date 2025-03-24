@@ -1,22 +1,16 @@
 include_recipe "dependency.rb"
+include_cookbook "mise"
 
-define :neovim_make_install do
-  execute "install neovim" do
-    command <<-EOCMD
-      BASEPATH=/usr/src
-      cd $BASEPATH
+node.reverse_merge!(
+  neovim: {
+    version: "stable"
+  }
+)
 
-      git clone https://github.com/neovim/neovim.git
-      cd neovim
-      git pull
-      if [ -e build ]; then
-        rm -r build
-      fi
-      make -j4 CMAKE_BUILD_TYPE=Release
-      make && sudo make install
-    EOCMD
-    not_if "test -f /usr/local/bin/nvim"
-  end
+execute "install neovim via mise" do
+  user node[:user]
+  command "mise use -g neovim@#{node[:neovim][:version]}"
+  not_if "which nvim"
 end
 
 case node[:platform]
@@ -34,8 +28,6 @@ when "debian", "ubuntu", "mint"
   package "curl"
   package "doxygen"
 
-  neovim_make_install :install
-
 when "fedora", "redhat", "amazon"
   package "libtool"
   package "autoconf"
@@ -47,11 +39,7 @@ when "fedora", "redhat", "amazon"
   package "pkgconfig"
   package "unzip"
 
-  neovim_make_install :install
-
 when "osx", "darwin"
-  package "nvim"
 when "arch"
-  package "neovim"
 when "opensuse"
 end

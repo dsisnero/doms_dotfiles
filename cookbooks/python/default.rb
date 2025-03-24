@@ -8,8 +8,6 @@ node.reverse_merge!(
   }
 )
 
-version = node[:python][:version] || "latest"
-
 user = node[:user]
 home = node[:home]
 
@@ -19,7 +17,8 @@ remote_file "#{home}/.default-python-packages" do
   mode "644"
 end
 
-execute "install latest python" do
+execute "install python via mise" do
   user user
-  command %(mise use -g python@#{version})
+  command "mise use -g python@#{node[:python][:version]} && mise reshim"
+  not_if "which python"
 end

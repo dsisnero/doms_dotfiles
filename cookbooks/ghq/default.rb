@@ -2,18 +2,19 @@
 
 include_cookbook "mise"
 
-version = "latest"
-
 user = node["user"]
 home = node["home"]
 
+node.reverse_merge!(
+  ghq: {
+    version: "latest"
+  }
+)
+
 execute "install ghq" do
   user user
-  command <<EOCMD
-  VER=#{version}
-  mise use -g ghq@${VER} 
-EOCMD
-  # not_if "test -e ~/.asdf/shims/ghq"
+  command "mise use -g ghq@#{node[:ghq][:version]}"
+  not_if "test -e #{home}/.local/share/mise/installs/ghq/current"
 end
 
 ghq_root = run_command(run_as(user, "ghq root")).stdout.chomp
