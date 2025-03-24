@@ -36,7 +36,7 @@ end
 execute "add GitHub key to agent" do
   user node[:user]
   command "source #{node[:home]}/.ssh/agent_env && ssh-add #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
-  env({
+  environment({
     "SSH_AUTH_SOCK" => "#{node[:home]}/.ssh/agent.sock"
   })
   not_if "source #{node[:home]}/.ssh/agent_env && ssh-add -l | grep -q #{node[:github][:ssh_key_file]}"
