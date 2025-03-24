@@ -2,6 +2,15 @@ class Specinfra::Command::Pop < Specinfra::Command::Ubuntu
 end
 node[:family] = "ubuntu" if node[:platform] == "pop"
 ::MItamae::RecipeContext.class_eval do
+  # Helper methods for platform detection
+  def windows?
+    node[:is_windows]
+  end
+
+  def wsl?
+    node[:is_wsl]
+  end
+
   # node hashのパラメータで必須のものを初期設定する。
   def init_node
     user = ENV["SUDO_USER"] || ENV["USER"]
@@ -323,15 +332,6 @@ define :install_font do
 
   directory install_path
   execute "cp #{name} #{install_path}"
-end
-
-# Helper methods for platform detection
-def windows?
-  node[:is_windows]
-end
-
-def wsl?
-  node[:is_wsl]
 end
 
 # Chocolatey package management for Windows
