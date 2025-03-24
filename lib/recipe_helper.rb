@@ -7,28 +7,37 @@ node[:platform] = "ubuntu" if node[:platform] == "pop"
   # node hashのパラメータで必須のものを初期設定する。
   def init_node
     user = ENV["SUDO_USER"] || ENV["USER"]
-    case node[:platform]
-    when "osx", "darwin"
-      home = ENV["HOME"]
-      group = "staff"
-    when "arch"
-      home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
-      group = user
-    when "pop"
-      home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
-      group = user
+    
+    if node[:is_windows]
+      # Windows-specific defaults
+      home = node[:home] # Already normalized in node_supplement.rb
+      group = 'Users'
+      user_bin = "#{home}/AppData/Local/Microsoft/WindowsApps"
+      config_home = "#{home}/AppData/Roaming"
     else
-      home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
-      group = user
+      # Unix-based systems
+      case node[:platform]
+      when "osx", "darwin"
+        home = ENV["HOME"]
+        group = "staff"
+      when "arch"
+        home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
+        group = user
+      when "pop"
+        home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
+        group = user
+      else
+        home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
+        group = user
+      end
+      
+      user_bin = "#{home}/.local/bin"
+      # Use XDG_CONFIG_HOME if set, otherwise default to ~/.config
+      config_home = ENV.fetch("XDG_CONFIG_HOME", "#{home}/.config")
     end
 
     repos = "#{home}/repos"
     dotfile_repos = "#{repos}/github.com/dsisnero/doms_dotfiles"
-    is_wsl = run_command("uname -a | grep -i Microsoft", error: false).exit_status == 0
-    user_bin = "#{home}/.local/bin"
-
-    # Use XDG_CONFIG_HOME if set, otherwise default to ~/.config
-    config_home = ENV.fetch("XDG_CONFIG_HOME", "#{home}/.config")
 
     node.reverse_merge!(
       user: user,
@@ -38,38 +47,51 @@ node[:platform] = "ubuntu" if node[:platform] == "pop"
       config_home: config_home,
       user_bin: user_bin,
       repos: repos,
-      dotfile_repos: dotfile_repos,
-      is_wsl: is_wsl
+      dotfile_repos: dotfile_repos
     )
   end
 
   def update_package
-    case node[:platform]
-    when "arch"
-      execute "yay -Syy"
-    when "osx", "darwin"
+    case node[:platform_family]
+    when "windows"
+      execute "choco upgrade chocolatey -y" do
+        only_if "where choco"
+      end
+    when "linux"
+      case node[:platform]
+      when "arch"
+        execute "yay -Syy"
+      when "fedora", "redhat", "amazon"
+        # execute 'yum update -y' # '区別なし'
+      when "debian", "ubuntu", "mint", "pop"
+        execute "apt update -y"
+      when "opensuse"
+        MItamae.logger.debug("need package manager for opensuse")
+      end
+    when "macos"
       execute "brew update"
-    when "fedora", "redhat", "amazon"
-      # execute 'yum update -y' # '区別なし'
-    when "debian", "ubuntu", "mint", "pop"
-      execute "apt update -y"
-    when "opensuse"
-      MItamae.logger.debug("need package manager for opensuse")
     end
   end
 
   def upgrade_package
-    case node[:platform]
-    when "arch"
-      execute "yay -Syu --noconfirm"
-    when "osx", "darwin"
+    case node[:platform_family]
+    when "windows"
+      execute "choco upgrade all -y" do
+        only_if "where choco"
+      end
+    when "linux"
+      case node[:platform]
+      when "arch"
+        execute "yay -Syu --noconfirm"
+      when "fedora", "redhat", "amazon"
+        execute "yum update -y" # 区別なし
+      when "debian", "ubuntu", "mint", "pop"
+        execute "apt upgrade -y"
+      when "opensuse"
+        MItamae.logger.debug("need package manager for opensuse")
+      end
+    when "macos"
       execute "brew upgrade"
-    when "fedora", "redhat", "amazon"
-      execute "yum update -y" # 区別なし
-    when "debian", "ubuntu", "mint", "pop"
-      execute "apt upgrade -y"
-    when "opensuse"
-      MItamae.logger.debug("need package manager for opensuse")
     end
   end
 
@@ -90,7 +112,10 @@ node[:platform] = "ubuntu" if node[:platform] == "pop"
   end
 
   def sudo(user)
-    if node[:platform] == "darwin" || node[:platform] == "osx"
+    if node[:is_windows]
+      # Windows doesn't have sudo, but we could use runas or similar
+      ""
+    elsif node[:platform] == "darwin" || node[:platform] == "osx"
       ""
     else
       "sudo -u #{user} -i "
@@ -98,7 +123,10 @@ node[:platform] = "ubuntu" if node[:platform] == "pop"
   end
 
   def run_as(user, cmd)
-    if node[:platform] == "darwin" || node[:platform] == "osx"
+    if node[:is_windows]
+      # Use PowerShell to run as different user if needed
+      "powershell -Command \"Start-Process -FilePath 'cmd' -ArgumentList '/c #{cmd.gsub('"', '\"')}' -Verb RunAs\""
+    elsif node[:platform] == "darwin" || node[:platform] == "osx"
       cmd
     else
       "su - #{user} -c \"cd ${PWD} && SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock #{cmd}\""
@@ -118,7 +146,9 @@ end
 
 ::MItamae::ResourceContext.class_eval do
   def sudo(user)
-    if node[:platform] == "darwin" || node[:platform] == "osx"
+    if node[:is_windows]
+      ""
+    elsif node[:platform] == "darwin" || node[:platform] == "osx"
       ""
     else
       "sudo -u #{user} -i "
@@ -126,7 +156,9 @@ end
   end
 
   def run_as(user, cmd)
-    if node[:platform] == "darwin" || node[:platform] == "osx"
+    if node[:is_windows]
+      "powershell -Command \"Start-Process -FilePath 'cmd' -ArgumentList '/c #{cmd.gsub('"', '\"')}' -Verb RunAs\""
+    elsif node[:platform] == "darwin" || node[:platform] == "osx"
       cmd
     else
       "su - #{user} -c \"cd ${PWD} && #{cmd}\""
@@ -137,14 +169,22 @@ end
 # dotfileリポジトリ内へのシンボリックリンク設定
 define :dotfile, source: nil, user: nil do
   dst = File.join(node[:config_home], params[:name])
-  src = params[:source].nil? ? File.join(node[:dotfile_repos], "config", params[:name]) : parmas[:source]
+  src = params[:source].nil? ? File.join(node[:dotfile_repos], "config", params[:name]) : params[:source]
   user = params[:user].nil? ? node[:user] : params[:user]
   # puts "dst: #{dst}"
   # puts "src: #{src}"
 
-  execute "ln -s #{src} #{dst}" do
-    user user
-    not_if "test -L #{dst}"
+  if node[:is_windows]
+    execute "Create symlink for #{params[:name]}" do
+      command "powershell -Command \"New-Item -ItemType SymbolicLink -Path '#{dst.gsub('/', '\\')}' -Target '#{src.gsub('/', '\\')}' -Force\""
+      user user
+      not_if "powershell -Command \"if (Test-Path -Path '#{dst.gsub('/', '\\')}' -PathType SymbolicLink) { exit 0 } else { exit 1 }\""
+    end
+  else
+    execute "ln -s #{src} #{dst}" do
+      user user
+      not_if "test -L #{dst}"
+    end
   end
 end
 
@@ -258,6 +298,27 @@ define :install_font do
 
   directory install_path
   execute "cp #{name} #{install_path}"
+end
+
+# Helper methods for platform detection
+def windows?
+  node[:is_windows]
+end
+
+def wsl?
+  node[:is_wsl]
+end
+
+# Chocolatey package management for Windows
+define :chocolatey_package, version: nil do
+  package_name = params[:name]
+  version = params[:version]
+
+  execute "Install #{package_name} via Chocolatey" do
+    command "choco install #{package_name} #{version ? "--version=#{version}" : ""} -y"
+    not_if "choco list --local-only #{package_name} | findstr /C:\"#{package_name} \""
+    only_if { windows? }
+  end
 end
 
 init_node
