@@ -61,7 +61,7 @@ node.reverse_merge!(
 node.reverse_merge!(
   platform_family: case node[:platform]
                    when 'debian', 'ubuntu', 'pop', 'linuxmint', 'arch', 'fedora'
-                     'linux'
+                     'linux'  # Treat Pop!_OS as generic Linux
                    when 'macos', 'darwin'
                      'macos'
                    when 'windows'
