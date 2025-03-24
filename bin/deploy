@@ -11,9 +11,7 @@ mitamae() {
   cmd="bin/mitamae local --shell /bin/bash -l debug lib/recipe_helper.rb $cookbooks"
   case "$(uname)" in
     "Darwin")  bin/mitamae local $cookbooks ;;
-    # *) $cmd ;;
-    # *) sudo -i bash -c "cd $(pwd) && $cmd" ;; # -iつけてるとcurrent-context is not setと表示される
-    *) sudo bash -c "cd $(pwd) && $cmd" ;;
+    *) sudo -E bash -c "cd $(pwd) && ZSH_DISABLE_COMPFIX=true SHELL=/bin/bash $cmd" ;;
   esac
 }
 

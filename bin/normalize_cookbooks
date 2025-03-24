@@ -21,4 +21,4 @@ foreach my $raw(@raw_cookbooks) {
   }
 }
 
-print "\n"
+print ""
