@@ -1,6 +1,10 @@
 # Create a user-specific temporary directory to avoid permission issues
 home = node[:home]
-config_home = node[:config_home] || "#{home}/.config"
+config_home = node[:config_home]
+
+# Common XDG paths
+git_config_dir = "#{config_home}/git"
+git_hooks_dir = "#{git_config_dir}/hooks"
 
 case node[:platform_family]
 when "windows"
@@ -11,8 +15,9 @@ when "windows"
   end
   
   # Create config directory if it doesn't exist
-  directory "#{home}/.config/git" do
+  directory git_config_dir do
     user node[:user]
+    recursive true
   end
   
 when "linux"
@@ -44,24 +49,21 @@ end
 
 # Only proceed with Unix-style config if not on Windows or if in WSL
 unless windows? && !wsl?
-# Create XDG-compliant hooks directory
-hooks_dir = "#{config_home}/git/hooks"
-
 # Ensure parent git directory exists
-directory "#{config_home}/git" do
+directory git_config_dir do
   user node[:user]
   group node[:group]
   mode "755"
 end
 
-directory hooks_dir do
+directory git_hooks_dir do
   user node[:user]
   group node[:group]
   mode "0755"
 end
 
 # Main .gitconfig with platform-specific includes
-template "#{config_home}/git/config" do
+template "#{git_config_dir}/config" do
   source "templates/git/gitconfig.erb"
   owner node[:user]
   group node[:group]
@@ -70,19 +72,20 @@ template "#{config_home}/git/config" do
     platform: node[:platform],
     platform_family: node[:platform_family],
     is_wsl: node[:is_wsl],
-    config_dir: node[:config_home]
+    config_dir: git_config_dir,
+    hooks_dir: git_hooks_dir
   )
 end
 
 # Platform-specific config directory
-directory "#{config_home}/git/platforms" do
+directory "#{git_config_dir}/platforms" do
   user node[:user]
   group node[:group]
   mode "755"
 end
 
 # Common git configuration
-template "#{config_home}/git/config.common" do
+template "#{git_config_dir}/config.common" do
   source "templates/git/common_config.erb"
   owner node[:user]
   group node[:group]
@@ -91,7 +94,7 @@ end
 
 # Platform-specific templates
 %w[darwin linux windows wsl].each do |platform|
-  template "#{config_home}/git/platforms/#{platform}" do
+  template "#{git_config_dir}/platforms/#{platform}" do
     source "templates/git/platforms/#{platform}.erb"
     owner node[:user]
     group node[:group]
@@ -100,7 +103,7 @@ end
 end
 
 # Install pre-commit hook
-template "#{config_home}/git/hooks/pre-commit" do
+template "#{git_hooks_dir}/pre-commit" do
   source "templates/git/hooks/pre-commit.erb"
   mode "755"
   owner node[:user]
@@ -111,7 +114,7 @@ template "#{config_home}/git/hooks/pre-commit" do
 end
 
 # Install commit-msg hook
-template "#{config_home}/git/hooks/commit-msg" do
+template "#{git_hooks_dir}/commit-msg" do
   source "templates/git/hooks/commit-msg.erb"
   mode "755"
   owner node[:user]
@@ -122,9 +125,9 @@ template "#{config_home}/git/hooks/commit-msg" do
 end
 
 # Configure global hooks path
-execute "git config --global core.hooksPath '#{hooks_dir}'" do
+execute "git config --global core.hooksPath '#{git_hooks_dir}'" do
   user node[:user]
-  not_if "git config --global core.hooksPath | grep -q '#{hooks_dir}'"
+  not_if "git config --global core.hooksPath | grep -q '#{git_hooks_dir}'"
 end
 end
 
@@ -136,7 +139,8 @@ if windows? && !wsl?
     variables(
       user_name: node[:git_user_name] || "Your Name",
       user_email: node[:git_user_email] || "your.email@example.com",
-      credential_helper: "manager-core"
+      credential_helper: "manager-core",
+      xdg_config: git_config_dir
     )
   end
   

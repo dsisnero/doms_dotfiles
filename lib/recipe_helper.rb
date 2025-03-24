@@ -13,7 +13,6 @@ node[:platform] = "ubuntu" if node[:platform] == "pop"
       home = node[:home] # Already normalized in node_supplement.rb
       group = 'Users'
       user_bin = "#{home}/AppData/Local/Microsoft/WindowsApps"
-      config_home = "#{home}/AppData/Roaming"
     else
       # Unix-based systems
       case node[:platform]
@@ -32,8 +31,24 @@ node[:platform] = "ubuntu" if node[:platform] == "pop"
       end
       
       user_bin = "#{home}/.local/bin"
-      # Use XDG_CONFIG_HOME if set, otherwise default to ~/.config
-      config_home = ENV.fetch("XDG_CONFIG_HOME", "#{home}/.config")
+    end
+    
+    # Unified XDG_CONFIG_HOME handling across all platforms
+    config_home = ENV.fetch("XDG_CONFIG_HOME") do
+      if node[:is_windows]
+        "#{home}/AppData/Roaming"
+      else
+        "#{home}/.config"
+      end
+    end
+
+    # Unified XDG_DATA_HOME handling
+    data_home = ENV.fetch("XDG_DATA_HOME") do
+      if node[:is_windows]
+        "#{home}/AppData/Local"
+      else
+        "#{home}/.local/share"
+      end
     end
 
     repos = "#{home}/repos"
@@ -45,6 +60,8 @@ node[:platform] = "ubuntu" if node[:platform] == "pop"
       group: group,
       home: home,
       config_home: config_home,
+      data_home: data_home,
+      cache_home: ENV.fetch("XDG_CACHE_HOME") { "#{home}/.cache" },
       user_bin: user_bin,
       repos: repos,
       dotfile_repos: dotfile_repos
@@ -176,9 +193,15 @@ define :dotfile, source: nil, user: nil do
 
   if node[:is_windows]
     execute "Create symlink for #{params[:name]}" do
-      command "powershell -Command \"New-Item -ItemType SymbolicLink -Path '#{dst.gsub('/', '\\')}' -Target '#{src.gsub('/', '\\')}' -Force\""
+      command <<-PS1
+      $target = "#{src.gsub('/', '\\')}"
+      $link = "#{dst.gsub('/', '\\')}"
+      if (Test-Path $link) { Remove-Item $link -Force -Recurse }
+      New-Item -ItemType Junction -Path $link -Target $target
+      PS1
+      interpreter "powershell"
       user user
-      not_if "powershell -Command \"if (Test-Path -Path '#{dst.gsub('/', '\\')}' -PathType SymbolicLink) { exit 0 } else { exit 1 }\""
+      not_if "powershell -Command \"if (Test-Path -Path '#{dst.gsub('/', '\\')}') { exit 0 } else { exit 1 }\""
     end
   else
     execute "ln -s #{src} #{dst}" do
