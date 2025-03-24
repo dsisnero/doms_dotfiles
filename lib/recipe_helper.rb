@@ -1,8 +1,6 @@
 class Specinfra::Command::Pop < Specinfra::Command::Ubuntu
 end
 node[:family] = "ubuntu" if node[:platform] == "pop"
-# FINALLY set platform override
-node[:platform] = "ubuntu" if node[:platform] == "pop"
 ::MItamae::RecipeContext.class_eval do
   # node hashのパラメータで必須のものを初期設定する。
   def init_node

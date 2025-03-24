@@ -26,20 +26,53 @@ node.reverse_merge!(
   os: run_command("uname", error: false).stdout.strip.downcase
 )
 
-# Add Windows-specific paths and platform family
+# Add platform detection before platform_family
 node.reverse_merge!(
-  platform_family: if node[:is_windows]
+  platform: if node[:is_windows]
+              'windows'
+            else
+              case node[:os]
+              when 'darwin'
+                'macos'
+              when 'linux'
+                # Detect Linux distribution
+                if File.exist?('/etc/os-release')
+                  id = File.read('/etc/os-release')[/^ID=([^\n]+)/, 1].gsub('"', '')
+                  case id
+                  when 'debian', 'ubuntu', 'pop', 'linuxmint'
+                    id
+                  when 'arch', 'manjaro'
+                    'arch'
+                  when 'fedora', 'centos', 'rhel', 'amzn'
+                    'fedora'
+                  else
+                    'linux'
+                  end
+                else
+                  'linux'
+                end
+              else
+                node[:os]
+              end
+            end
+)
+
+# THEN set platform_family
+node.reverse_merge!(
+  platform_family: case node[:platform]
+                   when 'debian', 'ubuntu', 'pop', 'linuxmint', 'arch', 'fedora'
+                     'linux'
+                   when 'macos', 'darwin'
+                     'macos'
+                   when 'windows'
                      'windows'
                    else
-                     case node[:platform]
-                     when 'arch', 'debian', 'ubuntu', 'mint', 'fedora', 'pop'
-                       'linux'
-                     when 'darwin', 'osx'
-                       'macos'
-                     else
-                       node[:platform]
-                     end
-                   end,
+                     node[:platform]
+                   end
+)
+
+# Add Windows-specific paths
+node.reverse_merge!(
   
   # Windows-specific paths if on Windows
   program_files: node[:is_windows] ? (ENV['ProgramFiles'] ? ENV['ProgramFiles'].gsub('\\', '/') : '/Program Files') : nil,
