@@ -1,3 +1,4 @@
+# Dependencies for openssh cookbook
 case node[:platform]
 when "arch"
 when "osx", "darwin"

@@ -1,5 +1,3 @@
-include_recipe "dependency.rb"
-
 version = "9.7"
 url = "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-#{version}p1.tar.gz"
 
