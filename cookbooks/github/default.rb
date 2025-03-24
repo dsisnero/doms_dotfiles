@@ -1,12 +1,11 @@
-include_cookbook "ssh"
-
 node.reverse_merge!(
   github: {
     ssh_key_type: "ed25519",
     ssh_key_file: "id_github",
-    email: "REPLACE_WITH_YOUR_GITHUB_EMAIL@example.com" # ← MUST CHANGE THIS
+    email: "dsisnero@gmail.com" # ← MUST CHANGE THIS
   }
 )
+include_cookbook "ssh"
 
 # Create .ssh directory if missing
 directory "#{node[:home]}/.ssh" do
