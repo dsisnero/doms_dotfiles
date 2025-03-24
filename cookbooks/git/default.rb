@@ -35,10 +35,10 @@ when "debian", "ubuntu", "mint"
   end
 
   # Main .gitconfig with platform-specific includes
-  template "#{config_dir}/git/config" do
+  template "#{config_home}/git/config" do
     source "templates/git/gitconfig.erb"
-    owner user
-    group group
+    owner node[:user]
+    group node[:group]
     mode "644"
     variables(
       platform: node[:platform],
@@ -48,31 +48,35 @@ when "debian", "ubuntu", "mint"
   end
 
   # Platform-specific config directory
-  mydir "#{config_dir}/git/platforms"
+  directory "#{config_home}/git/platforms" do
+    user node[:user]
+    group node[:group]
+    mode "755"
+  end
 
   # Common git configuration
-  template "#{config_dir}/git/config.common" do
+  template "#{config_home}/git/config.common" do
     source "templates/git/common_config.erb"
-    owner user
-    group group
+    owner node[:user]
+    group node[:group]
     mode "644"
   end
 
   # Platform-specific templates
   %w[darwin linux windows].each do |platform|
-    template "#{config_dir}/git/platforms/#{platform}" do
+    template "#{config_home}/git/platforms/#{platform}" do
       source "templates/git/platforms/#{platform}.erb"
-      owner user
-      group group
+      owner node[:user]
+      group node[:group]
       mode "644"
     end
   end
 
   # WSL template (special case)
-  template "#{config_dir}/git/platforms/wsl" do
+  template "#{config_home}/git/platforms/wsl" do
     source "templates/git/platforms/wsl.erb"
-    owner user
-    group group
+    owner node[:user]
+    group node[:group]
     mode "644"
   end
 
