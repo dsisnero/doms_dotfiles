@@ -2,7 +2,7 @@ node.reverse_merge!(
   github: {
     ssh_key_type: "ed25519",
     ssh_key_file: "id_github",
-    email: "dsisnero@gmail.com" # ← MUST CHANGE THIS
+    email: "your_actual_email@example.com" # ← MUST CHANGE THIS
   }
 )
 include_cookbook "ssh"
