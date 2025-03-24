@@ -1,6 +1,14 @@
-class Specinfra::Command::Pop < Specinfra::Command::Ubuntu
+module Specinfra
+  module Command
+    module Pop
+      class Base < Specinfra::Command::Ubuntu::Base
+      end
+    end
+  end
 end
+
 include_recipe "recipe_helper"
 
-node[:platform] = "ubuntu" if node[:platform] == "pop"
+# Keep this line to treat Pop as Ubuntu for package management
+node[:platform] = "ubuntu" if node[:platform] == "pop" 
 include_role node[:platform]

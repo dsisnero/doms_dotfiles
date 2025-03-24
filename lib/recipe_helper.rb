@@ -9,6 +9,9 @@
     when "arch"
       home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
       group = user
+    when "pop"
+      home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
+      group = user
     else
       home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
       group = user
@@ -44,7 +47,7 @@
       execute "brew update"
     when "fedora", "redhat", "amazon"
       # execute 'yum update -y' # '区別なし'
-    when "debian", "ubuntu", "mint"
+    when "debian", "ubuntu", "mint", "pop"
       execute "apt update -y"
     when "opensuse"
       MItamae.logger.debug("need package manager for opensuse")
@@ -59,7 +62,7 @@
       execute "brew upgrade"
     when "fedora", "redhat", "amazon"
       execute "yum update -y" # 区別なし
-    when "debian", "ubuntu", "mint"
+    when "debian", "ubuntu", "mint", "pop"
       execute "apt upgrade -y"
     when "opensuse"
       MItamae.logger.debug("need package manager for opensuse")
