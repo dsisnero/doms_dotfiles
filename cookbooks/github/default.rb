@@ -1,8 +1,5 @@
 include_cookbook "github-cli"
 
-require 'time'
-timestamp = Time.now.strftime('%Y-%m-%d')
-
 node.reverse_merge!(
   github: {
     ssh_key_type: "ed25519",
@@ -82,7 +79,7 @@ execute "add_ssh_key_via_gh" do
   user node[:user]
   command <<~EOCMD
     gh ssh-key add #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}.pub \\
-      --title "#{node[:hostname]} [#{timestamp}]" \\
+      --title "#{node[:hostname]} [$(date +%F)]" \\
       --type authentication
   EOCMD
   not_if "gh ssh-key list | grep -qF '$(cat #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}.pub | cut -d' ' -f2)'"
