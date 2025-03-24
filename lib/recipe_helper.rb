@@ -1,3 +1,8 @@
+class Specinfra::Command::Pop < Specinfra::Command::Ubuntu
+end
+node[:family] = "ubuntu" if node[:platform] == "pop"
+# FINALLY set platform override
+node[:platform] = "ubuntu" if node[:platform] == "pop"
 ::MItamae::RecipeContext.class_eval do
   # node hashのパラメータで必須のものを初期設定する。
   def init_node
@@ -149,7 +154,7 @@ define :get_repo, build: nil do
   user = params[:user].nil? ? ENV["SUDO_USER"] || ENV["USER"] : node[:user]
 
   execute "get_repo #{reponame}" do
-    command "source ~/.asdf/asdf.sh; ghq get -p #{reponame}"
+    command "mise exec ghq get -p #{reponame}"
     user user
   end
 
