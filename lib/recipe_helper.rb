@@ -48,8 +48,12 @@ node[:family] = "ubuntu" if node[:platform] == "pop"
         "#{home}/.local/share"
       end
     end
+    repos = if node[:is_windows]
 
-    repos = "#{home}/repos"
+       "d:/repos"
+    else
+     "#{home}/repos"
+    end
     dotfile_repos = "#{repos}/github.com/dsisnero/doms_dotfiles"
 
     node.reverse_merge!(
