@@ -23,15 +23,3 @@ execute "install latest python" do
   user user
   command %(mise use -g python@#{version})
 end
-
-# [
-#   {cmd: "asdf plugin add python https://github.com/asdf-community/asdf-python.git",
-#    not_if: "asdf plugin list | grep python"},
-#   {cmd: "asdf install python #{version}", not_if: "asdf list python | grep #{version}"},
-#   {cmd: "asdf global python #{version}", not_if: "which python"}
-# ].each do |op|
-#   source_asdf_and_execute op[:cmd] do
-#     user user
-#     not_if_ op[:not_if] unless op[:not_if].nil?
-#   end
-# end
