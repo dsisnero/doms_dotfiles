@@ -101,7 +101,7 @@ node[:platform] = "ubuntu" if node[:platform] == "pop"
     if node[:platform] == "darwin" || node[:platform] == "osx"
       cmd
     else
-      "su - #{user} -c \"cd ${PWD} && #{cmd}\""
+      "su - #{user} -c \"cd ${PWD} && SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock #{cmd}\""
     end
   end
 
@@ -151,13 +151,19 @@ end
 define :get_repo, build: nil do
   reponame = params[:name]
   user = params[:user].nil? ? ENV["SUDO_USER"] || ENV["USER"] : node[:user]
+  home = node[:home]
 
-  # Use HTTPS URL format for GitHub repositories to avoid SSH authentication issues
-  repo_url = reponame.include?("github.com") ? reponame : "https://github.com/#{reponame}"
+  # Try SSH first, fall back to HTTPS if SSH fails
+  repo_url = if reponame.include?("github.com")
+               reponame
+             else
+               "git@github.com:#{reponame}.git"
+             end
   
   execute "get_repo #{reponame}" do
-    command "mise exec -- ghq get -p #{repo_url}"
+    command "SSH_AUTH_SOCK=#{home}/.ssh/agent.sock mise exec -- ghq get -p #{repo_url}"
     user user
+    not_if "test -d #{home}/repos/#{reponame.gsub('/', '/')}"
   end
 
   unless params[:build].nil?
