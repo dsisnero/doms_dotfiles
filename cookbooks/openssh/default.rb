@@ -1,5 +1,5 @@
-version = "9.7"
-url = "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-#{version}p1.tar.gz"
+version = "9.7p1"
+url = "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-#{version}.tar.gz"
 
 case node[:platform]
 when "arch"
@@ -17,9 +17,9 @@ when "debian", "ubuntu", "mint"
       mkdir work_openssh
       pushd work_openssh
       wget --no-check-certificate #{url}
-      tar -zxvf openssh-#{version}p1.tar.gz
+      tar -zxvf openssh-#{version}.tar.gz
 
-      cd openssh-#{version}p1
+      cd openssh-#{version}
         ./configure
       make
       make install

@@ -34,8 +34,8 @@ end
 execute "start ssh-agent" do
   user node[:user]
   command <<~EOCMD
-    source #{node[:home]}/.ssh/agent_env
-    ssh-agent -a #{node[:home]}/.ssh/agent.sock
+    ssh-agent -a #{node[:home]}/.ssh/agent.sock > #{node[:home]}/.ssh/agent_env
+    echo 'export SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock' >> #{node[:home]}/.ssh/agent_env
   EOCMD
   not_if "test -S #{node[:home]}/.ssh/agent.sock"
 end
