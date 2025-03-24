@@ -1,5 +1,6 @@
 # Create a user-specific temporary directory to avoid permission issues
-
+home = node[:home]
+config_home = node[:config_home] || "#{home}/.config"
 case node[:platform]
 when "debian", "ubuntu", "mint"
   package "software-properties-common"
@@ -18,10 +19,10 @@ when "debian", "ubuntu", "mint"
     not_if "which git-secrets"
   end
   # Create XDG-compliant hooks directory
-  hooks_dir = "#{node[:config_home]}/git/hooks"
+  hooks_dir = "#{config_home}/git/hooks"
 
   # Ensure parent git directory exists
-  directory "#{node[:config_home]}/git" do
+  directory "#{config_home}/git" do
     user node[:user]
     group node[:group]
     mode "755"
@@ -33,16 +34,68 @@ when "debian", "ubuntu", "mint"
     mode "0755"
   end
 
-  # Deploy all hook files from cookbook
-  hook_dir = File.expand_path("../files/hooks", __FILE__)
-  Dir.glob("#{hook_dir}/*").each do |hook|
-    basename = File.basename(hook)
-    remote_file "#{hooks_dir}/#{basename}" do
-      source "hooks/#{basename}"
-      mode "0755"
-      user node[:user]
-      group node[:group]
+  # Main .gitconfig with platform-specific includes
+  template "#{config_dir}/git/config" do
+    source "templates/git/gitconfig.erb"
+    owner user
+    group group
+    mode "644"
+    variables(
+      platform: node[:platform],
+      is_wsl: node[:is_wsl],
+      config_dir: node[:config_home]
+    )
+  end
+
+  # Platform-specific config directory
+  mydir "#{config_dir}/git/platforms"
+
+  # Common git configuration
+  template "#{config_dir}/git/config.common" do
+    source "templates/git/common_config.erb"
+    owner user
+    group group
+    mode "644"
+  end
+
+  # Platform-specific templates
+  %w[darwin linux windows].each do |platform|
+    template "#{config_dir}/git/platforms/#{platform}" do
+      source "templates/git/platforms/#{platform}.erb"
+      owner user
+      group group
+      mode "644"
     end
+  end
+
+  # WSL template (special case)
+  template "#{config_dir}/git/platforms/wsl" do
+    source "templates/git/platforms/wsl.erb"
+    owner user
+    group group
+    mode "644"
+  end
+
+  # Install pre-commit hook
+  template "#{home}/.config/git/hooks/pre-commit" do
+    source "templates/git/hooks/pre-commit.erb"
+    mode "755"
+    owner node[:user]
+    group node[:group]
+    variables(
+      user: node[:user]
+    )
+  end
+
+  # Install commit-msg hook
+  template "#{home}/.config/git/hooks/commit-msg" do
+    source "templates/git/hooks/commit-msg.erb"
+    mode "755"
+    owner node[:user]
+    group node[:group]
+    variables(
+      user: node[:user]
+    )
   end
 
   # Configure global hooks path
@@ -90,67 +143,4 @@ when "osx", "darwin"
 when "arch"
   package "git"
 when "opensuse"
-end
-# Install git package
-package 'git'
-
-# Create git config directory if it doesn't exist
-directory "#{ENV['HOME']}/.config/git" do
-  mode '755'
-  owner node[:user]
-  group node[:group]
-  not_if "test -d #{ENV['HOME']}/.config/git"
-end
-
-# Create git hooks directory
-directory "#{ENV['HOME']}/.config/git/hooks" do
-  mode '755'
-  owner node[:user]
-  group node[:group]
-  not_if "test -d #{ENV['HOME']}/.config/git/hooks"
-end
-
-# Install pre-commit hook
-template "#{ENV['HOME']}/.config/git/hooks/pre-commit" do
-  source 'templates/git/hooks/pre-commit.erb'
-  mode '755'
-  owner node[:user]
-  group node[:group]
-  variables(
-    user: node[:user]
-  )
-end
-
-# Install commit-msg hook
-template "#{ENV['HOME']}/.config/git/hooks/commit-msg" do
-  source 'templates/git/hooks/commit-msg.erb'
-  mode '755'
-  owner node[:user]
-  group node[:group]
-  variables(
-    user: node[:user]
-  )
-end
-
-# Set git global config for hooks path
-execute "git config --global core.hooksPath #{ENV['HOME']}/.config/git/hooks" do
-  user node[:user]
-  not_if "git config --global --get core.hooksPath | grep -q '#{ENV['HOME']}/.config/git/hooks'"
-end
-# Create git config directory if it doesn't exist
-directory "#{ENV['HOME']}/.config/git/hooks" do
-  action :create
-  mode "0755"
-  recursive true
-end
-
-# Install git hook templates
-template "#{ENV['HOME']}/.config/git/hooks/pre-commit" do
-  source "git/hooks/pre-commit.erb"
-  mode "0755"
-end
-
-template "#{ENV['HOME']}/.config/git/hooks/commit-msg" do
-  source "git/hooks/commit-msg.erb"
-  mode "0755"
 end
