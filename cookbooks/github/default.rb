@@ -1,3 +1,5 @@
+include_cookbook "github-cli"
+
 node.reverse_merge!(
   github: {
     ssh_key_type: "ed25519",
@@ -42,14 +44,46 @@ end
 # Display public key instructions
 execute "show GitHub SSH public key" do
   user node[:user]
-  command <<-EOCMD
-    echo '=== ACTION REQUIRED ==='
-    echo '1. Copy below public key:'
-    echo '2. Go to https://github.com/settings/keys'
-    echo '3. Click "New SSH key" and paste'
-    echo '========================'
+  command <<~EOCMD
+    if command -v gh >/dev/null; then
+      echo "✅ GitHub CLI authenticated for: $(gh api user | jq -r .login)"
+    else
+      echo "⚠️  GitHub CLI not installed - manual key copy required"
+    fi
+
+    echo "🔑 SSH Public Key:"
+    echo "------------------"
     cat #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}.pub
+    echo "------------------"
+    
+    # Clipboard copy commands
+    if command -v xclip >/dev/null; then
+      cat #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}.pub | xclip -selection clipboard
+      echo "📋 Key copied to clipboard (Linux)"
+    elif command -v pbcopy >/dev/null; then
+      cat #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}.pub | pbcopy
+      echo "📋 Key copied to clipboard (macOS)"
+    fi
+
+    echo "🌐 Add this key to GitHub:"
+    echo "   1. Go to https://github.com/settings/keys"
+    echo "   2. Click 'New SSH key'"
+    echo "   3. Paste key contents"
+    echo "   4. Click 'Add SSH key'"
   EOCMD
+  only_if "test -f #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}.pub"
+end
+
+# Add automatic key upload via GitHub CLI
+execute "add_ssh_key_via_gh" do
+  user node[:user]
+  command <<~EOCMD
+    gh ssh-key add #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}.pub \\
+      --title "#{node[:hostname]} [#{Time.now.strftime('%Y-%m-%d')}]" \\
+      --type authentication
+  EOCMD
+  not_if "gh ssh-key list | grep -qF '$(cat #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}.pub | cut -d' ' -f2)'"
+  only_if "which gh && gh auth status >/dev/null 2>&1"
 end
 
 # Verify SSH connection
