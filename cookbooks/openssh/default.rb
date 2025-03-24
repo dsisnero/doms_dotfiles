@@ -13,8 +13,7 @@ when "debian", "ubuntu", "mint"
 
   execute "install openssh" do
     command <<~EOCMD
-
-      mkdir work_openssh
+      mkdir -p work_openssh
       pushd work_openssh
       wget --no-check-certificate #{url}
       tar -zxvf openssh-#{version}.tar.gz
@@ -26,6 +25,7 @@ when "debian", "ubuntu", "mint"
 
       popd
     EOCMD
+    not_if "ssh -V 2>&1 | grep -q 'OpenSSH_#{version}'"
   end
 when "opensuse"
   raise NotImplementedError
