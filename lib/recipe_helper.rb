@@ -39,8 +39,7 @@ node[:platform] = "ubuntu" if node[:platform] == "pop"
       user_bin: user_bin,
       repos: repos,
       dotfile_repos: dotfile_repos,
-      is_wsl: is_wsl,
-      go_root: "#{home}/.asdf/shims/"
+      is_wsl: is_wsl
     )
   end
 
@@ -165,14 +164,7 @@ define :get_repo, build: nil do
   end
 end
 
-define :go_get do
-  reponame = params[:name]
-  version = "latest"
-
-  execute "#{node[:go_root]}/go install #{reponame}@#{version}" do
-    user node[:user]
-  end
-end
+# go_get definition moved to cookbooks/go/default.rb
 
 # githubから直接バイナリを取得してインストール
 define :get_bin_github_release, version: nil, version_cmd: nil, version_str: nil, release_artifact_url: nil do
