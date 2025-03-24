@@ -2,8 +2,13 @@ include_recipe "./dependency.rb"
 include_cookbook "uv"
 include_cookbook "mise"
 
-version = node[:python][:version]
-version ||= "latest"
+node.reverse_merge!(
+  python: {
+    version: "latest"
+  }
+)
+
+version = node[:python][:version] || "latest"
 
 user = node[:user]
 home = node[:home]

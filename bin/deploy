@@ -11,7 +11,7 @@ mitamae() {
   cmd="bin/mitamae local --shell /bin/bash -l debug lib/recipe_helper.rb $cookbooks"
   case "$(uname)" in
     "Darwin")  bin/mitamae local $cookbooks ;;
-    *) sudo -E bash -c "cd $(pwd) && ZSH_DISABLE_COMPFIX=true SHELL=/bin/bash $cmd" ;;
+    *) sudo -E bash -c "cd $(pwd) && ZSH_DISABLE_COMPFIX=true SHELL=/bin/bash NO_RCS=true $cmd" ;;
   esac
 }
 
