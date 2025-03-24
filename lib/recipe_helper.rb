@@ -152,8 +152,11 @@ define :get_repo, build: nil do
   reponame = params[:name]
   user = params[:user].nil? ? ENV["SUDO_USER"] || ENV["USER"] : node[:user]
 
+  # Use HTTPS URL format for GitHub repositories to avoid SSH authentication issues
+  repo_url = reponame.include?("github.com") ? reponame : "https://github.com/#{reponame}"
+  
   execute "get_repo #{reponame}" do
-    command "mise exec -- ghq get -p #{reponame}"
+    command "mise exec -- ghq get -p #{repo_url}"
     user user
   end
 
