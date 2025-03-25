@@ -6,7 +6,7 @@ config_home = node[:config_home]
 git_config_dir = "#{config_home}/git"
 git_hooks_dir = "#{git_config_dir}/hooks"
 
-case node[:platform_family]
+case node[:os]
 when "windows"
   # Windows Git installation via Chocolatey
   chocolatey_package "git"
@@ -48,7 +48,7 @@ when "macos"
 end
 
 # Only proceed with Unix-style config if not on Windows or if in WSL
-unless windows? && !wsl?
+unless node[:os] == "windows" && !wsl?
 # Ensure parent git directory exists
 directory git_config_dir do
   user node[:user]
@@ -70,7 +70,7 @@ template "#{git_config_dir}/config" do
   mode "644"
   variables(
     platform: node[:platform],
-    platform_family: node[:platform_family],
+    os: node[:os],
     is_wsl: node[:is_wsl],
     config_dir: git_config_dir,
     hooks_dir: git_hooks_dir
@@ -132,7 +132,7 @@ end
 end
 
 # Windows-specific Git configuration (when not in WSL)
-if windows? && !wsl?
+if node[:os] == "windows" && !wsl?
   # Windows Git configuration
   template "#{home}/.gitconfig" do
     source "templates/git/windows_gitconfig.erb"

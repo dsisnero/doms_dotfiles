@@ -2,15 +2,8 @@
 #
 # Pre-commit hook to run various checks before committing
 
-# Detect platform
-platform="unknown"
-if [ "$(uname)" = "Darwin" ]; then
-  platform="macos"
-elif [ "$(expr substr $(uname -s) 1 5)" = "Linux" ]; then
-  platform="linux"
-elif [ "$(expr substr $(uname -s) 1 10)" = "MINGW32_NT" ]; then
-  platform="windows"
-fi
+# Use OS from template
+platform="<%= @os || 'linux' %>"
 
 # Check for trailing whitespace
 if git diff --cached --name-only | xargs grep --with-filename -n "[[:blank:]]$" > /dev/null 2>&1; then

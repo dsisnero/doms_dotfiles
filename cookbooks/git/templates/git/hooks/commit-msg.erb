@@ -29,15 +29,8 @@ fi
 #   exit 1
 # fi
 
-# Detect platform for platform-specific checks
-platform="unknown"
-if [ "$(uname)" = "Darwin" ]; then
-  platform="macos"
-elif [ "$(expr substr $(uname -s) 1 5)" = "Linux" ]; then
-  platform="linux"
-elif [ "$(expr substr $(uname -s) 1 10)" = "MINGW32_NT" ]; then
-  platform="windows"
-fi
+# Use OS from template
+platform="<%= @os || 'linux' %>"
 
 # Platform-specific commit message checks
 if [ "$platform" = "macos" ]; then

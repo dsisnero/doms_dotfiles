@@ -57,18 +57,18 @@ node.reverse_merge!(
             end
 )
 
-# THEN set platform_family
+# Set os based on platform
 node.reverse_merge!(
-  platform_family: case node[:platform]
-                   when 'debian', 'ubuntu', 'pop', 'linuxmint', 'arch', 'fedora'
-                     'linux'  # Treat Pop!_OS as generic Linux
-                   when 'macos', 'darwin'
-                     'macos'
-                   when 'windows'
-                     'windows'
-                   else
-                     node[:platform]
-                   end
+  os: case node[:platform]
+      when 'debian', 'ubuntu', 'pop', 'linuxmint', 'arch', 'fedora'
+        'linux'  # Treat Pop!_OS as generic Linux
+      when 'macos', 'darwin'
+        'macos'
+      when 'windows'
+        'windows'
+      else
+        node[:platform]
+      end
 )
 
 # Add Windows-specific paths

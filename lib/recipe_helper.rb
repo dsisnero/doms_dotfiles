@@ -13,9 +13,14 @@ node[:family] = "ubuntu" if node[:platform] == "pop"
 
   # node hashのパラメータで必須のものを初期設定する。
   def init_node
+    # Ensure os is always defined
+    node.reverse_merge!(
+      os: node[:os] || 'linux' # Default fallback
+    )
+    
     user = ENV["SUDO_USER"] || ENV["USER"]
     
-    if node[:is_windows]
+    if node[:os] == "windows"
       # Windows-specific defaults
       home = node[:home] # Already normalized in node_supplement.rb
       group = 'Users'
@@ -80,7 +85,7 @@ node[:family] = "ubuntu" if node[:platform] == "pop"
   end
 
   def update_package
-    case node[:platform_family]
+    case node[:os]
     when "windows"
       execute "choco upgrade chocolatey -y" do
         only_if "where choco"
@@ -102,7 +107,7 @@ node[:family] = "ubuntu" if node[:platform] == "pop"
   end
 
   def upgrade_package
-    case node[:platform_family]
+    case node[:os]
     when "windows"
       execute "choco upgrade all -y" do
         only_if "where choco"
