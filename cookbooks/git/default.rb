@@ -70,7 +70,7 @@ template "#{git_config_dir}/config" do
   mode "644"
   variables(
     platform: node[:platform],
-    os: node[:os],
+    os: node[:os] || 'linux', # Add explicit default
     is_wsl: node[:is_wsl],
     config_dir: git_config_dir,
     hooks_dir: git_hooks_dir

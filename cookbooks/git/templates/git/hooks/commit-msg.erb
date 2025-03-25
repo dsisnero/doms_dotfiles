@@ -30,7 +30,7 @@ fi
 # fi
 
 # Use OS from template
-platform="<%= @os || 'linux' %>"
+platform="<%= @os.to_s || 'linux' %>"
 
 # Platform-specific commit message checks
 if [ "$platform" = "macos" ]; then

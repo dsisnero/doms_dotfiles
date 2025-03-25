@@ -3,7 +3,7 @@
 # Pre-commit hook to run various checks before committing
 
 # Use OS from template
-platform="<%= @os || 'linux' %>"
+platform="<%= @os.to_s || 'linux' %>"
 
 # Check for trailing whitespace
 if git diff --cached --name-only | xargs grep --with-filename -n "[[:blank:]]$" > /dev/null 2>&1; then

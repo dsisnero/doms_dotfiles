@@ -5,7 +5,8 @@ is_wsl = !is_windows && run_command("uname -a | grep -i Microsoft", error: false
 node.reverse_merge!(
   user: ENV["SUDO_USER"] || ENV["USER"],
   is_windows: is_windows,
-  is_wsl: is_wsl
+  is_wsl: is_wsl,
+  os: 'linux' # Default fallback
 )
 
 # In some Linux distribution, `sudo -E` doesn't preserve environment variables.
