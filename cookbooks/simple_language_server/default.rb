@@ -26,3 +26,12 @@ when "windows"
     EOCMD
   end
 end
+get_repo "github.com/estin/simple-completion-language-server",
+  repository: "estin/simple-completion-language-server",
+  build: <<-EOCMD
+    cd #{home}/repos/github.com/estin/simple-completion-language-server
+    cargo install --path .
+  EOCMD
+  version_cmd: "simple-completion-language-server --version",
+  version_str: "0.1.0"
+)

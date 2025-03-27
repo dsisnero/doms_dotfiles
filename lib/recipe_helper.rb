@@ -248,8 +248,17 @@ define :get_repo, build: nil do
   end
 
   unless params[:build].nil?
+    cloned_dir = "#{home}/repos/#{reponame.gsub('/', '/')}"
+    version_check = if params[:version_cmd] && params[:version_str]
+                      " && #{params[:version_cmd]} | grep -q '#{params[:version_str]}'"
+                    else
+                      ""
+                    end
+
     execute "build #{reponame}" do
-      command params[:build]
+      command "cd #{cloned_dir} && #{params[:build]}"
+      user user
+      not_if "test -d #{cloned_dir}/target#{version_check}"
     end
   end
 end
