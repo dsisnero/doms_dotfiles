@@ -10,6 +10,7 @@ case node[:os]
 when "windows"
   # Windows Git installation via Chocolatey
   chocolatey_package "git"
+  chocolatey_package "mitamae"
   chocolatey_package "git-credential-manager-for-windows" do
     not_if { wsl? }
   end
