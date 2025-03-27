@@ -30,6 +30,12 @@ zinit light "GeneralD/zaw-src-github" #, on:"zsh-users/zaw", defer:2
 # zinit light "GeneralD/zaw-src-ghq" #, on:"zsh-users/zaw", on:"Tarrasch/zsh-functional", defer:2
 zinit light "GeneralD/zaw-src-package-managers" #, on:"zsh-users/zaw", defer:2
 
+# git-flow completion
+if command -v git-flow &> /dev/null; then
+    source <(git-flow completion zsh)
+    compdef _git-flow git-flow
+fi
+
 ## zaw
 bindkey '^x^x' zaw
 

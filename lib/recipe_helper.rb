@@ -1,6 +1,10 @@
 class Specinfra::Command::Pop < Specinfra::Command::Ubuntu
 end
 node[:family] = "ubuntu" if node[:platform] == "pop"
+
+include_recipe "node_supplement.rb"
+puts "node info: #{node.mash.to_yaml}"
+MItamae.logger.info "Node Info:\n#{node.inspect}"
 ::MItamae::RecipeContext.class_eval do
   # Helper methods for platform detection
   def windows?
@@ -19,7 +23,6 @@ node[:family] = "ubuntu" if node[:platform] == "pop"
     )
     
     user = ENV["SUDO_USER"] || ENV["USER"]
-    
     if node[:os] == "windows"
       # Windows-specific defaults
       home = node[:home] # Already normalized in node_supplement.rb
@@ -40,8 +43,7 @@ node[:family] = "ubuntu" if node[:platform] == "pop"
       else
         home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
         group = user
-      end
-      
+      end      
       user_bin = "#{home}/.local/bin"
     end
     
@@ -238,7 +240,7 @@ define :get_repo, build: nil do
              else
                "git@github.com:#{reponame}.git"
              end
-  
+               
   execute "get_repo #{reponame}" do
     command "SSH_AUTH_SOCK=#{home}/.ssh/agent.sock mise exec -- ghq get -p #{repo_url}"
     user user
