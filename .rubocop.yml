@@ -3,6 +3,7 @@ require:
   - standard-custom
   - standard-performance
   - rubocop-performance
+  - rubocop-mruby
 
 inherit_gem:
   standard: config/base.yml
@@ -10,14 +11,21 @@ inherit_gem:
   standard-performance: config/base.yml
 
 AllCops:
+  TargetRubyVersion: 1.8
   NewCops: enable
   Exclude:
     - node_modules/**/*
     - public/**/*
     - vendor/**/*
+    - mrblib/**/*
+    - src/**/*
 
 Style/FrozenStringLiteralComment:
-  Enabled: true
+  Enabled: false
+
+Style/SymbolProc:
+  Enabled: false
 
 Style/HashSyntax:
-  EnforcedShortHandSyntax: never
+  EnforcedShorthandSyntax: never
+  EnforcedStyle: hash_rockets
