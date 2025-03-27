@@ -1,24 +1,30 @@
-#!/usr/bin/env perl
-use utf8;
+#!/usr/bin/env bash
+set -eo pipefail
 
-my @raw_cookbooks = @ARGV;
-
-if (!@raw_cookbooks) {
-  print 'need cookbooks!';
-  exit 1;
+normalize_cookbook() {
+  local raw=$1
+  
+  # Check exact paths first
+  if [[ -f "$raw" ]]; then
+    echo "$raw"
+  elif [[ -f "${raw}.rb" ]]; then
+    echo "${raw}.rb"
+  elif [[ -f "cookbooks/${raw}/default.rb" ]]; then
+    echo "cookbooks/${raw}/default.rb"
+  elif [[ -f "roles/${raw}/default.rb" ]]; then
+    echo "roles/${raw}/default.rb"
+  else
+    echo "Error: Could not find cookbook for '${raw}'" >&2
+    exit 1
+  fi
 }
 
-foreach my $raw(@raw_cookbooks) {
-  if (-f "$raw") {
-    print "$raw ";
-  } elsif (-f "$raw.rb") {
-    print "$raw.rb ";
-  } elsif (-f "$raw/default.rb") {
-    print "$raw/default.rb ";
-  } else {
-    print "please check cookbook name. : ${raw}";
-    exit 1;
-  }
-}
+# Main execution
+if [[ $# -eq 0 ]]; then
+  echo "Error: No cookbooks specified" >&2
+  exit 1
+fi
 
-print ""
+for arg in "$@"; do
+  normalize_cookbook "$arg"
+done

@@ -1,23 +1,56 @@
 #!/bin/bash
-# Homebrew does not allow sudo.
-
-# set -x #debug
 set -eu
+
+usage() {
+  echo "Usage: $0 [--debug] [cookbook1 cookbook2...]"
+  echo "  --debug   Enable debug logging"
+  echo "  cookbooks Space-separated list of cookbooks to deploy"
+  echo ""
+  echo "Examples:"
+  echo "  Deploy everything       : ./bin/deploy"
+  echo "  Deploy git cookbook     : ./bin/deploy git"
+  echo "  Debug mode deployment   : ./bin/deploy --debug"
+  echo "  Debug specific cookbook : ./bin/deploy --debug dotfiles"
+  exit 1
+}
+
+# Parse arguments
+DEBUG=false
+COOKBOOKS=()
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --debug)
+      DEBUG=true
+      shift
+      ;;
+    *)
+      COOKBOOKS+=("$1")
+      shift
+      ;;
+  esac
+done
 
 ./bin/setup
 
-mitamae() {
-  cookbooks=$@
-  cmd="bin/mitamae local --shell /bin/bash -l debug lib/recipe_helper.rb $cookbooks"
+run_mitamae() {
+  local level=$1
+  local recipe=$2
+  cmd="bin/mitamae local --shell /bin/bash -l $level $recipe"
   case "$(uname)" in
-    "Darwin")  bin/mitamae local $cookbooks ;;
+    "Darwin") bin/mitamae local -l $level $recipe ;;
     *) sudo -E bash -c "cd $(pwd) && ZSH_DISABLE_COMPFIX=true SHELL=/bin/bash NO_RCS=true SSH_AUTH_SOCK=${HOME}/.ssh/agent.sock $cmd" ;;
   esac
 }
 
-if [ "$#" = "0" ]; then
-  mitamae lib/recipe.rb
+if [ ${#COOKBOOKS[@]} -eq 0 ]; then
+  # Full deployment
+  level="info"
+  $DEBUG && level="debug"
+  run_mitamae $level "lib/recipe.rb"
 else
-  # echo "mitamae $(./bin/normalize_cookbooks $@)"
-  mitamae $(./bin/normalize_cookbooks $@)
+  # Individual cookbooks
+  level="info"
+  $DEBUG && level="debug"
+  normalized=($(./bin/normalize_cookbooks "${COOKBOOKS[@]}"))
+  run_mitamae $level "lib/recipe_helper.rb ${normalized[@]}"
 fi
