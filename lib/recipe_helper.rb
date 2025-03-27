@@ -1,6 +1,6 @@
 class Specinfra::Command::Pop < Specinfra::Command::Ubuntu
 end
-node[:family] = "ubuntu" if node[:platform] == "pop"
+node[:platform] = "ubuntu" if node[:platform] == "pop"
 
 include_recipe "node_supplement.rb"
 puts "node info: #{node.mash.to_yaml}"
@@ -19,14 +19,14 @@ MItamae.logger.info "Node Info:\n#{node.inspect}"
   def init_node
     # Ensure os is always defined
     node.reverse_merge!(
-      os: node[:os] || 'linux' # Default fallback
+      os: node[:os] || "linux" # Default fallback
     )
-    
+
     user = ENV["SUDO_USER"] || ENV["USER"]
     if node[:os] == "windows"
       # Windows-specific defaults
       home = node[:home] # Already normalized in node_supplement.rb
-      group = 'Users'
+      group = "Users"
       user_bin = "#{home}/AppData/Local/Microsoft/WindowsApps"
     else
       # Unix-based systems
@@ -43,10 +43,10 @@ MItamae.logger.info "Node Info:\n#{node.inspect}"
       else
         home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
         group = user
-      end      
+      end
       user_bin = "#{home}/.local/bin"
     end
-    
+
     # Unified XDG_CONFIG_HOME handling across all platforms
     config_home = ENV.fetch("XDG_CONFIG_HOME") do
       if node[:is_windows]
@@ -66,9 +66,9 @@ MItamae.logger.info "Node Info:\n#{node.inspect}"
     end
     repos = if node[:is_windows]
 
-       "d:/repos"
+      "d:/repos"
     else
-     "#{home}/repos"
+      "#{home}/repos"
     end
     dotfile_repos = "#{repos}/github.com/dsisnero/doms_dotfiles"
 
@@ -212,14 +212,14 @@ define :dotfile, source: nil, user: nil do
   if node[:is_windows]
     execute "Create symlink for #{params[:name]}" do
       command <<-PS1
-      $target = "#{src.gsub('/', '\\')}"
-      $link = "#{dst.gsub('/', '\\')}"
+      $target = "#{src.tr("/", "\\")}"
+      $link = "#{dst.tr("/", "\\")}"
       if (Test-Path $link) { Remove-Item $link -Force -Recurse }
       New-Item -ItemType Junction -Path $link -Target $target
       PS1
       interpreter "powershell"
       user user
-      not_if "powershell -Command \"if (Test-Path -Path '#{dst.gsub('/', '\\')}') { exit 0 } else { exit 1 }\""
+      not_if "powershell -Command \"if (Test-Path -Path '#{dst.tr("/", "\\")}') { exit 0 } else { exit 1 }\""
     end
   else
     execute "ln -s #{src} #{dst}" do
@@ -236,13 +236,13 @@ define :get_repo, build: nil do
 
   # Parse repository URL format
   repo_url = if reponame.include?("://") || reponame.include?("@")
-               reponame # Already a full URL
-             else
-               "https://github.com/#{reponame}.git"
-             end
+    reponame # Already a full URL
+  else
+    "https://github.com/#{reponame}.git"
+  end
 
   # Extract proper ghq path from URL
-  cloned_dir = "#{home}/repos/#{repo_url.split(%r{[:/]})[1..-1].join('/').gsub(/\.git$/, '')}"
+  cloned_dir = "#{home}/repos/#{repo_url.split(%r{[:/]})[1..-1].join("/").gsub(/\.git$/, "")}"
 
   execute "get_repo #{reponame}" do
     command "SSH_AUTH_SOCK=#{home}/.ssh/agent.sock mise exec -- ghq get -p '#{repo_url}'"
@@ -252,10 +252,10 @@ define :get_repo, build: nil do
 
   unless params[:build].nil?
     version_check = if params[:version_cmd] && params[:version_str]
-                      " && #{params[:version_cmd]} | grep -q '#{params[:version_str]}'"
-                    else
-                      ""
-                    end
+      " && #{params[:version_cmd]} | grep -q '#{params[:version_str]}'"
+    else
+      ""
+    end
 
     execute "build #{reponame}" do
       command "cd #{cloned_dir} && #{params[:build]}"

@@ -18,7 +18,7 @@ end
 # Reimplement go_get definition
 define :go_get do
   reponame = params[:name]
-  
+
   execute "#{node[:go_root]}/go install #{reponame}@#{node[:go][:version]}" do
     user node[:user]
   end

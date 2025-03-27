@@ -74,7 +74,7 @@ node.reverse_merge!(
 
 # Add Windows-specific paths
 node.reverse_merge!(
-  
+
   # Windows-specific paths if on Windows
   program_files: node[:is_windows] ? (ENV['ProgramFiles'] ? ENV['ProgramFiles'].gsub('\\', '/') : '/Program Files') : nil,
   appdata: node[:is_windows] ? (ENV['APPDATA'] ? ENV['APPDATA'].gsub('\\', '/') : "#{node[:home]}/AppData/Roaming") : nil
@@ -85,7 +85,7 @@ if node[:is_windows]
   begin
     win_version = run_command("powershell -Command \"(Get-CimInstance Win32_OperatingSystem).Caption\"", error: false).stdout.strip
     win_build = run_command("powershell -Command \"(Get-CimInstance Win32_OperatingSystem).BuildNumber\"", error: false).stdout.strip
-    
+
     node.reverse_merge!(
       os_version: win_version,
       os_build: win_build

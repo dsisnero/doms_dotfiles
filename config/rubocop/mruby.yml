@@ -1,7 +1,7 @@
 # mruby-specific configuration
 
 AllCops:
-  TargetRubyVersion: 1.8
+  TargetRubyVersion: 3.0
   Exclude:
     - mrblib/**/*
     - src/**/*
@@ -30,7 +30,7 @@ Style/SymbolArray:
 Style/WordArray:
   Enabled: false
 
-Lint/UnneededCopDisableDirective:
+Lint/RedundantCopDisableDirective:
   Enabled: false
 
 Metrics/BlockLength:

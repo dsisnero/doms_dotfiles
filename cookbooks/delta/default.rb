@@ -1,14 +1,18 @@
 include_recipe "dependency.rb"
 
+MItamae.logger.info("platform: #{node[:platform]}")
+MItamae.logger.info("node #{node}")
+puts node[:platform]
+
 case node[:platform]
 when "arch"
-  raise NotImplementedError
+  raise NotImplementredError
 when "osx", "darwin"
   raise NotImplementedError
 when "fedora", "redhat", "amazon"
   raise NotImplementedError
 
-when "debian", "ubuntu", "mint"
+when "debian", "ubuntu", "mint", "pop"
   execute "install delta" do
     user node["user"]
 
