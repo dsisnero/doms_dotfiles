@@ -33,6 +33,7 @@ zinit light "GeneralD/zaw-src-package-managers" #, on:"zsh-users/zaw", defer:2
 # git-flow completion
 if command -v git-flow &> /dev/null; then
     source <(git-flow completion zsh)
+    autoload -Uz compinit && compinit
     compdef _git-flow git-flow
 fi
 

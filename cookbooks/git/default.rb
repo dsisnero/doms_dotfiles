@@ -42,6 +42,7 @@ when "linux"
     # Existing fedora/redhat setup
   when "arch"
     package "git"
+    package "git-flow"
   end
 when "macos"
   package "git"
