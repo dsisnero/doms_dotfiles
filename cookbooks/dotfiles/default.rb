@@ -2,6 +2,7 @@ home = node[:home]
 user = node[:user]
 group = node[:group]
 config_dir = node[:config_home]
+repos = node[:repos]
 
 define :mydir, mode: "755" do
   dirpath = params[:name]
@@ -33,7 +34,7 @@ mydir "#{home}/.local/bin"
 mydir "#{home}/.local/themes"
 mydir "#{home}/.local/icons"
 
-mydir "#{home}/repos"
+mydir repos
 
 # Initialize Fish config with mise setup
 template "#{config_dir}/fish/config.fish" do
@@ -134,14 +135,15 @@ if node[:is_wsl]
 end
 
 include_cookbook "git"
-execute "git clone git@github.com:dsisnero/doms_dotfiles.git #{home}/repos/github.com/dsisnero/doms_dotfiles" do
+doms_dotfiles = "#{repos}/github.com/dsisnero/doms_dotfiles"
+execute "git clone git@github.com:dsisnero/doms_dotfiles.git #{doms_dotfiles}" do
   user user
-  not_if "test -e #{home}/repos/github.com/dsisnero/doms_dotfiles"
+  not_if "test -e #{doms_dotfiles}"
 end
 execute "git init" do
   user user
-  cwd "#{home}/repos/github.com/dsisnero/doms_dotfiles"
-  only_if "test -e #{home}/repos/github.com/dsisnero/doms_dotfiles"
+  cwd "#{doms_dotfiles}"
+  only_if "test -e #{doms_dotfiles}"
 end
 
 dotfile "pip"
