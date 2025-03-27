@@ -49,47 +49,6 @@ end
 #   group group
 # #   not_if "test -e #{config_dir}/nvim/init.vim"
 # end
-# Main .gitconfig with platform-specific includes
-template "#{config_dir}/git/config" do
-  source "templates/git/gitconfig.erb"
-  owner user
-  group group
-  mode "644"
-  variables(
-    platform: node[:platform],
-    is_wsl: node[:is_wsl],
-    config_dir: node[:config_home]
-  )
-end
-
-# Platform-specific config directory
-mydir "#{config_dir}/git/platforms"
-
-# Common git configuration
-template "#{config_dir}/git/config.common" do
-  source "templates/git/common_config.erb"
-  owner user
-  group group
-  mode "644"
-end
-
-# Platform-specific templates
-%w[darwin linux windows].each do |platform|
-  template "#{config_dir}/git/platforms/#{platform}" do
-    source "templates/git/platforms/#{platform}.erb"
-    owner user
-    group group
-    mode "644"
-  end
-end
-
-# WSL template (special case)
-template "#{config_dir}/git/platforms/wsl" do
-  source "templates/git/platforms/wsl.erb"
-  owner user
-  group group
-  mode "644"
-end
 
 template "#{home}/.zlogin" do
   source "templates/.zlogin.erb"

@@ -1,12 +1,6 @@
 [include]
-  path = <%= @config_dir %>/git/config.common
-  path = <%= @config_dir %>/git/platforms/<%= @platform %>
-<% if @is_wsl %>
-  path = <%= @config_dir %>/git/platforms/wsl
-<% end %>
-[include]
   path = <%= File.join(@config_dir, "config.common") %>
-  path = <%= File.join(@config_dir, "platforms", @platform_family) %>
+  path = <%= File.join(@config_dir, "platforms", @os) %>
 <% if @is_wsl %>
   path = <%= File.join(@config_dir, "platforms/wsl") %>
 <% end %>
