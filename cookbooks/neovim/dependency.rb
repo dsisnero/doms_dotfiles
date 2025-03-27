@@ -11,9 +11,10 @@ package "cmake"
 execute "gem install --user-install neovim" do
   user node[:user]
   command <<-EOCMD
-  . /etc/profile.d/asdf.sh
+  mise exec
   gem install --user-install neovim
   EOCMD
+  not_if "mise exec -- gem list | grep -q 'neovim'"
 end
 
 # pip =
@@ -29,33 +30,20 @@ end
       user node[:user]
 
       command <<-EOCMD
-        . /etc/profile.d/asdf.sh
+        mise exec
         #{pipcmd} install --upgrade --user #{pip}
       EOCMD
-      only_if ". /etc/profile.d/asdf.sh; which #{pipcmd}"
+      only_if "mise activate; which #{pipcmd}"
     end
   end
 end
 
-# pip3
-%w[
-  neovim-remote
-].each do |pip|
-  # cmds =
-  execute "pip3 install --upgrade --user #{pip}" do
-    user node[:user]
-    only_if "which pip3"
-  end
-end
-
 # Node.js
-execute "yarn global add neovim" do
-  user node[:user]
-  command <<-EOCMD
-    . /etc/profile.d/asdf.sh
-    yarn global add neovim
-  EOCMD
-end
+  execute "install neovim yarn package" do
+    command "mise exec -- yarn global add neovim"
+    user node[:user]
+    not_if "mise exec -- yarn global list | grep -q 'neovim@'"
+  end
 
 # include_cookbook 'perl'
 # execute 'cpanm Neovim::Ext'

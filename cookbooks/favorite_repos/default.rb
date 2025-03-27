@@ -17,9 +17,9 @@ pip_pkgs = %w[
 ]
 %w[pip pip3].each do |pip|
   pip_pkgs.each do |pkg|
-    execute ". /etc/profile.d/asdf.sh; #{pip} install #{pkg}" do
+    execute "mise exec -- #{pip} install #{pkg}" do
       user node[:user]
-      only_if ". /etc/profile.d/asdf.sh; which #{pip}>/dev/null"
+      only_if "mise exec --  which #{pip}>/dev/null"
     end
   end
 end

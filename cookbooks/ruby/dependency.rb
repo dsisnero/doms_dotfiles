@@ -1,4 +1,4 @@
-include_cookbook "asdf"
+include_cookbook "mise"
 
 case node[:platform]
 when "debian", "ubuntu", "mint"

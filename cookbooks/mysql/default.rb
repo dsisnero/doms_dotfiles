@@ -132,8 +132,8 @@ execute "mysql user add for auth_socket" do
 end
 
 %w[pip pip3].each do |pip|
-  execute ". /etc/profile.d/asdf.sh; pip install mycli" do
-    not_if "which mycli"
-    only_if ". /etc/profile.d/asdf.sh; which #{pip}>/dev/null"
+  execute "mise exec -- pip install mycli" do
+    not_if "mise exec -- which mycli"
+    only_if "mise exec -- which #{pip}>/dev/null"
   end
 end
