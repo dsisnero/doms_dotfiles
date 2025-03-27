@@ -153,7 +153,15 @@ dotfile "broot"
 dotfile "helix/external-snippets.toml"
 dotfile "helix/languages.toml"
 dotfile "helix/config.toml"
-dotfile "helix/snippets"
+
+# Special handling for snippets directory
+execute "symlink helix snippets" do
+  command "ln -sfT #{doms_dotfiles}/config/helix/snippets #{config_dir}/helix/snippets"
+  user user
+  only_if "test -d #{doms_dotfiles}/config/helix/snippets"
+  not_if "test -L #{config_dir}/helix/snippets"
+end
+
 dotfile "solargraph"
 dotfile ".spacemacs"
 dotfile ".spacemacs.d"
