@@ -1,0 +1,29 @@
+[[snippet]]
+name = "def"
+scope = "source.ruby"
+prefix = "def"
+body = '''
+def ${1:method_name}($2)
+  $0
+end
+'''
+
+[[snippet]]
+name = "class"
+scope = "source.ruby"
+prefix = "class"
+body = '''
+class ${1:ClassName}
+  $0
+end
+'''
+
+[[snippet]] 
+name = "do_block"
+scope = "source.ruby"
+prefix = "do"
+body = '''
+do |${1:arg}|
+  $0
+end
+'''
