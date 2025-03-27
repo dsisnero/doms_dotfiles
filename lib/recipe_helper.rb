@@ -234,21 +234,23 @@ define :get_repo, build: nil do
   user = params[:user].nil? ? ENV["SUDO_USER"] || ENV["USER"] : node[:user]
   home = node[:home]
 
-  # Try SSH first, fall back to HTTPS if SSH fails
-  repo_url = if reponame.include?("github.com")
-               reponame
+  # Parse repository URL format
+  repo_url = if reponame.include?("://") || reponame.include?("@")
+               reponame # Already a full URL
              else
-               "git@github.com:#{reponame}.git"
+               "https://github.com/#{reponame}.git"
              end
-               
+
+  # Extract proper ghq path from URL
+  cloned_dir = "#{home}/repos/#{repo_url.split(%r{[:/]})[1..-1].join('/').gsub(/\.git$/, '')}"
+
   execute "get_repo #{reponame}" do
-    command "SSH_AUTH_SOCK=#{home}/.ssh/agent.sock mise exec -- ghq get -p #{repo_url}"
+    command "SSH_AUTH_SOCK=#{home}/.ssh/agent.sock mise exec -- ghq get -p '#{repo_url}'"
     user user
-    not_if "test -d #{home}/repos/#{reponame.gsub('/', '/')}"
+    not_if "test -d #{cloned_dir}"
   end
 
   unless params[:build].nil?
-    cloned_dir = "#{home}/repos/#{reponame.gsub('/', '/')}"
     version_check = if params[:version_cmd] && params[:version_str]
                       " && #{params[:version_cmd]} | grep -q '#{params[:version_str]}'"
                     else
