@@ -1,31 +1,3 @@
-require:
-  - standard
-  - standard-custom
-  - standard-performance
-  - rubocop-performance
-  - rubocop-mruby
-
-inherit_gem:
-  standard: config/base.yml
-  standard-custom: config/base.yml
-  standard-performance: config/base.yml
-
-AllCops:
-  TargetRubyVersion: 1.8
-  NewCops: enable
-  Exclude:
-    - node_modules/**/*
-    - public/**/*
-    - vendor/**/*
-    - mrblib/**/*
-    - src/**/*
-
-Style/FrozenStringLiteralComment:
-  Enabled: false
-
-Style/SymbolProc:
-  Enabled: false
-
-Style/HashSyntax:
-  EnforcedShorthandSyntax: never
-  EnforcedStyle: hash_rockets
+inherit_from:
+  - config/rubocop/mruby.yml
+  - config/rubocop/standard.yml
