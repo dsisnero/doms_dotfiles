@@ -6,3 +6,7 @@ AllCops:
   Exclude:
     - bin/**/*
     - config/rubocop/**/*
+
+
+Style/QuotedSymbols:
+  EnforcedStyle: single_quotes

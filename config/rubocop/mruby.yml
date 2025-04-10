@@ -50,3 +50,6 @@ Style/FrozenStringLiteralComment:
 
 Style/SymbolProc:
   Enabled: false
+
+Style/QuotedSymbols:
+  EnforcedStyle: single_quotes
