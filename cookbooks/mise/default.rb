@@ -94,6 +94,15 @@ when "debian", "mint", "ubuntu"
     not_if %(grep 'mise activate' #{fish_config})
   end
 
+  execute "install latest lua-language-server" do
+    user user
+    command %(mise use -g lua-language-server@latest)
+  end
+  execute "install latest stylua" do
+    user user
+    command %(mise use -g stylua@latest)
+  end
+
 when "fedora", "redhat", "amazon"
 
 when "osx", "darwin"

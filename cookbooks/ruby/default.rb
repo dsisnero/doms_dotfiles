@@ -2,7 +2,7 @@
 include_recipe "./dependency.rb"
 
 user = node["user"]
-home = node["home"]
+node["home"]
 
 node.reverse_merge!(
   ruby: {
@@ -12,7 +12,7 @@ node.reverse_merge!(
 
 version = node[:ruby][:version] || "latest"
 
-remote_file "#{home}/.default-gems" do
+remote_file '#{home}/.default-gems' do
   source "files/.default-gems"
   owner user
   mode "644"
