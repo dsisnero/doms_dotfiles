@@ -1,6 +1,6 @@
 user = node[:user]
 home = node[:home]
-ghq_root = node[:ghq_root]
+ghq_root = node[:ghq_root] || "#{home}/repos"
 hx_config = "#{home}/.config/helix"
 
 get_repo("helix-editor/helix")

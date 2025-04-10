@@ -13,6 +13,10 @@ execute "install neovim via mise" do
   not_if "which nvim"
 end
 
+include_cookbook "ghq"
+
+
+
 case node[:platform]
 when "debian", "ubuntu", "mint"
   package "ninja-build"

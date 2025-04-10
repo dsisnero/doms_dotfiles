@@ -36,6 +36,11 @@ mydir "#{home}/.local/icons"
 
 mydir repos
 
+include_cookbook "ghq"
+get_repo("dsisnero/doms_dotfiles")
+
+repos = node[:ghq_root]
+doms_dotfiles = "#{repos}/github.com/dsisnero/doms_dotfiles"
 # Initialize Fish config with mise setup
 template "#{config_dir}/fish/config.fish" do
   source "templates/fish/config.fish.erb"
@@ -134,20 +139,8 @@ if node[:is_wsl]
   end
 end
 
-include_cookbook "git"
-doms_dotfiles = "#{repos}/github.com/dsisnero/doms_dotfiles"
-execute "git clone git@github.com:dsisnero/doms_dotfiles.git #{doms_dotfiles}" do
-  user user
-  not_if "test -e #{doms_dotfiles}"
-end
-execute "git init" do
-  user user
-  cwd "#{doms_dotfiles}"
-  only_if "test -e #{doms_dotfiles}"
-end
 
 dotfile "pip"
-dotfile "git/config"
 dotfile "powerline"
 dotfile "broot"
 dotfile "helix/external-snippets.toml"
