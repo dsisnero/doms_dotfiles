@@ -6,16 +6,18 @@ line-number = "relative"
 mouse = true
 rulers = [80]
 bufferline = "multiple"
-completion-trigger-len = 1
+completion-trigger-len = 2
+default-line-ending = "lf"
 # Highlight all lines with a cursor
 cursorline = true
 # auto-pairs = false
 
+
 [editor.soft-wrap]
-enable = true
-max-wrap = 25
-max-indent-retain = 0
+enable = false
 wrap-indicator = "|"
+wrap-at-text-width = true
+
 
 [editor.lsp]
 auto-signature-help = true

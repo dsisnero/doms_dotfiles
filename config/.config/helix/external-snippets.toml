@@ -3,5 +3,17 @@ name = "friendly-snippets"  # optional name shown on snippet description
 git = "https://github.com/rafamadriz/friendly-snippets.git" # git repo with snippets collections
 
 [[sources.paths]] # list of paths to load on current source
-scope = ["ruby"]  # optional scopes for current snippets
-path = "snippets/ruby/ruby.json"  # where snippet file or dir located in repo
+scope = ["python"]  # optional scopes for current snippets
+path = "snippets/python/python.json"  # where snippet file or dir located in repo
+
+[[sources.paths]]
+scope = ["ruby"]
+path = "snippets/ruby/ruby.json"
+
+[[sources.paths]]
+scope = ["asciidoc"]
+path = "snippets/asciidoc.json"
+
+[[sources.paths]]
+scope = ["markdown"]
+path = "snippets/markdown.json"

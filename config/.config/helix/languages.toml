@@ -27,9 +27,8 @@ LOG_FILE = "d:/tmp/completion.log"
  cargo = { allFeatures = true }
  procMacro = { enable = true }
 
- [language-server.llm-ls]
- command = "llm-ls"
- timeout = 5
+ # [language-server.llm-ls]
+ # command = "llm-ls"on timeout = 5
  
 [language-sever.ltex]
 command = "ltex-ls"
@@ -38,9 +37,10 @@ command = "ltex-ls"
 command = "buck2"
 args = ["--lsp"]
 
-[language-server.solargraph.config.solargraph]
-diagnostics = true
-formatting = false
+
+[language-server.solargraph]
+command = "bundle"
+args = ["exec", "solargraph", "stdio"]
 
 [language-server.yaml-language-server.config.yaml]
 format = { enable = true }
@@ -52,41 +52,16 @@ validation = true
 
 [language-server.ruby-lsp]
 command = "ruby-lsp"
-args = ["--debug"]
-
-[language-server.ruby-lsp.config]
+config = { codeActions = true,codeLens = true,completion = true, definition = false, diagnostics = false, documentHighlights = true, documentLink = true, documentSymbols = true, foldingRanges = true, formatting = false, hover = true, inlayHint = true, onTypeFormatting = true, selectionRanges = true, semanticHighlighting = true, signatureHelp = true, typeHierarchy = true, workspaceSymbol = true }
 formatter = "rubocop"
 experimentalFeaturesEnabled = true
 
-[language-server.ruby-lsp.config.enabledFeatures]
-codeActions = true
-codeLens = true
-completion = true
-definition = true
-diagnostics = true
-documentHighlights = true
-documentLink = true
-documentSymbols = true
-foldingRanges = true
-formatting = true
-hover = true
-inlayHint = true
-onTypeFormatting = true
-selectionRanges = true
-semanticHighlighting = true
-signatureHelp = true
-typeHierarchy = true
-workspaceSymbol = true
 
-[language-server.ruby-lsp.config.featuresConfiguration.inlayHint]
-implicitHashValue = true
-implicitRescue = true
-
-[language-server.ruby-lsp.config.indexing]
-excludedPatterns = [ "path/to/excluded/file.rb" ]
-includedPatterns = [ "path/to/included/file.rb" ]
-excludedGems = [ "gem1", "gem2", "etc." ]
-excludedMagicComments = [ "compiled:true" ]
+# [language-server.ruby-lsp.config.indexing]
+# excludedPatterns = [ "path/to/excluded/file.rb" ]
+# includedPatterns = [ "path/to/included/file.rb" ]
+# excludedGems = [ "gem1", "gem2", "etc." ]
+# excludedMagicComments = [ "compiled:true" ]
 
 [language-server.rubocop]
 command = "bundle"
@@ -107,29 +82,41 @@ formatting = true
 [[language]]
 name = "asciidoc"
 scope = "source.adoc"
+soft-wrap.enable = true
+injection-regex = "adoc"
 file-types = ["adoc"]
+comment-tokens = ["//"]
+block-comment-tokens = [{start = "////", end = "////"}]
 language-servers = ["ltex", "scls"]
+grammar = "asciidoc"
+text-width = 80
 roots = []
+
+[[grammar]]
+name = "asciidoc"
+source = { git = "https://github.com/cathaysia/tree-sitter-asciidoc", rev="master", subpath="tree-sitter-asciidoc" }
 
 [[language]]
 name = "ruby"
 roots = ["Gemfile", "Rakefile", "Gemfile.lock"]
-# language-servers = ["standardrb", {name  = "solargraph", except-features = ["format", "diagnostics"]}]
-language-servers = ["ruby-lsp", "scls", "rubocop", "solargraph"]
+language-servers =[{name="ruby-lsp", except-features = ["diagnostics"]}, {name="solargraph", only-features = ["diagnostics"]}, {name = "scls"}, {name = "rubocop"}]
+formatter = { command = "bundle" , args = ["exec", "rubocop", "--stdin", "foo.rb", "-a", "--stderr", "--fail-level", "fatal"] }
 auto-format = true
+
 
 [language.debugger]
 name = "rdbg"
 transport = "tcp"
 command = "rdbg.bat"
-args = [ "--open", "--stop-at-load",  "-c", "--", "{0}", "{1}"]
+# args = [ "--open", "--stop-at-load",  "-c", "--", "{0}", "{1}"]
+args = ["--open"]
 port-arg = "--port {}"
 
 [[language.debugger.templates]]
-name = "debug file"
+name = "script"
 request = "launch"
-completion = [{ name = "file", completion = "filename", default = "."}]
-args = {}
+completion = [{ name = "script", completion = "filename", default = "."}]
+args = { program = "{0}"}
 
 
 [[language.debugger.templates]]
