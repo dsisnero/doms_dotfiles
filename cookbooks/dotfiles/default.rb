@@ -21,7 +21,6 @@ end
 mydir "#{config_dir}"
 mydir "#{config_dir}/git"
 mydir "#{config_dir}/helix"
-mydir "#{config_dir}/helix/snippets"
 mydir "#{config_dir}/zsh/z"
 mydir "#{config_dir}/nvim"
 mydir "#{config_dir}/spacemacs/layers"
@@ -41,6 +40,12 @@ get_repo("dsisnero/doms_dotfiles")
 
 repos = node[:ghq_root]
 doms_dotfiles = "#{repos}/github.com/dsisnero/doms_dotfiles"
+
+execute "init submodules for doms_dotfiles" do
+  cwd doms_dotfiles
+  user user
+  command "git submodule init;git submodule update"
+end
 # Initialize Fish config with mise setup
 template "#{config_dir}/fish/config.fish" do
   source "templates/fish/config.fish.erb"
