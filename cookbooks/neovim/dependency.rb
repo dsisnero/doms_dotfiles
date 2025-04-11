@@ -39,11 +39,11 @@ end
 end
 
 # Node.js
-execute "install neovim yarn package" do
-  command "mise exec -- yarn global add neovim"
-  user node[:user]
-  not_if "mise exec -- yarn global list | grep -q 'neovim@'"
-end
+# execute "install neovim yarn package" do
+#   command "mise exec -- yarn global add neovim"
+#   user node[:user]
+#   not_if "mise exec -- yarn global list | grep -q 'neovim@'"
+# end
 
 # include_cookbook 'perl'
 # execute 'cpanm Neovim::Ext'

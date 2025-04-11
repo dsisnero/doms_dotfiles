@@ -7,6 +7,8 @@ node.reverse_merge!(
   }
 )
 
+config_home = node[:config_home]
+
 execute "install neovim via mise" do
   user node[:user]
   command "mise use -g neovim@#{node[:neovim][:version]}"
@@ -16,34 +18,19 @@ end
 include_cookbook "ghq"
 
 
+my_repos = node[:my_repos]
 
-case node[:platform]
-when "debian", "ubuntu", "mint"
-  package "ninja-build"
-  package "gettext"
-  package "libtool"
-  package "libtool-bin"
-  package "autoconf"
-  package "automake"
-  package "cmake"
-  package "g++"
-  package "pkg-config"
-  package "unzip"
-  package "curl"
-  package "doxygen"
+get_repo("#{my_repos}/astronvim_config}")
 
-when "fedora", "redhat", "amazon"
-  package "libtool"
-  package "autoconf"
-  package "automake"
-  package "cmake"
-  package "gcc"
-  package "gcc-c++"
-  package "make"
-  package "pkgconfig"
-  package "unzip"
 
-when "osx", "darwin"
-when "arch"
-when "opensuse"
+
+
+
+src = File.join(my_repos, "astronvim_config")
+dst = File.join(config_home, "nvim")
+
+link src do
+  to dst
+  user node[:user]
+  not_if "test -d #{dst}"
 end
