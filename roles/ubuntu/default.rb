@@ -21,6 +21,7 @@ include_role("base")
 # for nokogiri for rails
 package "build-essential"
 package "apt-file"
+package "keepassxc"
 
 package "patch"
 # package 'ruby-dev'
