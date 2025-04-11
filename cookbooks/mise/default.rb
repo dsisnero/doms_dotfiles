@@ -3,6 +3,7 @@ include_recipe "dependency.rb"
 user_ = node[:user]
 home_ = node[:home]
 
+
 case node[:platform]
 when "debian", "mint", "ubuntu"
   # Get config_home from node attributes
@@ -94,16 +95,35 @@ when "debian", "mint", "ubuntu"
     not_if %(grep 'mise activate' #{fish_config})
   end
 
-  execute "install latest lua-language-server" do
-    user user
-    command %(mise use -g lua-language-server@latest)
-  end
-  execute "install latest stylua" do
-    user user
-    command %(mise use -g stylua@latest)
-  end
-
 when "fedora", "redhat", "amazon"
 
 when "osx", "darwin"
 end
+
+define :mise, version: nil, cargo: nil do
+  tool_name = params[:name]
+  version = params[:version] || "latest"
+  cmd = "mise use -g #{tool_name}@#{version}"
+  execute "installing #{tool_name}@#{version}" do
+    user node[:user]
+    command cmd
+  end
+end
+
+mise "lua-language-server"
+mise "stylua"
+mise "fd"
+mise "rg"
+mise "cargo-binstall"
+mise "bat"
+mise "git-cliff"
+mise "grex"
+mise "hyperfine"
+mise "ripgrep-all"
+mise "starship"
+mise "bottom"
+mise "dust"
+mise "tree-sitter"
+mise "watchexec"
+mise "zoxide"
+mise "rclone"
