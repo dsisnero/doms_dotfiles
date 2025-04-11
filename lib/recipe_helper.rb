@@ -82,7 +82,8 @@ MItamae.logger.info "Node Info:\n#{node.inspect}"
       cache_home: ENV.fetch("XDG_CACHE_HOME") { "#{home}/.cache" },
       user_bin: user_bin,
       repos: repos,
-      dotfile_repos: dotfile_repos
+      dotfile_repos: dotfile_repos,
+      my_repos: "#{repos}/dsisnero"
     )
   end
 
