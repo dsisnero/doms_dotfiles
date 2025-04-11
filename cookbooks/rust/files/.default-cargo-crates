@@ -1,7 +1,6 @@
 sccache
-bottom
 broot
-du-dust
-ripgrep
 mockword
-tree-sitter-cli
+cargo-edit
+cargo-update
+cargo-watch

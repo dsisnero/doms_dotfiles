@@ -68,7 +68,7 @@ define :cargo, version: nil, locked: true, path: nil, git: nil,
     cmd << " --features #{params[:features]}" if params[:features]
     cmd << " --locked" if params[:locked]
     cmd << " #{cargo_name}" unless params[:path] || params[:git]
-    execute "installing_cmd" do
+    execute "installing #{cargo_name}" do
       user node[:user]
       command cmd
       not_if %(#{cargo_cmd} install --list | grep "^#{cargo_name} ")
