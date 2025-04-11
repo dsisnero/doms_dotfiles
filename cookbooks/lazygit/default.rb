@@ -1,12 +1,15 @@
 include_recipe "dependency.rb"
+include_cookbook "mise"
 
-github_binary "lazygit" do
-  repository "jesseduffield/lazygit"
-  version "v0.43.1"
-  ext = ((node[:platform] == "darwin") ? "zip" : "tar.gz")
-  archive "lazygit_#{version[1..-1]}_Linux_x86_64.tar.gz"
-  binary_path "lazygit"
-end
+mise "lazygit"
+
+# github_binary "lazygit" do
+#   repository "jesseduffield/lazygit"
+#   version "v0.43.1"
+#   ext = ((node[:platform] == "darwin") ? "zip" : "tar.gz")
+#   archive "lazygit_#{version[1..-1]}_Linux_x86_64.tar.gz"
+#   binary_path "lazygit"
+# end
 
 # target_name = "lazygit"
 # version = "0.43.1"
