@@ -1,7 +1,7 @@
 user = node[:user]
 home = node[:home]
 ghq_root = node[:ghq_root] || "#{home}/repos"
-hx_config = "#{home}/.config/helix"
+config_home = node[:config_home]
 
 get_repo("helix-editor/helix")
 
@@ -12,9 +12,9 @@ cargo "helix-locked" do
 end
 
 src = File.expand_path(File.join(dir, "runtime"))
-dest = "#{hx_config}/runtime"
-link src do
-  to dest
+dest = "#{config_home}/helix/runtime"
+link dest do
+  to src
   user node[:user]
   not_if "test -d #{dest}"
 end
