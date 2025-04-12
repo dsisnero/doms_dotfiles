@@ -8,8 +8,6 @@ node.reverse_merge!(
   }
 )
 
-include_cookbook "ssh"
-
 directory "#{node[:home]}/.ssh" do
   owner node[:user]
   mode "700"
@@ -27,17 +25,29 @@ execute "generate GitHub SSH key" do
   not_if "test -f #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
 end
 
-execute "start ssh-agent" do
-  user node[:user]
-  command "ssh-agent -a #{node[:home]}/.ssh/agent.sock"
-  not_if "test -S #{node[:home]}/.ssh/agent.sock"
+file "#{node[:home]}/.ssh/config" do
+  owner node[:user]
+  group node[:group]
+  mode "600"
+  content <<~EOCFG
+    Host github.com
+      HostName github.com
+      User git
+      IdentityFile #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}
+      IdentityAgent #{node[:home]}/.ssh/agent.sock
+      IdentitiesOnly yes
+      AddKeysToAgent yes
+  EOCFG
+  only_if "test -f #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
 end
 
-execute "add GitHub key to agent" do
-  user node[:user]
-  command "SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh-add #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
-  not_if "SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh-add -l | grep -q $(ssh-keygen -lf #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]} | awk '{print $2}')"
-end
+include_cookbook "ssh"
+
+# execute "add GitHub key to agent" do
+#   user node[:user]
+#   command "SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh-add #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
+#   not_if "SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh-add -l | grep -q $(ssh-keygen -lf #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]} | awk '{print $2}')"
+# end
 
 execute "show GitHub SSH public key" do
   user node[:user]
@@ -52,7 +62,6 @@ execute "show GitHub SSH public key" do
     echo "------------------"
     cat #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}.pub
     echo "------------------"
-    
     if command -v xclip >/dev/null 2>&1; then
       cat #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}.pub | xclip -selection clipboard
       echo "📋 Key copied to clipboard (Linux)"

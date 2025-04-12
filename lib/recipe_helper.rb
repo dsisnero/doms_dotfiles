@@ -83,7 +83,7 @@ MItamae.logger.info "Node Info:\n#{node.inspect}"
       user_bin: user_bin,
       repos: repos,
       dotfile_repos: dotfile_repos,
-      my_repos: "#{repos}/dsisnero"
+      my_repos: "#{repos}/github.com/dsisnero"
     )
   end
 
@@ -223,9 +223,10 @@ define :dotfile, source: nil, user: nil do
       not_if "powershell -Command \"if (Test-Path -Path '#{dst.tr("/", "\\")}') { exit 0 } else { exit 1 }\""
     end
   else
-    execute "ln -s #{src} #{dst}" do
+    link dst do
+      to src
       user user
-      not_if "test -L #{dst}"
+      # not_if "test -L #{dst}"
     end
   end
 end
@@ -271,7 +272,7 @@ end
 # githubから直接バイナリを取得してインストール
 define :get_bin_github_release, version: nil, version_cmd: nil, version_str: nil, release_artifact_url: nil do
   target_name = params[:name]
-  version = params[:version]
+  params[:version]
 
   version = params[:version]
   version_cmd = params[:version_cmd]
