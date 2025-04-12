@@ -3,7 +3,6 @@ include_recipe "dependency.rb"
 user_ = node[:user]
 home_ = node[:home]
 
-
 case node[:platform]
 when "debian", "mint", "ubuntu"
   # Get config_home from node attributes
@@ -56,17 +55,13 @@ when "debian", "mint", "ubuntu"
 
   file "#{home_}/.bashrc" do
     action :edit
-    block do |content|
-      content << %[eval "$(mise activate bash)"]
-    end
+    content %[eval "$(mise activate bash)"]
     not_if %(grep 'mise activate' #{home_}/.bashrc)
   end
 
   file "#{home_}/.zshrc" do
     action :edit
-    block do |content|
-      content << %[eval "$(mise activate zsh)"]
-    end
+    content %[eval "$(mise activate zsh)"]
     not_if %(grep 'mise activate' #{home_}/.zshrc)
   end
 
@@ -81,17 +76,13 @@ when "debian", "mint", "ubuntu"
   fish_config = "#{fish_config_dir}/config.fish"
   file fish_config do
     action :create
-    block do |content|
-      content << %(mise activate fish | source)
-    end
+    content %(mise activate fish | source)
     not_if { File.exist?(fish_config) }
   end
 
   file fish_config do
     action :edit
-    block do |content|
-      content << %(mise activate fish | source)
-    end
+    content %(mise activate fish | source)
     not_if %(grep 'mise activate' #{fish_config})
   end
 
@@ -100,7 +91,7 @@ when "fedora", "redhat", "amazon"
 when "osx", "darwin"
 end
 
-define :mise, version: nil, cargo: nil do
+define :mise, version: nil, cargo: nil, exe: nil, rename: nil  do
   tool_name = params[:name]
   version = params[:version] || "latest"
   cmd = "mise use -g #{tool_name}@#{version}"
@@ -109,21 +100,3 @@ define :mise, version: nil, cargo: nil do
     command cmd
   end
 end
-
-mise "lua-language-server"
-mise "stylua"
-mise "fd"
-mise "rg"
-mise "cargo-binstall"
-mise "bat"
-mise "git-cliff"
-mise "grex"
-mise "hyperfine"
-mise "ripgrep-all"
-mise "starship"
-mise "bottom"
-mise "dust"
-mise "tree-sitter"
-mise "watchexec"
-mise "zoxide"
-mise "rclone"
