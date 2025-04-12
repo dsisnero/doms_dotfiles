@@ -17,20 +17,15 @@ end
 
 include_cookbook "ghq"
 
-
 my_repos = node[:my_repos]
 
-get_repo("#{my_repos}/astronvim_config}")
-
-
-
-
+get_repo("dsisnero/astronvim_config")
 
 src = File.join(my_repos, "astronvim_config")
 dst = File.join(config_home, "nvim")
 
-link src do
-  to dst
+link dst do
+  to src
   user node[:user]
   not_if "test -d #{dst}"
 end
