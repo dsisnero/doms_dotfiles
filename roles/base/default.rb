@@ -49,9 +49,7 @@ cargo "fnm"
 
 file "#{home}/.bashrc" do
   action :edit
-  block do |content|
-    content << %[eval "$(fnm env --use-on-cd --shell bash)"]
-  end
+  content %[eval "$(fnm env --use-on-cd --shell bash)"]
   not_if %(grep 'fnm env' #{home}/.bashrc)
 end
 cargo "git-delta"
@@ -60,9 +58,7 @@ cargo "sqlx-cli"
 
 # file "#{home}/.bashrc" do
 #   action :edit
-#   block do |content|
-#     content << %[eval "$(starship init bash)"]
-#   end
+#   content %[eval "$(starship init bash)"]
 #   not_if %(grep 'starship init' #{home}/.bashrc)
 # end
 cargo "trippy"

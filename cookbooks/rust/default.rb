@@ -14,7 +14,6 @@ home = node[:home]
 
 cargo_home = node[:rust][:cargo_home]
 cargo_bin_dir = "#{cargo_home}/bin"
-rustup = "#{cargo_bin_dir}/rustup"
 cargo_cmd = "#{cargo_bin_dir}/cargo"
 
 cargo_env = <<~EOS
@@ -59,7 +58,7 @@ EOS
 define :cargo, version: nil, locked: true, path: nil, git: nil,
   features: nil, binname: nil, sscache: true do
     cargo_name = params[:name]
-    binname = params[:binname] || params[:name]
+    params[:binname] || params[:name]
     cmd = "#{cargo_init} ;" if params[:sscache]
     cmd = "#{cargo_cmd} install --verbose"
     cmd << " --version #{params[:version]}" if params[:version]
@@ -78,38 +77,28 @@ define :cargo, version: nil, locked: true, path: nil, git: nil,
 file "#{home}/.bashrc" do
   action :edit
   not_if "grep 'source $HOME/.cargo/env' #{home}/.bashrc"
-  block do |content|
-    content << "source $HOME/.cargo/env"
-  end
+  content "source $HOME/.cargo/env"
 end
 
 file "#{home}/.bashrc" do
   action :edit
   not_if "grep 'zoxide init bash' #{home}/.bashrc"
-  block do |content|
-    content << %(eval "$(zoxide init bash)")
-  end
+  content %(eval "$(zoxide init bash)")
 end
 
 file "#{home}/.bashrc" do
   action :edit
   not_if "grep 'export RUSTC_WRAPPER' #{home}/.bashrc"
-  block do |content|
-    content << %(export RUSTC_WRAPPER=#{cargo_bin_dir}/sccache)
-  end
+  content %(export RUSTC_WRAPPER=#{cargo_bin_dir}/sccache)
 end
 file "#{home}/.zshrc" do
   action :edit
   not_if "grep 'source $HOME/.cargo/env' #{home}/.zshrc"
-  block do |content|
-    content << "source $HOME/.cargo/env"
-  end
+  content "source $HOME/.cargo/env"
 end
 
 file "#{home}/.zshrc" do
   action :edit
   not_if "grep 'export RUSTC_WRAPPER' #{home}/.zshrc"
-  block do |content|
-    content << %(export RUSTC_WRAPPER=#{cargo_bin_dir}/sccache)
-  end
+  content %(export RUSTC_WRAPPER=#{cargo_bin_dir}/sccache)
 end

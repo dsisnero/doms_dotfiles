@@ -40,9 +40,7 @@ end
 file "/etc/shells" do
   action :edit
   not_if "grep /usr/local/bin/zsh /etc/shells > /dev/null"
-  block do |content|
-    content << "/usr/local/bin/zsh"
-  end
+  content "/usr/local/bin/zsh"
 end
 
 file "/etc/zprofile" do
