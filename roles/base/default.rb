@@ -8,6 +8,7 @@ include_cookbook "keepassxc"
 home = node[:home]
 include_cookbook "sudo_nopassword"
 include_cookbook "mise"
+include_cookbook "keychain"
 mise "node"
 mise "lua-language-server"
 mise "stylua"
