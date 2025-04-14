@@ -1,11 +1,32 @@
-node[:user]
+user = node[:user]
 home = node[:home]
-ghq_root = node[:ghq_root] || "#{home}/repos"
-node[:config_home]
+doms_dotfiles = node[:doms_dotfiles]
+config_dir = node[:config_home]
 
 include_cookbook "mise"
 
-mise "helix"
+mise "helix" do
+  exe "hx"
+end
+
+file "#{home}/.bashrc" do
+  action :edit
+  not_if "grep 'export EDITOR=hx' #{home}/.bashrc"
+  content %(export EDITOR=hx)
+end
+file "#{home}/.zshrc" do
+  action :edit
+  not_if "grep 'export EDITOR=hx' #{home}/.zshrc"
+  content %(export EDITOR=hx)
+end
+
+# Special handling for snippets directory
+execute "symlink helix snippets" do
+  command "ln -sfT #{doms_dotfiles}/config/helix/snippets #{config_dir}/helix/snippets"
+  user user
+  only_if "test -d #{doms_dotfiles}/config/helix/snippets"
+  not_if "test -L #{config_dir}/helix/snippets"
+end
 
 # get_repo("helix-editor/helix")
 
@@ -46,17 +67,6 @@ mise "helix"
 #   user user
 #   command change_links_cmd
 # end
-
-file "#{home}/.bashrc" do
-  action :edit
-  not_if "grep 'export EDITOR=hx'"
-  content %(export EDITOR=hx)
-end
-file "#{home}/.zshrc" do
-  action :edit
-  not_if "grep 'export EDITOR=hx'"
-  content %(export EDITOR=hx)
-end
 
 # # add HELIX_RUNTIME to .bashrc
 # execute "add HELIX_RUNTIME to .bashrc" do
