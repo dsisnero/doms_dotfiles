@@ -53,6 +53,12 @@ when "debian", "mint", "ubuntu"
 
   package "mise"
 
+  remote_file "/etc/profile.d/00-mise.sh" do  # ← 00- prefix ensures first load
+    source "files/mise-profile.sh"
+    mode "644"
+    only_if "which mise"
+  end
+
   file "#{home_}/.bashrc" do
     action :edit
     content %[eval "$(mise activate bash)"]
