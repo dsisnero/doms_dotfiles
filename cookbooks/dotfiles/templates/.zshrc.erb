@@ -1,7 +1,7 @@
 # vim: set ft=zsh:
 
 if [[ -z "${PIP_SITE_LOCATION}" ]]; then
-  export PIP_SITE_LOCATION=$(pip show -f powerline-status | grep Location | awk '{print $2}')
+  export PIP_SITE_LOCATION=$(mise exec -- pip show -f powerline-status | grep Location | awk '{print $2}')
   echo "Please set env: export PIP_SITE_LOCATION=$PIP_SITE_LOCATION"
 fi
 
