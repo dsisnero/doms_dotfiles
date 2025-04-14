@@ -14,14 +14,15 @@ when "debian", "ubuntu", "mint", "fedora", "redhat", "amazon", "arch"
     command "mise use -g yarn@#{node[:yarn][:version]}"
     not_if "which yarn"
   end
+  
+  remote_file "/etc/profile.d/yarn.sh" do
+    source "files/yarn.sh"
+    mode "644"
+    only_if "which yarn"  # Only create the profile script if yarn is installed
+  end
 
 when "osx", "darwin"
 when "opensuse"
-end
-
-remote_file "/etc/profile.d/yarn.sh" do
-  source "files/yarn.sh"
-  mode "644"
 end
 
 # # ほんとうはここじゃないが書くところないのでここで・・・
