@@ -70,7 +70,7 @@ MItamae.logger.info "Node Info:\n#{node.inspect}"
     else
       "#{home}/repos"
     end
-    dotfile_repo = "#{repos}/github.com/dsisnero/doms_dotfiles"
+    dotfile_repos = "#{repos}/github.com/dsisnero/doms_dotfiles"
 
     node.reverse_merge!(
       user: user,
@@ -82,7 +82,7 @@ MItamae.logger.info "Node Info:\n#{node.inspect}"
       cache_home: ENV.fetch("XDG_CACHE_HOME") { "#{home}/.cache" },
       user_bin: user_bin,
       repos: repos,
-      dotfile_repo: dotfile_repo,
+      dotfile_repos: dotfile_repos,
       my_repos: "#{repos}/github.com/dsisnero"
     )
   end
@@ -205,7 +205,7 @@ end
 # dotfileリポジトリ内へのシンボリックリンク設定
 define :dotfile, source: nil, user: nil do
   dst = File.join(node[:config_home], params[:name])
-  src = params[:source].nil? ? File.join(node[:dotfile_repo], "config", params[:name]) : params[:source]
+  src = params[:source].nil? ? File.join(node[:dotfile_repos], "config", params[:name]) : params[:source]
   user = params[:user].nil? ? node[:user] : params[:user]
   # puts "dst: #{dst}"
   # puts "src: #{src}"
