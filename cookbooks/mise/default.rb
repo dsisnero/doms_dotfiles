@@ -91,12 +91,17 @@ when "fedora", "redhat", "amazon"
 when "osx", "darwin"
 end
 
-define :mise, version: nil, cargo: nil, exe: nil, rename: nil  do
+define :mise, version: nil, cargo: nil, exe: nil, rename: nil do
   tool_name = params[:name]
   version = params[:version] || "latest"
   cmd = "mise use -g #{tool_name}@#{version}"
+  exe = params[:exe] || tool_name
   execute "installing #{tool_name}@#{version}" do
     user node[:user]
     command cmd
+    not_if "mise exec -- which #{exe}"
   end
 end
+
+mise "sops"
+mise "age"
