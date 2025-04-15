@@ -71,6 +71,12 @@ when "debian", "mint", "ubuntu"
     not_if %(grep 'mise activate' #{home_}/.zshrc)
   end
 
+  file "#{home_}/.zshrc" do
+    action :edit
+    content %[export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt"]
+    not_if %(grep 'MISE_SOPS_AGE_KEY_FILE' #{home_}/.zshrc)
+  end
+
   fish_config_dir = "#{config_home}/fish"
   directory fish_config_dir do
     user user_
