@@ -111,3 +111,4 @@ end
 
 mise "sops"
 mise "age"
+mise "slsa-verifier"
