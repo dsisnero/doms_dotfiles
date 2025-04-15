@@ -144,7 +144,6 @@ if node[:is_wsl]
   end
 end
 
-
 dotfile "pip"
 dotfile "powerline"
 dotfile "broot"
