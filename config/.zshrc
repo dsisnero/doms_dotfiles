@@ -572,3 +572,6 @@ cd_repos() {
 alias myip='curl ifconfig.io -4'
 
 alias tenki='curl -4 http://wttr.in/kanagawa'
+
+export MISE_SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
+export SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
