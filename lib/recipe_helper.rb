@@ -4,7 +4,6 @@ node[:platform] = "ubuntu" if node[:platform] == "pop"
 
 include_recipe "node_supplement.rb"
 puts "node info: #{node.mash.to_yaml}"
-MItamae.logger.info "Node Info:\n#{node.inspect}"
 ::MItamae::RecipeContext.class_eval do
   # Helper methods for platform detection
   def windows?
@@ -65,12 +64,12 @@ MItamae.logger.info "Node Info:\n#{node.inspect}"
       end
     end
     repos = if node[:is_windows]
-
       "d:/repos"
     else
       "#{home}/repos"
     end
-    dotfile_repos = "#{repos}/github.com/dsisnero/doms_dotfiles"
+    my_repos = "#{repos}/github.com/dsisnero"
+    doms_dotfiles = "#{my_repos}/doms_dotfiles"
 
     node.reverse_merge!(
       user: user,
@@ -82,8 +81,9 @@ MItamae.logger.info "Node Info:\n#{node.inspect}"
       cache_home: ENV.fetch("XDG_CACHE_HOME") { "#{home}/.cache" },
       user_bin: user_bin,
       repos: repos,
-      dotfile_repos: dotfile_repos,
-      my_repos: "#{repos}/github.com/dsisnero"
+      my_repos: my_repos,
+      doms_dotfiles: doms_dotfiles,
+      zshrc_config: File.join(doms_dotfiles, "config", ".zshrc")
     )
   end
 
@@ -205,7 +205,7 @@ end
 # dotfileリポジトリ内へのシンボリックリンク設定
 define :dotfile, source: nil, user: nil do
   dst = File.join(node[:config_home], params[:name])
-  src = params[:source].nil? ? File.join(node[:dotfile_repos], "config", params[:name]) : params[:source]
+  src = params[:source].nil? ? File.join(node[:doms_dotfiles], "config", params[:name]) : params[:source]
   user = params[:user].nil? ? node[:user] : params[:user]
   # puts "dst: #{dst}"
   # puts "src: #{src}"
@@ -367,3 +367,4 @@ define :chocolatey_package, version: nil do
 end
 
 init_node
+MItamae.logger.info "Node Info:\n#{node.inspect}"

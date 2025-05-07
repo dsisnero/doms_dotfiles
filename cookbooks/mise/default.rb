@@ -2,23 +2,13 @@ include_recipe "dependency.rb"
 
 user_ = node[:user]
 home_ = node[:home]
+config_home = node[:config_home]
+zshrc_config = node[:zshrc_config]
 
 case node[:platform]
 when "debian", "mint", "ubuntu"
   # Get config_home from node attributes
   config_home = node[:config_home]
-
-  # Stop packagekit to avoid lock conflicts
-  service "packagekit" do
-    action [:stop, :disable]
-    only_if "systemctl list-unit-files | grep -q packagekit.service"
-  end
-
-  # Clean up any stale locks
-  execute "cleanup apt locks" do
-    command "sudo rm -f /var/lib/apt/lists/lock /var/lib/dpkg/lock*"
-    only_if "test -f /var/lib/apt/lists/lock || test -f /var/lib/dpkg/lock"
-  end
 
   execute "install mise" do
     command <<~EOCMD
@@ -27,30 +17,6 @@ when "debian", "mint", "ubuntu"
     EOCMD
     not_if "test -f /etc/apt/sources.list.d/mise.list"
   end
-
-  # Deduplicate repository entries
-  execute "deduplicate-sources" do
-    command <<~EOCMD
-      # Remove duplicate entries if they exist
-      if [ $(grep -c "mise.jdx.dev" /etc/apt/sources.list.d/mise.list 2>/dev/null || echo 0) -gt 1 ]; then
-        echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg] https://mise.jdx.dev/deb stable main" | \
-          sudo tee /etc/apt/sources.list.d/mise.list >/dev/null
-      fi
-    EOCMD
-    only_if "test -f /etc/apt/sources.list.d/mise.list"
-  end
-
-  # Update with lock handling
-  execute "update apt" do
-    command <<~EOCMD
-      while sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1; do
-        echo "Waiting for apt lock..."
-        sleep 1
-      done
-      sudo apt-get update -o Acquire::Retries=3 -o APT::Get::Always-Include-Phased-Updates=false
-    EOCMD
-  end
-
   package "mise"
 
   remote_file "/etc/profile.d/00-mise.sh" do  # ← 00- prefix ensures first load
@@ -65,16 +31,10 @@ when "debian", "mint", "ubuntu"
     not_if %(grep 'mise activate' #{home_}/.bashrc)
   end
 
-  file "#{home_}/.zshrc" do
+  file zshrc_config do
     action :edit
     content %[eval "$(mise activate zsh)"]
-    not_if %(grep 'mise activate' #{home_}/.zshrc)
-  end
-
-  file "#{home_}/.zshrc" do
-    action :edit
-    content %[export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt"]
-    not_if %(grep 'MISE_SOPS_AGE_KEY_FILE' #{home_}/.zshrc)
+    not_if %(grep 'mise activate' #{zshrc_config})
   end
 
   fish_config_dir = "#{config_home}/fish"
@@ -118,3 +78,16 @@ end
 mise "sops"
 mise "age"
 mise "slsa-verifier"
+puts node
+MItamae.logger.info("zshrc_config: #{zshrc_config}")
+file zshrc_config do
+  action :edit
+  content %(export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt")
+  not_if %(grep 'MISE_SOPS_AGE_KEY_FILE' #{zshrc_config})
+end
+
+file "#{home_}/.bashrc" do
+  action :edit
+  content %(export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt")
+  not_if %(grep 'MISE_SOPS_AGE_KEY_FILE' #{home_}/.bashrc)
+end

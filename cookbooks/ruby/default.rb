@@ -23,12 +23,12 @@ execute "install latest ruby" do
   command %(mise use -g ruby@#{version})
 end
 
-dotfile_repo = node[:dotfile_repo]
 home = node[:home]
-dst "#{home}/rake"
-src = "rake"
+dotfiles = node[:doms_dotfiles]
+dst = "#{home}/.rake"
+src = "#{dotfiles}/cookbooks/ruby/files/rake"
 
 link dst do
   to src
-  not if "test -d #{dst}"
+  not_if "test -d #{dst}"
 end

@@ -4,6 +4,7 @@ solargraph
 ruby-lsp
 standardrb
 rubocop
+rubocop-ast
 ruby_parser
 seeing_is_believing
 ruby-debug-ide

@@ -14,7 +14,7 @@ when "debian", "ubuntu", "mint", "fedora", "redhat", "amazon", "arch"
     command "mise use -g yarn@#{node[:yarn][:version]}"
     not_if "which yarn"
   end
-  
+
   remote_file "/etc/profile.d/yarn.sh" do
     source "files/yarn.sh"
     mode "644"
