@@ -22,3 +22,13 @@ execute "install latest ruby" do
   user user
   command %(mise use -g ruby@#{version})
 end
+
+dotfile_repo = node[:dotfile_repo]
+home = node[:home]
+dst "#{home}/rake"
+src = "rake"
+
+link dst do
+  to src
+  not if "test -d #{dst}"
+end
