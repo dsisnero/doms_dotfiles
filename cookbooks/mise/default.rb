@@ -115,6 +115,8 @@ puts node
 MItamae.logger.info("zshrc_config: #{zshrc_config}")
 file zshrc_config do
   action :edit
+  user user_
+  group user_
   content %(export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt")
   not_if %(grep 'MISE_SOPS_AGE_KEY_FILE' #{zshrc_config})
 end
@@ -127,6 +129,5 @@ end
 
 directory "/tmp/mitamae-#{user_}" do
   action :delete
-  recursive true
   only_if { File.exist?("/tmp/mitamae-#{user_}") }
 end
