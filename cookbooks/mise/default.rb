@@ -7,20 +7,36 @@ zshrc_config = node[:zshrc_config]
 
 case node[:platform]
 when "debian", "mint", "ubuntu"
-  # Get config_home from node attributes
-  config_home = node[:config_home]
-
-  execute "install mise" do
-    command <<~EOCMD
-      wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | sudo tee /etc/apt/keyrings/mise-archive-keyring.gpg
-      echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=amd64] https://mise.jdx.dev/deb stable main" | sudo tee /etc/apt/sources.list.d/mise.list
-    EOCMD
-    not_if "test -f /etc/apt/sources.list.d/mise.list"
+  # Create user-owned directories first
+  directory "#{home_}/.local/share/mise" do
+    user user_
+    mode "755"
+    recursive true
   end
-  package "mise"
+
+  directory "#{home_}/.config/mise" do
+    user user_
+    mode "755"
+  end
+
+  # Install mise using official method as regular user
+  execute "install mise" do
+    user user_
+    command "curl -fsSL https://mise.jdx.dev/install.sh | sh"
+    not_if "which mise"
+  end
+
+  # Ensure mise is in user's PATH
+  file "#{home_}/.bashrc" do
+    action :edit
+    content %[export PATH="#{home_}/.local/bin:$PATH"]
+    not_if %(grep '$HOME/.local/bin' #{home_}/.bashrc)
+  end
 
   remote_file "/etc/profile.d/00-mise.sh" do  # ← 00- prefix ensures first load
     source "files/mise-profile.sh"
+    owner user_  # Add this line
+    group user_  # Add this line
     mode "644"
     only_if "which mise"
   end
@@ -32,6 +48,7 @@ when "debian", "mint", "ubuntu"
   end
 
   file zshrc_config do
+    user user_  # Add this line
     action :edit
     content %[eval "$(mise activate zsh)"]
     not_if %(grep 'mise activate' #{zshrc_config})
@@ -53,6 +70,7 @@ when "debian", "mint", "ubuntu"
   end
 
   file fish_config do
+    user user_  # Add this line
     action :edit
     content %(mise activate fish | source)
     not_if %(grep 'mise activate' #{fish_config})
@@ -69,7 +87,11 @@ define :mise, version: nil, cargo: nil, exe: nil, rename: nil do
   cmd = "mise use -g #{tool_name}@#{version}"
   exe = params[:exe] || tool_name
   execute "installing #{tool_name}@#{version}" do
-    user node[:user]
+    user user_  # Change from node[:user] to local variable
+    environment ({
+      "HOME" => home_,
+      "USER" => user_
+    })
     command cmd
     not_if "mise exec -- which #{exe}"
   end
