@@ -35,14 +35,21 @@ when "debian", "mint", "ubuntu"
   execute "install mise" do
     user user_
     command "curl -fsSL https://mise.jdx.dev/install.sh | sh"
-    not_if "which mise"
+    not_if "test -f #{home_}/.local/bin/mise"  # Changed from 'which mise'
+  end
+
+  execute "verify mise installation" do
+    user user_
+    command "#{home_}/.local/bin/mise --version"
+    only_if "test -f #{home_}/.local/bin/mise"
   end
 
   # Ensure mise is in user's PATH
+  # Update bashrc PATH modification to use single quotes
   file "#{home_}/.bashrc" do
     action :edit
-    content %(export PATH="#{home_}/.local/bin:$PATH")
-    not_if %(grep '$HOME/.local/bin' #{home_}/.bashrc)
+    content %(export PATH='#{home_}/.local/bin:$PATH')
+    not_if %(grep 'export PATH=.*\.local/bin' #{home_}/.bashrc)
   end
 
   remote_file "/etc/profile.d/00-mise.sh" do  # ← 00- prefix ensures first load
@@ -61,11 +68,13 @@ when "debian", "mint", "ubuntu"
 
   file zshrc_config do
     user user_
-    group user_  # Add group ownership
-    mode "644"   # Explicitly set permissions
+    group user_
+    mode "644"
     action :edit
-    content %[eval "$(mise activate zsh)"]
-    not_if %(grep 'mise activate' #{zshrc_config})
+    content %(# mise configuration
+export PATH="#{home_}/.local/bin:$PATH"
+eval "$(mise activate zsh)")
+    not_if %(grep 'mise activate zsh' #{zshrc_config})
   end
 
   fish_config_dir = "#{config_home}/fish"
