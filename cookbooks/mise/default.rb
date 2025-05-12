@@ -11,7 +11,6 @@ when "debian", "mint", "ubuntu"
   directory "#{home_}/.local/share/mise" do
     user user_
     mode "755"
-    recursive true
   end
 
   directory "#{home_}/.config/mise" do
@@ -29,7 +28,7 @@ when "debian", "mint", "ubuntu"
   # Ensure mise is in user's PATH
   file "#{home_}/.bashrc" do
     action :edit
-    content %[export PATH="#{home_}/.local/bin:$PATH"]
+    content %(export PATH="#{home_}/.local/bin:$PATH")
     not_if %(grep '$HOME/.local/bin' #{home_}/.bashrc)
   end
 
@@ -88,10 +87,6 @@ define :mise, version: nil, cargo: nil, exe: nil, rename: nil do
   exe = params[:exe] || tool_name
   execute "installing #{tool_name}@#{version}" do
     user user_  # Change from node[:user] to local variable
-    environment ({
-      "HOME" => home_,
-      "USER" => user_
-    })
     command cmd
     not_if "mise exec -- which #{exe}"
   end
