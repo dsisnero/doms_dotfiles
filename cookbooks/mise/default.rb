@@ -7,6 +7,19 @@ zshrc_config = node[:zshrc_config]
 
 case node[:platform]
 when "debian", "mint", "ubuntu"
+  # Add this at the top of the platform case block
+  directory "/tmp/mitamae-#{user_}" do
+    user user_
+    group user_
+    mode "700"
+  end
+
+  # Set temporary directory environment
+  execute "set user tmpdir" do
+    user user_
+    command "export TMPDIR=/tmp/mitamae-#{user_}"
+  end
+
   # Create user-owned directories first
   directory "#{home_}/.local/share/mise" do
     user user_
@@ -34,8 +47,8 @@ when "debian", "mint", "ubuntu"
 
   remote_file "/etc/profile.d/00-mise.sh" do  # ← 00- prefix ensures first load
     source "files/mise-profile.sh"
-    owner user_  # Add this line
-    group user_  # Add this line
+    owner "root"  # Change back to root
+    group "root"
     mode "644"
     only_if "which mise"
   end
@@ -47,7 +60,9 @@ when "debian", "mint", "ubuntu"
   end
 
   file zshrc_config do
-    user user_  # Add this line
+    user user_
+    group user_  # Add group ownership
+    mode "644"   # Explicitly set permissions
     action :edit
     content %[eval "$(mise activate zsh)"]
     not_if %(grep 'mise activate' #{zshrc_config})
@@ -67,9 +82,10 @@ when "debian", "mint", "ubuntu"
     content %(mise activate fish | source)
     not_if { File.exist?(fish_config) }
   end
-
   file fish_config do
-    user user_  # Add this line
+    user user_
+    group user_  # Add group ownership
+    mode "644"   # Explicit permissions
     action :edit
     content %(mise activate fish | source)
     not_if %(grep 'mise activate' #{fish_config})
@@ -107,4 +123,10 @@ file "#{home_}/.bashrc" do
   action :edit
   content %(export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt")
   not_if %(grep 'MISE_SOPS_AGE_KEY_FILE' #{home_}/.bashrc)
+end
+
+directory "/tmp/mitamae-#{user_}" do
+  action :delete
+  recursive true
+  only_if { File.exist?("/tmp/mitamae-#{user_}") }
 end
