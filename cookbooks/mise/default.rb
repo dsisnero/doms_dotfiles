@@ -7,97 +7,64 @@ zshrc_config = node[:zshrc_config]
 
 case node[:platform]
 when "debian", "mint", "ubuntu"
-  # Add this at the top of the platform case block
-  directory "/tmp/mitamae-#{user_}" do
-    user user_
-    group user_
-    mode "700"
+  # Install required system packages
+  %w[gpg wget curl].each do |pkg|
+    package pkg
   end
 
-  # Set temporary directory environment
-  execute "set user tmpdir" do
-    user user_
-    command "export TMPDIR=/tmp/mitamae-#{user_}"
-  end
-
-  # Create user-owned directories first
-  directory "#{home_}/.local/share/mise" do
-    user user_
+  # Create keyring directory
+  directory "/etc/apt/keyrings" do
     mode "755"
+    owner "root"
+    group "root"
   end
 
-  directory "#{home_}/.config/mise" do
-    user user_
-    mode "755"
+  # Add GPG key (same pattern as Docker/GitHub CLI cookbooks)
+  execute "add mise gpg key" do
+    command <<-SH
+      wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor > /tmp/mise-archive-keyring.gpg && \
+      mv /tmp/mise-archive-keyring.gpg /etc/apt/keyrings/
+    SH
+    not_if "test -f /etc/apt/keyrings/mise-archive-keyring.gpg"
   end
 
-  # Install mise using official method as regular user
-  execute "install mise" do
-    user user_
-    command "curl -fsSL https://mise.jdx.dev/install.sh | sh"
-    not_if "test -f #{home_}/.local/bin/mise"  # Changed from 'which mise'
+  # Add repository (using standard apt_repository pattern)
+  apt_repository "mise" do
+    uri "https://mise.jdx.dev/deb"
+    distribution "stable"
+    components ["main"]
+    arch "amd64"
+    key "/etc/apt/keyrings/mise-archive-keyring.gpg"
+    notifies :run, "execute[apt-update]", :immediately
   end
 
-  execute "verify mise installation" do
-    user user_
-    command "#{home_}/.local/bin/mise --version"
+  # Install system package
+  package "mise" do
+    action :install
+    version nil  # Install latest available
+  end
+
+  # Remove previous user install leftovers
+  file "#{home_}/.local/bin/mise" do
+    action :delete
     only_if "test -f #{home_}/.local/bin/mise"
   end
 
-  # Ensure mise is in user's PATH
-  # Update bashrc PATH modification to use single quotes
-  file "#{home_}/.bashrc" do
-    action :edit
-    content %(export PATH='#{home_}/.local/bin:$PATH')
-    not_if %(grep 'export PATH=.*\.local/bin' #{home_}/.bashrc)
+  # Keep user config directories but fix ownership
+  directory "#{home_}/.config/mise" do
+    user user_
+    group user_
+    mode "755"
   end
 
-  remote_file "/etc/profile.d/00-mise.sh" do  # ← 00- prefix ensures first load
-    source "files/mise-profile.sh"
-    owner "root"  # Change back to root
-    group "root"
-    mode "644"
-    only_if "which mise"
-  end
-
-  file "#{home_}/.bashrc" do
-    action :edit
-    content %[eval "$(mise activate bash)"]
-    not_if %(grep 'mise activate' #{home_}/.bashrc)
-  end
-
+  # Update shell integration to use system-installed mise
   file zshrc_config do
     user user_
     group user_
     mode "644"
     action :edit
-    content %(# mise configuration
-export PATH="#{home_}/.local/bin:$PATH"
-eval "$(mise activate zsh)")
+    content %(eval "$(mise activate zsh)")
     not_if %(grep 'mise activate zsh' #{zshrc_config})
-  end
-
-  fish_config_dir = "#{config_home}/fish"
-  directory fish_config_dir do
-    user user_
-    group user_
-    mode "755"
-    not_if { File.exist?(fish_config_dir) }
-  end
-
-  fish_config = "#{fish_config_dir}/config.fish"
-  file fish_config do
-    action :create
-    content %(mise activate fish | source)
-    not_if { File.exist?(fish_config) }
-  end
-  file fish_config do
-    user user_
-    group user_  # Add group ownership
-    mode "644"   # Explicit permissions
-    action :edit
-    content %(mise activate fish | source)
-    not_if %(grep 'mise activate' #{fish_config})
   end
 
 when "fedora", "redhat", "amazon"
