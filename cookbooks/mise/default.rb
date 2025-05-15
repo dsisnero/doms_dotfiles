@@ -19,23 +19,15 @@ when "debian", "mint", "ubuntu"
     group "root"
   end
 
-  # Add GPG key (same pattern as Docker/GitHub CLI cookbooks)
-  execute "add mise gpg key" do
-    command <<-SH
-      wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor > /tmp/mise-archive-keyring.gpg && \
-      mv /tmp/mise-archive-keyring.gpg /etc/apt/keyrings/
-    SH
-    not_if "test -f /etc/apt/keyrings/mise-archive-keyring.gpg"
-  end
-
   # Add repository (using standard apt_repository pattern)
   apt_repository "mise" do
-    uri "https://mise.jdx.dev/deb"
-    distribution "stable"
+    url "https://mise.jdx.dev/deb"
+    distribution "stable"  # This should match your Debian/Ubuntu version
     components ["main"]
     arch "amd64"
-    key "/etc/apt/keyrings/mise-archive-keyring.gpg"
-    notifies :run, "execute[apt-update]", :immediately
+    gpg_key "https://mise.jdx.dev/gpg-key.pub"  # Use URL instead of local path
+    keyserver "keyserver.ubuntu.com"
+    notifies :update, "apt_update", :immediately
   end
 
   # Install system package
