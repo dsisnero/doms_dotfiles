@@ -1,5 +1,5 @@
 case node[:platform]
 when "debian", "ubuntu", "mint", "pop"
-  package "keepassxc"
+  flatpak "org.keepassxc.KeePassXC"
 when "windows"
 end
