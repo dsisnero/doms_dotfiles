@@ -58,12 +58,13 @@ when "debian", "mint", "ubuntu"
   end
 
   # Update shell integration to use system-installed mise
-  file zshrc_config do
+  execute "Add mise to #{zshrc_config}" do
     user user_
-    group user_
-    action :edit
-    content %(eval "$(mise activate zsh)")
-    not_if %(grep 'mise activate zsh' #{zshrc_config})
+    command %(
+      if ! grep -q 'mise activate zsh' #{zshrc_config}; then
+        echo 'eval "$(mise activate zsh)"' >> #{zshrc_config}
+      fi
+    )
   end
 
 when "fedora", "redhat", "amazon"
@@ -88,18 +89,22 @@ mise "age"
 mise "slsa-verifier"
 puts node
 MItamae.logger.info("zshrc_config: #{zshrc_config}")
-file zshrc_config do
-  action :edit
+execute "Add AGE key to #{zshrc_config}" do
   user user_
-  group user_
-  content %(export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt")
-  not_if %(grep 'MISE_SOPS_AGE_KEY_FILE' #{zshrc_config})
+  command %(
+    if ! grep -q 'MISE_SOPS_AGE_KEY_FILE' #{zshrc_config}; then
+      echo 'export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt"' >> #{zshrc_config}
+    fi
+  )
 end
 
-file "#{home_}/.bashrc" do
-  action :edit
-  content %(export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt")
-  not_if %(grep 'MISE_SOPS_AGE_KEY_FILE' #{home_}/.bashrc)
+execute "Add AGE key to #{home_}/.bashrc" do
+  user user_
+  command %(
+    if ! grep -q 'MISE_SOPS_AGE_KEY_FILE' #{home_}/.bashrc; then
+      echo 'export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt"' >> #{home_}/.bashrc
+    fi
+  )
 end
 
 directory "/tmp/mitamae-#{user_}" do
