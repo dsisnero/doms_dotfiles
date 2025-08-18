@@ -7,10 +7,6 @@ zshrc_config = node[:zshrc_config]
 
 case node[:platform]
 when "debian", "mint", "ubuntu"
-  # Install required system packages
-  %w[gpg wget curl].each do |pkg|
-    package pkg
-  end
 
   # Create keyring directory
   directory "/etc/apt/keyrings" do
