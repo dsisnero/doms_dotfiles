@@ -35,6 +35,7 @@ include_cookbook "git-secrets"
 include_cookbook "rust"
 include_cookbook "helix"
 include_cookbook "go"
+include_cookbook "zig"
 
 include_cookbook "treesitter"
 
