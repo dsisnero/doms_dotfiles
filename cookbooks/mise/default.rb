@@ -44,32 +44,33 @@ when "debian", "mint", "ubuntu"
     version nil  # Install latest available
   end
 
-  # Remove previous user install leftovers
-  file "#{home_}/.local/bin/mise" do
-    action :delete
-    only_if "test -f #{home_}/.local/bin/mise"
-  end
+when "fedora", "redhat", "amazon"
 
-  # Keep user config directories but fix ownership
-  directory "#{home_}/.config/mise" do
-    user user_
-    group user_
-    mode "755"
-  end
+when "osx", "darwin"
+  package "mise"
+end
 
-  # Update shell integration to use system-installed mise
-  execute "Add mise to #{zshrc_config}" do
-    user user_
-    command %(
+# Remove previous user install leftovers
+file "#{home_}/.local/bin/mise" do
+  action :delete
+  only_if "test -f #{home_}/.local/bin/mise"
+end
+
+# Keep user config directories but fix ownership
+directory "#{home_}/.config/mise" do
+  user user_
+  group user_
+  mode "755"
+end
+
+# Update shell integration to use system-installed mise
+execute "Add mise to #{zshrc_config}" do
+  user user_
+  command %(
       if ! grep -q 'mise activate zsh' #{zshrc_config}; then
         echo 'eval "$(mise activate zsh)"' >> #{zshrc_config}
       fi
     )
-  end
-
-when "fedora", "redhat", "amazon"
-
-when "osx", "darwin"
 end
 
 define :mise, version: nil, cargo: nil, exe: nil, rename: nil do
