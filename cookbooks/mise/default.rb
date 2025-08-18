@@ -44,6 +44,16 @@ when "fedora", "redhat", "amazon"
 
 when "osx", "darwin"
   package "mise"
+
+  group user_ do
+    action :create
+  end
+
+  user "create user group" do
+    username user_
+    gid user_
+  end
+
 end
 
 # Remove previous user install leftovers
