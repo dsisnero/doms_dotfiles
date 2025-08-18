@@ -1,5 +1,5 @@
 case node[:platform]
-when "debian", "mint", "ubuntu", "darwin"
+when "debian", "mint", "ubuntu"
   package "gpg"
   package "sudo"
   package "wget"
