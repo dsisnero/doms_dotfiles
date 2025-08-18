@@ -4,7 +4,6 @@ ROOT = Pathname.getwd
 namespace :rbs do
   task setup: %i[clean collection prototype subtract]
 
-
   task :clean do
     rm_rf 'sig/rbs_rails/'
     rm_rf 'sig/prototype/'
@@ -28,8 +27,8 @@ namespace :rbs do
     prototype_path = Pathname('sig/prototype')
     # rbs_rails_path = Rails.root.join('sig/rbs_rails')
     subtrahends = Pathname.glob('sig/*')
-                          .reject { |path| path == prototype_path }
-                          .map { |path| "--subtrahend=#{path}" }
+      .reject { |path| path == prototype_path }
+      .map { |path| "--subtrahend=#{path}" }
     sh 'rbs', 'subtract', '--write', 'sig/prototype', *subtrahends
   end
 
