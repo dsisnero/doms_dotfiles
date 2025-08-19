@@ -277,7 +277,10 @@ p() {
   $FILTER_CMD $pecoopts | while read LINE; do $@ $LINE; done
 }
 
+
+if [[ $OSTYPE != darwin* ]]; then
 alias ls='colorls'
+fi
 alias ls_font='fc-list'
 alias o='git ls-files | p open'
 alias c='ghq list -p | p cd'
