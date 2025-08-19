@@ -24,3 +24,11 @@ file "#{node[:home]}/.aspell.conf" do
 
   content "lang en_US"
 end
+
+config_dir = node[:config_dir]
+
+execute "aspell -d en dump master | aspell -l en expand > #{config_dir}/dictionary/my.dict" do
+  user user
+  cwd "#{config_dir}/dictionary"
+  not_if "test -e #{config_dir}/dictionary/my.dict"
+end

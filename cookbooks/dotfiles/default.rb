@@ -34,12 +34,20 @@ mydir "#{home}/.local/themes"
 mydir "#{home}/.local/icons"
 
 mydir repos
+my_repos = "#{repos}/github.com/dsisnero"
+doms_dotfiles = "#{my_repos}/doms_dotfiles"
 
-include_cookbook "ghq"
-get_repo("dsisnero/doms_dotfiles")
+mydir my_repos
 
-repos = node[:ghq_root]
-doms_dotfiles = "#{repos}/github.com/dsisnero/doms_dotfiles"
+git doms_dotfiles do
+  repository "https://github.com/dsisnero/doms_dotfiles"
+  action :sync
+end
+
+# include_cookbook "ghq"
+# get_repo("dsisnero/doms_dotfiles")
+
+# repos = node[:ghq_root]
 
 execute "init submodules for doms_dotfiles" do
   cwd doms_dotfiles
@@ -174,16 +182,9 @@ dotfile ".conkyrc"
 dotfile ".textlintrc"
 # dotfile '.gemrc' # 追加したいオプションができるまでなし
 
-include_cookbook "aspell"
-execute "aspell -d en dump master | aspell -l en expand > #{config_dir}/dictionary/my.dict" do
-  user user
-  cwd "#{config_dir}/dictionary"
-  not_if "test -e #{config_dir}/dictionary/my.dict"
-end
-
-mydir "#{home}/.prh-rules/media"
-execute "wget -q https://raw.githubusercontent.com/prh/rules/master/media/WEB%2BDB_PRESS.yml" do
-  user user
-  cwd "#{home}/.prh-rules/media/"
-  not_if "test -e #{home}/.prh-rules/media/WEB+DB_PRESS.yml"
-end
+# mydir "#{home}/.prh-rules/media"
+# execute "wget -q https://raw.githubusercontent.com/prh/rules/master/media/WEB%2BDB_PRESS.yml" do
+#   user user
+#   cwd "#{home}/.prh-rules/media/"
+#   not_if "test -e #{home}/.prh-rules/media/WEB+DB_PRESS.yml"
+# end
