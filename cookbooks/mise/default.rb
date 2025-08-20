@@ -4,6 +4,7 @@ user_ = node[:user]
 home_ = node[:home]
 config_home = node[:config_home]
 zshrc_config = node[:zshrc_config]
+group_ = node[:group]
 
 case node[:platform]
 when "debian", "mint", "ubuntu"
@@ -44,16 +45,6 @@ when "fedora", "redhat", "amazon"
 
 when "osx", "darwin"
   package "mise"
-
-  group user_ do
-    action :create
-  end
-
-  user "create user group" do
-    username user_
-    gid user_
-  end
-
 end
 
 # Remove previous user install leftovers
@@ -65,7 +56,7 @@ end
 # Keep user config directories but fix ownership
 directory "#{home_}/.config/mise" do
   user user_
-  group user_
+  group group_
   mode "755"
 end
 
