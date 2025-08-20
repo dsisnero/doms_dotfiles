@@ -1,6 +1,6 @@
 [include]
   path = <%= File.join(@config_dir, "config.common") %>
-  path = <%= File.join(@config_dir, "platforms", @os) %>
+  path = <%= File.join(@config_dir, "platforms", @platform) %>
 <% if @is_wsl %>
   path = <%= File.join(@config_dir, "platforms/wsl") %>
 <% end %>
