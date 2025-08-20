@@ -4,9 +4,6 @@
 [submodule "plugins/itamae-plugin-recipe-rust"]
 	path = plugins/itamae-plugin-recipe-rust
 	url = https://github.com/dsisnero/itamae-plugin-recipe-rust-rust.git
-[submodule "plugins/itame-plugin-resource-snappy"]
-	path = plugins/itame-plugin-resource-snappy
-	url = https://github.com/takeyuweb/itamae-plugin-resource-snappy.git
 [submodule "plugins/itamae-plugin-resource-flatpak"]
 	path = plugins/itamae-plugin-resource-flatpak
 	url = https://codeberg.org/dsisnero/itamae-plugin-resource-flatpak.git
