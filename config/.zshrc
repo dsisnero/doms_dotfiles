@@ -29,6 +29,11 @@
 #        .: 通常のファイルのみ残す
 #
 #************************************************************************** }}}
+
+export MISE_SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
+export SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
+eval "$(mise activate zsh)"
+
 if [ ! -f ~/.zshrc.zwc -o ~/.zshrc -nt ~/.zshrc.zwc ]; then
    zcompile ~/.zshrc
 fi
@@ -576,6 +581,3 @@ alias myip='curl ifconfig.io -4'
 
 alias tenki='curl -4 http://wttr.in/kanagawa'
 
-export MISE_SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
-export SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
-eval "$(mise activate zsh)"
