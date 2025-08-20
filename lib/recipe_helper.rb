@@ -1,9 +1,7 @@
 class Specinfra::Command::Pop < Specinfra::Command::Ubuntu
 end
-node[:platform] = "ubuntu" if node[:platform] == "pop"
 
-include_recipe "node_supplement.rb"
-puts "node info: #{node.mash.to_yaml}"
+MItamae.logger.info "Node Info:\n#{node.inspect}"
 ::MItamae::RecipeContext.class_eval do
   # Helper methods for platform detection
   def windows?
@@ -16,35 +14,28 @@ puts "node info: #{node.mash.to_yaml}"
 
   # node hashのパラメータで必須のものを初期設定する。
   def init_node
-    # Ensure os is always defined
-    node.reverse_merge!(
-      os: node[:os] || "linux" # Default fallback
-    )
-
+    puts "init node\n#{node.inspect}"
     user = ENV["SUDO_USER"] || ENV["USER"]
+    home = node[:home]
     if node[:os] == "windows"
       # Windows-specific defaults
-      home = node[:home] # Already normalized in node_supplement.rb
       group = "Users"
-      user_bin = "#{home}/AppData/Local/Microsoft/WindowsApps"
+      "#{home}/AppData/Local/Microsoft/WindowsApps"
     else
       # Unix-based systems
       case node[:platform]
       when "osx", "darwin"
-        home = ENV["HOME"]
         group = "staff"
       when "arch"
-        home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
         group = user
       when "pop"
-        home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
         group = user
       else
         home = `cat /etc/passwd | grep '^#{user}:' | awk -F: '!/nologin/{print $(NF-1)}'`.strip
         group = user
       end
-      user_bin = "#{home}/.local/bin"
     end
+    user_bin = "#{home}/.local/bin"
 
     # Unified XDG_CONFIG_HOME handling across all platforms
     config_home = ENV.fetch("XDG_CONFIG_HOME") do
@@ -55,6 +46,7 @@ puts "node info: #{node.mash.to_yaml}"
       end
     end
 
+    puts "config home is home: #{home} config_home: #{config_home}"
     # Unified XDG_DATA_HOME handling
     data_home = ENV.fetch("XDG_DATA_HOME") do
       if node[:is_windows]
@@ -72,10 +64,7 @@ puts "node info: #{node.mash.to_yaml}"
     doms_dotfiles = "#{my_repos}/doms_dotfiles"
 
     node.reverse_merge!(
-      user: user,
-      default_user: user,
       group: group,
-      home: home,
       config_home: config_home,
       data_home: data_home,
       cache_home: ENV.fetch("XDG_CACHE_HOME") { "#{home}/.cache" },
@@ -366,5 +355,6 @@ define :chocolatey_package, version: nil do
   end
 end
 
+include_recipe "node_supplement"
 init_node
 MItamae.logger.info "Node Info:\n#{node.inspect}"

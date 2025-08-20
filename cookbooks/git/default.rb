@@ -92,6 +92,9 @@ unless node[:os] == "windows" && !wsl?
     owner node[:user]
     group node[:group]
     mode "644"
+    variables(
+      ghq_root: node[:repos]
+      )
   end
 
   # Platform-specific templates

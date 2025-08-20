@@ -1,5 +1,5 @@
 #.zshenv
-BREW_PATH=`/usr/local/bin/brew --prefix`
+BREW_PATH=`/opt/homebrew/bin/brew --prefix`
 
 # for FBX path setting
 FBXSDK_ROOT=/Applications/Autodesk/FBX\ SDK/2013.3/
@@ -56,6 +56,6 @@ export DOCKER_HOST=tcp://192.168.59.103:2376
 export DOCKER_CERT_PATH=/Users/daiji/.boot2docker/certs/boot2docker-vm
 export DOCKER_TLS_VERIFY=1
 
-# rbenv
-export PATH="$HOME/.rbenv/bin:$PATH"
-eval "$(rbenv init -)"
+# # rbenv
+# export PATH="$HOME/.rbenv/bin:$PATH"
+# eval "$(rbenv init -)"

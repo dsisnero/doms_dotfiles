@@ -6,7 +6,6 @@ node.reverse_merge!(
   user: ENV["SUDO_USER"] || ENV["USER"],
   is_windows: is_windows,
   is_wsl: is_wsl,
-  os: 'linux' # Default fallback
 )
 
 # In some Linux distribution, `sudo -E` doesn't preserve environment variables.
@@ -27,61 +26,16 @@ node.reverse_merge!(
   os: run_command("uname", error: false).stdout.strip.downcase
 )
 
-# Add platform detection before platform_family
-node.reverse_merge!(
-  platform: if node[:is_windows]
-              'windows'
-            else
-              case node[:os]
-              when 'darwin'
-                'macos'
-              when 'linux'
-                # Detect Linux distribution
-                if File.exist?('/etc/os-release')
-                  id = File.read('/etc/os-release')[/^ID=([^\n]+)/, 1].gsub('"', '')
-                  case id
-                  when 'debian', 'ubuntu', 'pop', 'linuxmint'
-                    id
-                  when 'arch', 'manjaro'
-                    'arch'
-                  when 'fedora', 'centos', 'rhel', 'amzn'
-                    'fedora'
-                  else
-                    'linux'
-                  end
-                else
-                  'linux'
-                end
-              else
-                node[:os]
-              end
-            end
-)
+if is_windows
+  # Add Windows-specific paths
+  node.reverse_merge!(
 
-# Set os based on platform
-node.reverse_merge!(
-  os: case node[:platform]
-      when 'debian', 'ubuntu', 'pop', 'linuxmint', 'arch', 'fedora'
-        'linux'  # Treat Pop!_OS as generic Linux
-      when 'macos', 'darwin'
-        'macos'
-      when 'windows'
-        'windows'
-      else
-        node[:platform]
-      end
-)
+    # Windows-specific paths if on Windows
+    program_files: node[:is_windows] ? (ENV['ProgramFiles'] ? ENV['ProgramFiles'].gsub('\\', '/') : '/Program Files') : nil,
+    appdata: node[:is_windows] ? (ENV['APPDATA'] ? ENV['APPDATA'].gsub('\\', '/') : "#{node[:home]}/AppData/Roaming") : nil
+  )
 
-# Add Windows-specific paths
-node.reverse_merge!(
-
-  # Windows-specific paths if on Windows
-  program_files: node[:is_windows] ? (ENV['ProgramFiles'] ? ENV['ProgramFiles'].gsub('\\', '/') : '/Program Files') : nil,
-  appdata: node[:is_windows] ? (ENV['APPDATA'] ? ENV['APPDATA'].gsub('\\', '/') : "#{node[:home]}/AppData/Roaming") : nil
-)
-
-# Get Windows version information if on Windows
-if node[:is_windows]
+  # Get Windows version information if on Windows
   begin
     win_version = run_command("powershell -Command \"(Get-CimInstance Win32_OperatingSystem).Caption\"", error: false).stdout.strip
     win_build = run_command("powershell -Command \"(Get-CimInstance Win32_OperatingSystem).BuildNumber\"", error: false).stdout.strip

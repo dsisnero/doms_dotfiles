@@ -29,6 +29,11 @@
 #        .: 通常のファイルのみ残す
 #
 #************************************************************************** }}}
+
+export MISE_SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
+export SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
+eval "$(mise activate zsh)"
+
 if [ ! -f ~/.zshrc.zwc -o ~/.zshrc -nt ~/.zshrc.zwc ]; then
    zcompile ~/.zshrc
 fi
@@ -277,7 +282,10 @@ p() {
   $FILTER_CMD $pecoopts | while read LINE; do $@ $LINE; done
 }
 
+
+if [[ $OSTYPE != darwin* ]]; then
 alias ls='colorls'
+fi
 alias ls_font='fc-list'
 alias o='git ls-files | p open'
 alias c='ghq list -p | p cd'
@@ -573,6 +581,3 @@ alias myip='curl ifconfig.io -4'
 
 alias tenki='curl -4 http://wttr.in/kanagawa'
 
-export MISE_SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
-export SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
-eval "$(mise activate zsh)"

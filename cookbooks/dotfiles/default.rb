@@ -1,17 +1,23 @@
 home = node[:home]
 user = node[:user]
-group = node[:group]
+group_ = node[:group]
 config_dir = node[:config_home]
 repos = node[:repos]
+is_darwin = node[:platform] == 'darwin'
 
 define :mydir, mode: "755" do
   dirpath = params[:name]
 
   directory dirpath do
     owner user
-    group group
+    group group_
     mode params[:mode]
   end
+end
+
+group group_ do
+  user 'root'
+  action :create
 end
 
 mydir "#{home}/.ssh" do
@@ -42,6 +48,7 @@ mydir my_repos
 git doms_dotfiles do
   repository "https://github.com/dsisnero/doms_dotfiles"
   action :sync
+  only_if { ! FileTest.directory? doms_dotfiles}
 end
 
 # include_cookbook "ghq"
@@ -49,11 +56,6 @@ end
 
 # repos = node[:ghq_root]
 
-execute "init submodules for doms_dotfiles" do
-  cwd doms_dotfiles
-  user user
-  command "git submodule init;git submodule update"
-end
 # Initialize Fish config with mise setup
 template "#{config_dir}/fish/config.fish" do
   source "templates/fish/config.fish.erb"
@@ -160,12 +162,12 @@ dotfile "helix/languages.toml"
 dotfile "helix/config.toml"
 
 # Special handling for snippets directory
-execute "symlink helix snippets" do
-  command "ln -sfT #{doms_dotfiles}/config/helix/snippets #{config_dir}/helix/snippets"
-  user user
-  only_if "test -d #{doms_dotfiles}/config/helix/snippets"
-  not_if "test -L #{config_dir}/helix/snippets"
-end
+# execute "symlink helix snippets" do
+#   command "ln -sfT #{doms_dotfiles}/config/helix/snippets #{config_dir}/helix/snippets"
+#   user user
+#   only_if "test -d #{doms_dotfiles}/config/helix/snippets"
+#   not_if "test -L #{config_dir}/helix/snippets"
+# end
 
 dotfile "solargraph"
 dotfile ".spacemacs"

@@ -35,7 +35,7 @@ file "#{home}/.ssh/agent_env" do
   EOCFG
 end
 
-ghq_root = run_command(run_as(user, "mise exec -- ghq root")).stdout.chomp
+ghq_root = node[:repos]
 node.reverse_merge!(
   ghq_root: ghq_root
 )
