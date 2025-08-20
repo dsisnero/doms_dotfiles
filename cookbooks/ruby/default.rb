@@ -1,5 +1,6 @@
 # cookbook for ruby
 include_recipe "./dependency.rb"
+include_cookbook 'mise'
 
 user = node["user"]
 home = node["home"]
