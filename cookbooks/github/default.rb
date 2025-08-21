@@ -8,13 +8,30 @@ node.reverse_merge!(
   }
 )
 
+# Start SSH agent with persistent socket
+execute "start ssh-agent" do
+  user node[:user]
+  command "ssh-agent -a #{node[:home]}/.ssh/agent.sock"
+  not_if "test -S #{node[:home]}/.ssh/agent.sock"
+end
+
 directory "#{node[:home]}/.ssh" do
   owner node[:user]
+  group node[:group]
   mode "700"
   not_if "test -d #{node[:home]}/.ssh"
 end
 
-execute "generate GitHub SSH key" do
+keyfile = "#{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
+
+execute "add-github-key-to-agent" do
+  command "ssh_auth_sock=#{node[:home]}/.ssh/agent.sock ssh-add #{keyfile}"
+  user node[:user]
+  action :nothing
+  notifies :run, 'execute[verify ssh-agent]'
+end
+
+execute "generate GitHub SSH key #{keyfile}" do
   user node[:user]
   command <<~EOCMD
     ssh-keygen -t #{node[:github][:ssh_key_type]} \
@@ -22,7 +39,8 @@ execute "generate GitHub SSH key" do
     -C "#{node[:github][:email]}" \
     -N "" -q
   EOCMD
-  not_if "test -f #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
+  not_if "test -f #{keyfile}"
+  notifies :run, 'execute[add-github-key-to-agent]'
 end
 
 file "#{node[:home]}/.ssh/config" do
@@ -41,13 +59,12 @@ file "#{node[:home]}/.ssh/config" do
   only_if "test -f #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
 end
 
-include_cookbook "ssh"
-
-# execute "add GitHub key to agent" do
-#   user node[:user]
-#   command "SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh-add #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
-#   not_if "SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh-add -l | grep -q $(ssh-keygen -lf #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]} | awk '{print $2}')"
-# end
+# Verify SSH agent has keys loaded
+execute "verify ssh-agent" do
+  user node[:user]
+  command "SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh-add -l"
+  action :nothing
+end
 
 execute "show GitHub SSH public key" do
   user node[:user]
