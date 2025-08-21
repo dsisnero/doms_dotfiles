@@ -94,7 +94,7 @@ unless node[:os] == "windows" && !wsl?
     mode "644"
     variables(
       ghq_root: node[:repos]
-      )
+    )
   end
 
   # Platform-specific templates

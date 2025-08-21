@@ -48,7 +48,7 @@ mydir my_repos
 git doms_dotfiles do
   repository "https://github.com/dsisnero/doms_dotfiles"
   action :sync
-  only_if { ! FileTest.directory? doms_dotfiles}
+  only_if { !FileTest.directory? doms_dotfiles }
 end
 
 # include_cookbook "ghq"
