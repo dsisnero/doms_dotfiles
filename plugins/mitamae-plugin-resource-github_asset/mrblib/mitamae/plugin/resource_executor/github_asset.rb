@@ -15,21 +15,21 @@ module MItamae
         def fetch_release_data
           tag = attributes.version == 'latest' ? 'latest' : "tags/#{attributes.version}"
           url = "https://api.github.com/repos/#{attributes.repo}/releases/#{tag}"
-          
+
           http_request "github_api_#{attributes.name}" do
             url url
             headers({"Accept" => "application/vnd.github.v3+json"})
             action :get
             notifies :run, "ruby_block[parse_release_data_#{attributes.name}]"
           end
-          
+
           ruby_block "parse_release_data_#{attributes.name}" do
             block do
               node.run_state[attributes.name] = JSON.parse(run_command("cat /tmp/mitamae_github_api_#{attributes.name.shellescape}.json").stdout)
             end
             action :nothing
           end
-          
+
           node.run_state[attributes.name] || {}
         end
 
