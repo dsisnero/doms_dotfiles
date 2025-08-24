@@ -161,3 +161,5 @@ if node[:os] == "windows" && !wsl?
     user node[:user]
   end
 end
+
+include_cookbook 'git-credential-manager'
