@@ -2,7 +2,6 @@
 node[:user]
 
 myrepos = [
-  "doms_dotfiles",
   "nexcom-srf",
   "faa-cost_estimate",
   "autocad",

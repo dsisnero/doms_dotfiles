@@ -109,11 +109,11 @@ execute "add_ssh_key_via_gh" do
   EOCMD
 end
 
-execute "test GitHub SSH connection" do
-  user node[:user]
-  command "SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh -T git@github.com"
-  only_if <<~EOCMD
-    test -f #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]} && \
-    SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh-add -l | grep -q $(ssh-keygen -lf #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]} | awk '{print $2}')
-  EOCMD
-end
+# execute "test GitHub SSH connection" do
+#   user node[:user]
+#   command "SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh -T git@github.com"
+#   only_if <<~EOCMD
+#     test -f #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]} && \
+#     SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh-add -l | grep -q $(ssh-keygen -lf #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]} | awk '{print $2}')
+#   EOCMD
+# end

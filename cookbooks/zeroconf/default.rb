@@ -19,8 +19,8 @@ when "arch"
 when "opensuse"
 end
 
-unless node[:is_wsl]
-  service "avahi-daemon" do
-    action [:start, :enable]
-  end
-end
+# unless node[:is_wsl]
+#   service "avahi-daemon" do
+#     action [:start, :enable]
+#   end
+# end
