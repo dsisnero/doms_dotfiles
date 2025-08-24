@@ -73,7 +73,11 @@ end
 define :mise, version: nil, cargo: nil, exe: nil, rename: nil do
   tool_name = params[:name]
   version = params[:version] || "latest"
-  cmd = "mise use -g #{tool_name}@#{version}"
+  cmd = if params[:cargo] == true
+    "mise use -g cargo:#{tool_name}@#{version}"
+  else
+    "mise use -g #{tool_name}@#{version}"
+  end
   exe = params[:exe] || tool_name
   execute "installing #{tool_name}@#{version}" do
     user user_  # Change from node[:user] to local variable
