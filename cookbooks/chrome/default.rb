@@ -16,7 +16,7 @@ when "debian", "ubuntu", "mint"
 when "fedora", "redhat", "amazon"
   # not implemented
 when "osx", "darwin"
-  package "caskroom/cask/google-chrome"
+  package "google-chrome"
 when "arch"
   include_cookbook "yay"
   yay "google-chrome"
