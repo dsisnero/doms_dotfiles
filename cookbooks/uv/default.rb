@@ -22,3 +22,11 @@ execute "install llm" do
   EOCMD
   not_if %(which llm)
 end
+
+zshrc_config = node[:zshrc_config]
+user_bin = node[:user_bin]
+file zshrc_config do
+  action :edit
+  not_if "grep 'export PATH=#{user_bin}' #{zshrc_config}"
+  content %(export PATH=#{user_bin}:$PATH)
+end
