@@ -1,2 +1,7 @@
 cargo "tree-sitter-cli"
-package "libtree-sitter-dev"
+case node[:platform]
+when "debian", "ubuntu", "mint", "pop"
+  package "libtree-sitter-dev"
+when "osx"
+  package "treesitter"
+end
