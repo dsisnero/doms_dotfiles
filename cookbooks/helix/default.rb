@@ -1,4 +1,4 @@
-user = node[:user]
+node[:user]
 home = node[:home]
 doms_dotfiles = node[:doms_dotfiles]
 config_dir = node[:config_home]
@@ -14,19 +14,30 @@ file "#{home}/.bashrc" do
   not_if "grep 'export EDITOR=hx' #{home}/.bashrc"
   content %(export EDITOR=hx)
 end
-file "#{home}/.zshrc" do
+
+zshrc_config = node[:zshrc_config]
+file zshrc_config do
   action :edit
-  not_if "grep 'export EDITOR=hx' #{home}/.zshrc"
+  not_if "grep 'export EDITOR=hx' #{zshrc_config}"
   content %(export EDITOR=hx)
 end
 
-# Special handling for snippets directory
-execute "symlink helix snippets" do
-  command "ln -sfT #{doms_dotfiles}/config/helix/snippets #{config_dir}/helix/snippets"
-  user user
-  only_if "test -d #{doms_dotfiles}/config/helix/snippets"
-  not_if "test -L #{config_dir}/helix/snippets"
+dest = "#{config_dir}/helix/snippets"
+src = "#{doms_dotfiles}/config/helix/snippets"
+
+link dest do
+  to src
+  user node[:user]
+  not_if "test -d #{dest}"
 end
+
+# # Special handling for snippets directory
+# execute "symlink helix snippets" do
+#   command "ln -sfT #{doms_dotfiles}/config/helix/snippets #{config_dir}/helix/snippets"
+#   user user
+#   only_if "test -d #{doms_dotfiles}/config/helix/snippets"
+#   not_if "test -L #{config_dir}/helix/snippets"
+# end
 
 # get_repo("helix-editor/helix")
 
