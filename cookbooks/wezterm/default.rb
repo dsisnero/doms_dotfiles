@@ -6,7 +6,7 @@ case node[:platform]
 when "arch"
   raise NotImplementedError
 when "osx", "darwin"
-  raise NotImplementedError
+  package "wezterm"
 when "fedora", "redhat", "amazon"
   raise NotImplementedError
 when "debian", "ubuntu", "mint"
