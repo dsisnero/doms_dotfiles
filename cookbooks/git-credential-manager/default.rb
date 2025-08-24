@@ -4,7 +4,7 @@ case node[:platform]
 when "arch"
   raise NotImplementedError
 when "osx", "darwin"
-  raise NotImplementedError
+  package 'git-credential-manager'
 when "fedora", "redhat", "amazon"
   raise NotImplementedError
 
