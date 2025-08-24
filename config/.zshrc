@@ -581,3 +581,5 @@ alias myip='curl ifconfig.io -4'
 
 alias tenki='curl -4 http://wttr.in/kanagawa'
 
+export PATH=~/.local/bin:$PATH
+export EDITOR=hx
