@@ -62,10 +62,3 @@ execute "install vimalter" do
   user node[:user]
   not_if "test -f ~/.local/bin/vimalter"
 end
-
-# if arch package 'fd'
-package "fd-find"
-execute "ln -s $(which fdfind) ~/.local/bin/fd" do
-  user node[:user]
-  not_if "test -f ~/.local/bin/fd"
-end
