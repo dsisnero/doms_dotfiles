@@ -1,7 +1,11 @@
 include_recipe "dependency.rb"
-
-execute "curl -fsSL https://crystal-lang.org/install.sh | sudo bash " do
-  not_if "crystal --version"
+case node[:platform]
+when "debian", "ubuntu", "mint", "pop"
+  execute "curl -fsSL https://crystal-lang.org/install.sh | sudo bash " do
+    not_if "crystal --version"
+  end
+when "osx", "darwin"
+  package "crystal"
 end
 # #
 # # Define the Crystal version and channel

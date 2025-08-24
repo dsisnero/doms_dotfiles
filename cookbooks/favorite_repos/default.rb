@@ -7,6 +7,7 @@ repos = %w[
   itamae-kitchen/mitamae
   AstroNvim/astrocommunity
   llvm/llvm-project
+  crystal-ameba/ameba
 ]
 repos.each { |name| get_repo name.chomp }
 

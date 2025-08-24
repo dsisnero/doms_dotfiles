@@ -46,7 +46,6 @@ cargo "cargo-watch"
 cargo "exa"
 cargo "ouch"
 
-cargo "fnm"
 # include_cookbook "ollama"
 
 file "#{home}/.bashrc" do
@@ -74,7 +73,7 @@ end
 include_cookbook "ruby" # git hookスクリプトで必要なので先にインストールする'
 include_cookbook "python"
 include_cookbook "yarn"
-include_cookbook "alacritty"
+# include_cookbook "alacritty"
 include_cookbook "crystal"
 
 include_cookbook "rpi_imager"
