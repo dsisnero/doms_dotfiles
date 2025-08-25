@@ -520,14 +520,14 @@ source ${PIP_SITE_LOCATION}/powerline/bindings/zsh/powerline.zsh
 
 #}}}
 
-# for z
+# for z - use zoxide now
 # http://d.hatena.ne.jp/naoya/20130108/1357630895
-_Z_DATA=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/z/.z
-if [[ $OSTYPE == darwin* ]]; then
-  . `brew --prefix`/etc/profile.d/z.sh
-else
-  # . ~/repos/github.com/rupa/z/z.sh
-fi
+# _Z_DATA=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/z/.z
+# if [[ $OSTYPE == darwin* ]]; then
+#   . `brew --prefix`/etc/profile.d/z.sh
+# else
+#   # . ~/repos/github.com/rupa/z/z.sh
+# fi
 # precmd_z () {
 #   z --add "$(pwd -P)"
 # }

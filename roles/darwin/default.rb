@@ -11,7 +11,7 @@ package "luajit"
 package "lua"
 package "git"
 package "reattach-to-user-namespace"
-# package "z"
+# package "z"  replaced by zoxide
 # cask
 package "dropbox"
 package "vlc"
