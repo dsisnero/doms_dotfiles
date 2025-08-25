@@ -215,7 +215,7 @@ define :dotfile, source: nil, user: nil do
     link dst do
       to src
       user user
-      # not_if "test -L #{dst}"
+      not_if "test -L #{dst}"
     end
   end
 end
