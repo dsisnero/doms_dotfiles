@@ -20,7 +20,6 @@ mise "git-cliff"
 mise "grex"
 mise "hyperfine"
 mise "ripgrep-all"
-mise "starship"
 mise "bottom"
 mise "dust"
 mise "tree-sitter"
@@ -28,6 +27,7 @@ mise "watchexec"
 mise "zoxide"
 mise "rclone"
 
+include_cookbook "starship"
 include_cookbook "ghq"
 include_cookbook "dotfiles"
 include_cookbook "git"
@@ -57,11 +57,6 @@ cargo "git-delta"
 cargo "oxipng"
 cargo "sqlx-cli"
 
-# file "#{home}/.bashrc" do
-#   action :edit
-#   content %[eval "$(starship init bash)"]
-#   not_if %(grep 'starship init' #{home}/.bashrc)
-# end
 cargo "trippy"
 cargo "simple-completion-language-server" do
   git "https://github.com/estin/simple-completion-language-server.git"
@@ -90,3 +85,4 @@ include_cookbook "direnv"
 include_cookbook "myrepos"
 include_cookbook "fonts"
 include_cookbook "favorite_repos"
+include_cookbook "calibre"
