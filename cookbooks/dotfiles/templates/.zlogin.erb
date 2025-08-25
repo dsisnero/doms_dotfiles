@@ -6,9 +6,9 @@ fi
 
 #########################################
 # ssh-agent
-/usr/bin/keychain -q --nogui ~/.ssh/id_rsa
+keychain -q --nogui ~/.ssh/id_github
 
-source ~/.keychain/${HOST}-sh
+#source ~/.keychain/${HOST}-sh
 #########################################
 
 if [[ -f ~/repos/github.com/dylanaraps/neofetch/neofetch ]]; then
