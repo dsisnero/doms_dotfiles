@@ -10,7 +10,7 @@ wanted_fonts = %w[
   FiraMono
   Go-Mono
   Hack
-  Hermit
+  Hurmit
   JetBrainsMono
   Meslo
   Noto
@@ -25,7 +25,7 @@ wanted_fonts = %w[
 
 node.reverse_merge!(
   nerd_fonts: {
-    version: "3.2.1",
+    version: "3.4.0",
     fonts: wanted_fonts,
     fonts_dir: "#{share_dir}/fonts"
   }
@@ -42,6 +42,14 @@ when "arch"
   yay "nerd-fonts-complete"
 
 when "osx", "darwin"
+  fonts.each do |f|
+    converted_font = f.gsub(/([a-z])([A-Z])/, '\1-\2').downcase
+    converted_font = converted_font.gsub("jet-brains", "jetbrains")
+    converted_font = "meslo-lg" if converted_font == "meslo"
+    converted_font = "proggy-clean-tt" if converted_font == "proggy-clean"
+    converted_font = "sauce-code-pro" if converted_font == "source-code-pro"
+    package "font-#{converted_font}-nerd-font"
+  end
   # not implemented
 when "fedora", "redhat", "amazon"
   # not implemented
