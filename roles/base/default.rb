@@ -3,7 +3,10 @@ node.reverse_merge!({
     root_password: "D12uM3m4y+"
   }
 })
-package "pass"
+package "pass" do
+  action :remove
+end
+
 include_cookbook "keepassxc"
 home = node[:home]
 include_cookbook "sudo_nopassword"
