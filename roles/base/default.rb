@@ -29,6 +29,7 @@ mise "tree-sitter"
 mise "watchexec"
 mise "zoxide"
 mise "rclone"
+mise "atuin"
 
 include_cookbook "starship"
 include_cookbook "ghq"
