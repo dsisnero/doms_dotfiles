@@ -583,3 +583,4 @@ alias tenki='curl -4 http://wttr.in/kanagawa'
 
 export PATH=~/.local/bin:$PATH
 export EDITOR=hx
+export OLLAMA_MODELS=/Volumes/extreme_ssd/ollama_models
