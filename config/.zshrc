@@ -295,9 +295,20 @@ p() {
   $FILTER_CMD $pecoopts | while read LINE; do $@ $LINE; done
 }
 
-# Use colorls for non-macOS systems if available
-if [[ $OSTYPE != darwin* ]]; then
-alias ls='colorls'
+# Use exa for modern ls replacement on all platforms
+if command -v exa &> /dev/null; then
+  # exa is available, set up aliases
+  alias ls='exa --group-directories-first'  # Basic ls replacement
+  alias l='exa -l --group-directories-first --git'  # Long format with git status
+  alias ll='exa -la --group-directories-first --git'  # Long format including hidden files
+  alias la='exa -a --group-directories-first'  # Show all including hidden files
+  alias lt='exa -T --group-directories-first --git-ignore'  # Tree view
+  alias lT='exa -T --group-directories-first -L 2'  # Tree view limited to 2 levels
+else
+  # Fallback to standard ls if exa is not available
+  alias l='ls -FG'  # List files with colors and type indicators
+  alias ll='ls -lFG'  # Long list format
+  alias la='ls -lFGa'  # Long list including hidden files
 fi
 
 # Common command aliases for productivity
@@ -305,9 +316,6 @@ alias ls_font='fc-list'  # List installed fonts
 alias o='git ls-files | p open'  # Interactive selection and opening of git-tracked files
 alias c='ghq list -p | p cd'  # Change to repository directory
 alias h='history -i'; compdef h=history  # Show history with timestamps
-alias l='ls -FG'; compdef l=ls  # List files with colors and type indicators
-alias ll='ls -lFG'; compdef ll=ls  # Long list format
-alias la='ls -lFGa'; compdef la=ls  # Long list including hidden files
 alias pd=popd; compdef pd=popd  # Pop directory from stack
 alias history='history -i'  # History with timestamps
 
