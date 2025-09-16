@@ -266,6 +266,24 @@ if [[ $OSTYPE != darwin* ]]; then
   }
 fi
 
+# Edit git-tracked files with default editor
+function edit {
+  local editor_cmd
+  editor_cmd=($EDITOR)  # Split EDITOR into array to handle spaces
+  local files
+  files=$(git ls-files | $FILTER_CMD)  # Select files using filter command
+  if [ -n "$files" ]; then
+    local file_array
+    file_array=()
+    # Read files into array to handle spaces in filenames
+    while IFS= read -r line; do
+      file_array+=("$line")
+    done <<< "$files"
+    # Open all selected files with editor
+    "${editor_cmd[@]}" "${file_array[@]}"
+  fi
+}
+
 # Generic pipe function for filtering commands through $FILTER_CMD (like fzf/peco)
 p() {
   local pecoopts=()
