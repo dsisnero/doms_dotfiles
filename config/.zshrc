@@ -28,6 +28,20 @@ export MISE_SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
 export SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
 eval "$(mise activate zsh)"
 
+# Set filter command for interactive selection
+if [ -z "$FILTER_CMD" ]; then
+  if command -v fzf >/dev/null 2>&1; then
+    export FILTER_CMD=fzf
+  elif command -v peco >/dev/null 2>&1; then
+    export FILTER_CMD=peco
+  else
+    echo "Warning: FILTER_CMD is not set and neither fzf nor peco is installed."
+  fi
+fi
+
+# Set powerline location
+export PIP_SITE_LOCATION=$(mise exec -- pip show -f powerline-status 2>/dev/null | grep Location | awk '{print $2}')
+
 # Compile .zshrc for faster loading if it's newer than the compiled version
 if [ ! -f ~/.zshrc.zwc -o ~/.zshrc -nt ~/.zshrc.zwc ]; then
    zcompile ~/.zshrc
@@ -372,7 +386,10 @@ function g() {
 }
 compdef g=git
 alias gittaglist="git for-each-ref --sort=-taggerdate --format='%(taggerdate:short) %(tag) %(taggername) %(subject)' refs/tags"  # List tags with details
-alias gf='git flow'; compdef gf=git-flow  # Git flow extension
+# Conditionally define git-flow alias if installed
+if command -v git-flow >/dev/null 2>&1; then
+  alias gf='git flow'; compdef gf=git-flow  # Git flow extension
+fi
 
 # Docker-based tool aliases
 alias dockviz="docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock nate/dockviz"  # Docker visualization
