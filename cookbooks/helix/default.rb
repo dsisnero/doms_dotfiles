@@ -105,3 +105,23 @@ end
 
 mise "marksman"
 mise "dprint"
+
+# Create dprint config directory
+directory "#{config_dir}/dprint" do
+  owner node[:user]
+  mode "755"
+end
+
+# Copy dprint config file
+remote_file "#{config_dir}/dprint/config.json" do
+  source "files/dprint_config.json"
+  owner node[:user]
+  mode "644"
+end
+
+# Add alias for dprint to use the config file
+file zshrc_config do
+  action :edit
+  not_if "grep 'alias dprint=' #{zshrc_config}"
+  content %(alias dprint="dprint --config #{config_dir}/dprint/config.json")
+end
