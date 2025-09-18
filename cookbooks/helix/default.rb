@@ -1,26 +1,17 @@
+include_cookbook "ghq"
+include_cookbook "rust"
+ghq_root = node[:ghq_root]
+config_home = node[:config_home]
 node[:user]
 home = node[:home]
 doms_dotfiles = node[:doms_dotfiles]
 config_dir = node[:config_home]
 
-include_cookbook "mise"
+# include_cookbook "mise"
 
-mise "helix" do
-  exe "hx"
-end
-
-file "#{home}/.bashrc" do
-  action :edit
-  not_if "grep 'export EDITOR=hx' #{home}/.bashrc"
-  content %(export EDITOR=hx)
-end
-
-zshrc_config = node[:zshrc_config]
-file zshrc_config do
-  action :edit
-  not_if "grep 'export EDITOR=hx' #{zshrc_config}"
-  content %(export EDITOR=hx)
-end
+# mise "helix" do
+#   exe "hx"
+# end
 
 dest = "#{config_dir}/helix/snippets"
 src = "#{doms_dotfiles}/config/helix/snippets"
@@ -39,21 +30,21 @@ end
 #   not_if "test -L #{config_dir}/helix/snippets"
 # end
 
-# get_repo("helix-editor/helix")
+get_repo("helix-editor/helix")
 
-# dir = File.join(ghq_root, "github.com/helix-editor/helix")
-# cargo "helix-locked" do
-#   path "#{dir}/helix-term"
-#   cwd dir
-# end
+dir = File.join(ghq_root, "github.com/helix-editor/helix")
+cargo "helix-locked" do
+  path "#{dir}/helix-term"
+  cwd dir
+end
 
-# src = File.expand_path(File.join(dir, "runtime"))
-# dest = "#{config_home}/helix/runtime"
-# link dest do
-#   to src
-#   user node[:user]
-#   not_if "test -d #{dest}"
-# end
+src = File.expand_path(File.join(dir, "runtime"))
+dest = "#{config_home}/helix/runtime"
+link dest do
+  to src
+  user node[:user]
+  not_if "test -d #{dest}"
+end
 
 # share_dir = "#{home}/.local/share"
 
@@ -86,7 +77,7 @@ end
 # end
 
 # cargo = "#{home}/.cargo/bin/cargo"
-#   execute "#{sudo(node[:user])}ghq get helix-editor/helix"
+#   # execute "#{sudo(node[:user])}ghq get helix-editor/helix"
 #   execute 'install helix' do
 # dir = File.join( ghq_root, "github.com/helix-editor/helix")
 #     command <<-EOL
@@ -95,6 +86,22 @@ end
 #       #{cargo} install --path #{dir}/helix-term --locked
 #     EOL
 #     user user
-#
+
 #     not_if 'test -e /usr/local/bin/helix'
 #   end
+
+file "#{home}/.bashrc" do
+  action :edit
+  not_if "grep 'export EDITOR=hx' #{home}/.bashrc"
+  content %(export EDITOR=hx)
+end
+
+zshrc_config = node[:zshrc_config]
+file zshrc_config do
+  action :edit
+  not_if "grep 'export EDITOR=hx' #{zshrc_config}"
+  content %(export EDITOR=hx)
+end
+
+mise "marksman"
+mise "dprint"
