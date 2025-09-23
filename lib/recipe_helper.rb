@@ -355,6 +355,17 @@ define :chocolatey_package, version: nil do
   end
 end
 
+define :mydir, mode: "755", group: nil do
+  dirpath = params[:name]
+  group_ = params[:group] || node[:group]
+
+  directory dirpath do
+    owner user
+    group group_
+    mode params[:mode]
+  end
+end
+
 include_recipe "node_supplement"
 init_node
 MItamae.logger.info "Node Info:\n#{node.inspect}"
