@@ -4,7 +4,7 @@ user_ = node[:user]
 home_ = node[:home]
 config_home = node[:config_home]
 zshrc_config = node[:zshrc_config]
-group_ = node[:group]
+node[:group]
 
 case node[:platform]
 when "debian", "mint", "ubuntu"
@@ -54,11 +54,7 @@ file "#{home_}/.local/bin/mise" do
 end
 
 # Keep user config directories but fix ownership
-directory "#{home_}/.config/mise" do
-  user user_
-  group group_
-  mode "755"
-end
+mydir "#{home_}/.config/mise"
 
 # Update shell integration to use system-installed mise
 execute "Add mise to #{zshrc_config}" do
