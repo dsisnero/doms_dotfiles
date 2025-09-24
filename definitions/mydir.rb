@@ -3,7 +3,7 @@ define :mydir, mode: "755", group: nil do
   group_ = params[:group] || node[:group]
 
   directory dirpath do
-    owner user
+    owner node[:user]
     group group_
     mode params[:mode]
   end
