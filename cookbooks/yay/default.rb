@@ -25,6 +25,15 @@ when "arch"
   package "yay" do
     not_if "which yay"
   end
+
+  define :yay do
+    name = params[:name]
+
+    execute "yay -S --noconfirm #{name}" do
+      user node[:user]
+      not_if "yay -Q #{name}"
+    end
+  end
 when "osx", "darwin"
 when "fedora", "redhat", "amazon"
 when "debian", "ubuntu", "mint"
