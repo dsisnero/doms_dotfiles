@@ -1,6 +1,6 @@
 # cookbook for ruby
 include_recipe "./dependency.rb"
-include_cookbook 'mise'
+include_cookbook "mise"
 
 user = node["user"]
 home = node["home"]
@@ -31,5 +31,5 @@ src = "#{dotfiles}/cookbooks/ruby/files/rake"
 
 link dst do
   to src
-  not_if "test -d #{dst}"
+  not_if { File.directory? dst }
 end

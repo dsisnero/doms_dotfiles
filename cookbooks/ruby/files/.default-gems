@@ -11,3 +11,5 @@ ruby-debug-ide
 debase
 colorls
 neovim
+ruby_crystal_codemod
+colorls
