@@ -31,6 +31,7 @@ mise "zoxide"
 mise "rclone"
 mise "atuin"
 
+include_cookbook "dprint"
 include_cookbook "starship"
 include_cookbook "ghq"
 include_cookbook "dotfiles"
