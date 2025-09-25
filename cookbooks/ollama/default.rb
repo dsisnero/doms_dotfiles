@@ -107,6 +107,12 @@ when "darwin"
   MODEL_PATH = "/Volumes/extreme_ssd/ollama_models"
   LABEL = "com.ollama.serve"
 
+  # Set OLLAMA_MODELS globally for the user session
+  launch_env "OLLAMA_MODELS" do
+    value MODEL_PATH
+    persistent true
+  end
+
   # Helper: check installed version
   # def installed_version
   #   cmd = "defaults read '#{PLIST_PATH}' CFBundleShortVersionString 2>/dev/null"
