@@ -7,6 +7,10 @@ AllCops:
     - bin/**/*
     - config/rubocop/**/*
 
+Lint/EmptyWhen:
+  Exclude:
+    - 'cookbooks/**/*'
+    - 'roles/**/*'
 
 Style/QuotedSymbols:
   EnforcedStyle: single_quotes
