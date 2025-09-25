@@ -12,30 +12,30 @@
 # SupportedStyles: with_first_argument, with_fixed_indentation
 Layout/ArgumentAlignment:
   Exclude:
-    - 'lib/recipe_helper.rb'
+    - "lib/recipe_helper.rb"
 
 # Offense count: 2
 # This cop supports safe autocorrection (--autocorrect).
 Layout/ClosingHeredocIndentation:
   Exclude:
-    - 'cookbooks/python/default.rb'
-    - 'cookbooks/ruby/default.rb'
+    - "cookbooks/python/default.rb"
+    - "cookbooks/ruby/default.rb"
 
 # Offense count: 3
 # Configuration parameters: EnforcedStyle.
 # SupportedStyles: native, lf, crlf
 Layout/EndOfLine:
   Exclude:
-    - 'cookbooks/genie/dependency.rb'
-    - 'cookbooks/git-secrets/dependency.rb'
-    - 'cookbooks/lazygit/default.rb'
+    - "cookbooks/genie/dependency.rb"
+    - "cookbooks/git-secrets/dependency.rb"
+    - "cookbooks/lazygit/default.rb"
 
 # Offense count: 2
 # This cop supports safe autocorrection (--autocorrect).
 Layout/HeredocIndentation:
   Exclude:
-    - 'cookbooks/python/default.rb'
-    - 'cookbooks/ruby/default.rb'
+    - "cookbooks/python/default.rb"
+    - "cookbooks/ruby/default.rb"
 
 # Offense count: 2
 # This cop supports safe autocorrection (--autocorrect).
@@ -43,13 +43,13 @@ Layout/HeredocIndentation:
 # SupportedStyles: final_newline, final_blank_line
 Layout/TrailingEmptyLines:
   Exclude:
-    - 'cookbooks/python/default.rb'
-    - 'cookbooks/ruby/default.rb'
+    - "cookbooks/python/default.rb"
+    - "cookbooks/ruby/default.rb"
 
 # Offense count: 1
 Lint/DuplicateHashKey:
   Exclude:
-    - 'cookbooks/mysql/default.rb'
+    - "cookbooks/mysql/default.rb"
 
 # Offense count: 272
 # Configuration parameters: AllowComments.
@@ -61,16 +61,16 @@ Lint/EmptyWhen:
 # Configuration parameters: AutoCorrect.
 Lint/UselessAssignment:
   Exclude:
-    - 'cookbooks/deno/default.rb'
-    - 'cookbooks/haskell/default.rb'
-    - 'cookbooks/lazygit/default.rb'
-    - 'cookbooks/myrepos/default.rb'
-    - 'cookbooks/obsidian/default.rb'
+    - "cookbooks/deno/default.rb"
+    - "cookbooks/haskell/default.rb"
+    - "cookbooks/lazygit/default.rb"
+    - "cookbooks/myrepos/default.rb"
+    - "cookbooks/obsidian/default.rb"
 
 # Offense count: 1
 Security/Open:
   Exclude:
-    - 'cargo_install.rb'
+    - "cargo_install.rb"
 
 # Offense count: 142
 # This cop supports unsafe autocorrection (--autocorrect-all).
@@ -83,14 +83,14 @@ Style/FrozenStringLiteralComment:
 # This cop supports unsafe autocorrection (--autocorrect-all).
 Style/RedundantInterpolation:
   Exclude:
-    - 'cookbooks/zeroconf/default.rb'
-    - 'lib/recipe_helper.rb'
+    - "cookbooks/zeroconf/default.rb"
+    - "lib/recipe_helper.rb"
 
 # Offense count: 1
 # This cop supports unsafe autocorrection (--autocorrect-all).
 Style/SlicingWithRange:
   Exclude:
-    - 'cookbooks/lazygit/default.rb'
+    - "cookbooks/lazygit/default.rb"
 
 # Offense count: 70
 # This cop supports safe autocorrection (--autocorrect).
@@ -98,8 +98,8 @@ Style/SlicingWithRange:
 # SupportedStyles: single_quotes, double_quotes
 Style/StringLiterals:
   Exclude:
-    - 'cookbooks/neovim/dependency.rb'
-    - 'lib/recipe_helper.rb'
+    - "cookbooks/neovim/dependency.rb"
+    - "lib/recipe_helper.rb"
 
 # Offense count: 1
 # This cop supports unsafe autocorrection (--autocorrect-all).
@@ -107,4 +107,4 @@ Style/StringLiterals:
 # SupportedStyles: forbid_for_all_comparison_operators, forbid_for_equality_operators_only, require_for_all_comparison_operators, require_for_equality_operators_only
 Style/YodaCondition:
   Exclude:
-    - 'cookbooks/mysql/default.rb'
+    - "cookbooks/mysql/default.rb"

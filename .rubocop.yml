@@ -9,8 +9,8 @@ AllCops:
 
 Lint/EmptyWhen:
   Exclude:
-    - 'cookbooks/**/*'
-    - 'roles/**/*'
+    - "cookbooks/**/*"
+    - "roles/**/*"
 
 Style/QuotedSymbols:
   EnforcedStyle: single_quotes

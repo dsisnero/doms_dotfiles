@@ -1,26 +1,25 @@
+fix: true # default: false
+parallel: true # default: false
+format: progress # default: Standard::Formatter
+ruby_version: 2.7 # default: RUBY_VERSION
+default_ignores: true # default: true
 
-fix: true               # default: false
-parallel: true          # default: false
-format: progress        # default: Standard::Formatter
-ruby_version: 2.7       # default: RUBY_VERSION
-default_ignores: true  # default: true
+ignore: # default: []
+  - "lib/recipe_helper.rb":
+      - Style/Dir
+      - Style/FrozenStringLiteralComment
+      - Style/EnforcedShorthandSyntax
+      - Style/HashSyntax:
+          EnforcedShorthandSyntax: never
+      - Style/HashSyntax:
+          EnforcedShorthandSyntax
 
-ignore:                 # default: []
-  - 'lib/recipe_helper.rb':
-    - Style/Dir
-    - Style/FrozenStringLiteralComment
-    - Style/EnforcedShorthandSyntax
-    - Style/HashSyntax:
-        EnforcedShorthandSyntax: never
-    - Style/HashSyntax:
-        EnforcedShorthandSyntax
+plugins: # default: []
 
-plugins:                # default: []
+extend_config: # default: []
 
-extend_config:                # default: []
-
-Style/HashSyntax: 
-  EnforcedShorthandSyntax: never 
+Style/HashSyntax:
+  EnforcedShorthandSyntax: never
 #
 # Style/FrozenStringLiteralComment:
 #   Enabled: false
