@@ -3,20 +3,10 @@ user = node[:user]
 group_ = node[:group]
 config_dir = node[:config_home]
 repos = node[:repos]
-is_darwin = node[:platform] == 'darwin'
-
-define :mydir, mode: "755" do
-  dirpath = params[:name]
-
-  directory dirpath do
-    owner user
-    group group_
-    mode params[:mode]
-  end
-end
+node[:platform]
 
 group group_ do
-  user 'root'
+  user "root"
   action :create
 end
 
@@ -83,7 +73,7 @@ template "#{home}/.zshrc" do
   source "templates/.zshrc.erb"
   owner user
   group group
-  not_if "test -e #{home}/.zshrc"
+  # not_if "test -e #{home}/.zshrc"
 end
 
 template "#{home}/.zshenv" do
@@ -165,8 +155,8 @@ dotfile "helix/config.toml"
 # execute "symlink helix snippets" do
 #   command "ln -sfT #{doms_dotfiles}/config/helix/snippets #{config_dir}/helix/snippets"
 #   user user
-#   only_if "test -d #{doms_dotfiles}/config/helix/snippets"
-#   not_if "test -L #{config_dir}/helix/snippets"
+#   only_if {File.directory?( "#{doms_dotfiles}/config/helix/snippets" }
+#   not_if "check_is_symlink (#{config_dir}/helix/snippets )"
 # end
 
 dotfile "solargraph"
@@ -190,3 +180,14 @@ dotfile ".textlintrc"
 #   cwd "#{home}/.prh-rules/media/"
 #   not_if "test -e #{home}/.prh-rules/media/WEB+DB_PRESS.yml"
 # end
+
+# Create dprint config directory
+mydir "#{config_dir}/dprint"
+
+# Copy dprint config file
+remote_file "#{config_dir}/dprint/config.json" do
+  source "files/dprint_config.json"
+  owner node[:user]
+  mode "644"
+end
+# alias is added for dprint in zshrc.erb
