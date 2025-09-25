@@ -24,6 +24,7 @@ Yes. Try to use this scripts.
 ```powershell
 iwr -Headers @{"Cache-Control"="no-cache"} -useb https://raw.githubusercontent.com/dsisnero/doms_dotfiles/main/install.ps1 | iex
 ```
+
 ========
 mydotfiles
 
@@ -51,6 +52,7 @@ Yes. Try to use this scripts.
 ```powershell
 iwr -Headers @{"Cache-Control"="no-cache"} -useb https://raw.githubusercontent.com/dsisnero/doms_dotfiles/main/install.ps1 | iex
 ```
+
 mydotfiles
 
 ## How to install
