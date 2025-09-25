@@ -27,5 +27,5 @@ dst = File.join(config_home, "nvim")
 link dst do
   to src
   user node[:user]
-  not_if "test -d #{dst}"
+  not_if { File.directory? dst }
 end

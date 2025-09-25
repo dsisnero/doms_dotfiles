@@ -74,7 +74,7 @@ when "arch"
   package "mysql"
 
   execute "mysql_install_db --user=mysql --basedir=/usr --datadir=/var/lib/mysql" do
-    not_if "test -d /var/lib/mysql/mysql"
+    not_if { File.directory? "/var/lib/mysql/mysql" }
   end
   # execute 'mysql_secure_installation'
 

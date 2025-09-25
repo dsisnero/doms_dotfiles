@@ -8,7 +8,7 @@ when "darwin"
 
   link dst do
     to src
-    not_if "test -d #{dst}"
+    not_if { File.directory? dst }
     user "root"
   end
 end

@@ -6,6 +6,7 @@ node[:user]
 home = node[:home]
 doms_dotfiles = node[:doms_dotfiles]
 config_dir = node[:config_home]
+node[:zshrc_config]
 
 # include_cookbook "mise"
 
@@ -19,14 +20,14 @@ src = "#{doms_dotfiles}/config/helix/snippets"
 link dest do
   to src
   user node[:user]
-  not_if "test -d #{dest}"
+  not_if { File.directory? dest }
 end
 
 # # Special handling for snippets directory
 # execute "symlink helix snippets" do
 #   command "ln -sfT #{doms_dotfiles}/config/helix/snippets #{config_dir}/helix/snippets"
 #   user user
-#   only_if "test -d #{doms_dotfiles}/config/helix/snippets"
+#   only_if {File.directory? "#{doms_dotfiles}/config/helix/snippets" }
 #   not_if "test -L #{config_dir}/helix/snippets"
 # end
 
@@ -43,7 +44,7 @@ dest = "#{config_home}/helix/runtime"
 link dest do
   to src
   user node[:user]
-  not_if "test -d #{dest}"
+  not_if { File.directory? dest }
 end
 
 # share_dir = "#{home}/.local/share"
@@ -107,10 +108,7 @@ mise "marksman"
 mise "dprint"
 
 # Create dprint config directory
-directory "#{config_dir}/dprint" do
-  owner node[:user]
-  mode "755"
-end
+mydir "#{config_home}/dprint"
 
 # Copy dprint config file
 remote_file "#{config_dir}/dprint/config.json" do
@@ -122,6 +120,6 @@ end
 # Add alias for dprint to use the config file
 file zshrc_config do
   action :edit
-  not_if "grep 'alias dprint=' #{zshrc_config}"
   content %(alias dprint="dprint --config #{config_dir}/dprint/config.json")
+  not_if %(grep "alias dprint=" #{zshrc_config})
 end

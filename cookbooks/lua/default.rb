@@ -10,7 +10,7 @@ include_cookbook "./asdf"
 version = "latest"
 version = node[:lua][:version] unless node[:lua].nil?
 user = node[:user]
-home = node[:home]
+node[:home]
 
 execute "install asdf-lua" do
   user user
@@ -18,7 +18,7 @@ execute "install asdf-lua" do
     source /etc/profile.d/asdf.sh
     asdf plugin-add lua
   EOCMD
-  not_if "test -d #{home}/.asdf/plugins/lua"
+  not_if "File.directory?( " # {home}/.asdf/plugins/lua" )}
 end
 
 [

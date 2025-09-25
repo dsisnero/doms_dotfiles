@@ -19,7 +19,7 @@ directory "#{node[:home]}/.ssh" do
   owner node[:user]
   group node[:group]
   mode "700"
-  not_if "test -d #{node[:home]}/.ssh"
+  not_if { File.directory("#{node[:home]}/.ssh") }
 end
 
 keyfile = "#{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
@@ -28,7 +28,7 @@ execute "add-github-key-to-agent" do
   command "ssh_auth_sock=#{node[:home]}/.ssh/agent.sock ssh-add #{keyfile}"
   user node[:user]
   action :nothing
-  notifies :run, 'execute[verify ssh-agent]'
+  notifies :run, "execute[verify ssh-agent]"
 end
 
 execute "generate GitHub SSH key #{keyfile}" do
@@ -39,8 +39,8 @@ execute "generate GitHub SSH key #{keyfile}" do
     -C "#{node[:github][:email]}" \
     -N "" -q
   EOCMD
-  not_if "test -f #{keyfile}"
-  notifies :run, 'execute[add-github-key-to-agent]'
+  not_if { File.symlink? keyfile }
+  notifies :run, "execute[add-github-key-to-agent]"
 end
 
 file "#{node[:home]}/.ssh/config" do
@@ -56,7 +56,7 @@ file "#{node[:home]}/.ssh/config" do
       IdentitiesOnly yes
       AddKeysToAgent yes
   EOCFG
-  only_if "test -f #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}"
+  only_if { File.symlink? "#{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}" }
 end
 
 # Verify SSH agent has keys loaded
@@ -89,7 +89,7 @@ execute "show GitHub SSH public key" do
 
     echo "🌐 Add this key to GitHub: https://github.com/settings/keys"
   EOCMD
-  only_if "test -f #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}.pub"
+  only_if { File.file? "#{node[:home]}/.ssh/#{node[:github][:ssh_key_file]}.pub" }
 end
 
 execute "add_ssh_key_via_gh" do
@@ -113,7 +113,7 @@ end
 #   user node[:user]
 #   command "SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh -T git@github.com"
 #   only_if <<~EOCMD
-#     test -f #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]} && \
+#     File.symlink? "#{node[:ho me]}/.ssh/#{node[:github][:ssh_key_file]} && \
 #     SSH_AUTH_SOCK=#{node[:home]}/.ssh/agent.sock ssh-add -l | grep -q $(ssh-keygen -lf #{node[:home]}/.ssh/#{node[:github][:ssh_key_file]} | awk '{print $2}')
 #   EOCMD
 # end
