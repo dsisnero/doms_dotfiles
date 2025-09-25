@@ -7,6 +7,26 @@ when "debian", "ubuntu", "mint", "pop"
 when "osx", "darwin"
   package "crystal"
 end
+
+# Download Crystal LLDB formatters
+doms_dotfiles = node[:doms_dotfiles]
+config_home = node[:config_home]
+
+# Create directories
+mydir "#{doms_dotfiles}/config/lldb"
+mydir "#{config_home}/lldb"
+
+# Download the crystal formatters file
+http "#{doms_dotfiles}/config/lldb/crystal_formatters.py" do
+  url "https://raw.githubusercontent.com/crystal-lang/crystal/refs/heads/master/etc/lldb/crystal_formatters.py"
+  user node[:user]
+end
+
+# Create link to config home
+link "#{config_home}/lldb/crystal_formatters.py" do
+  to "#{doms_dotfiles}/config/lldb/crystal_formatters.py"
+  user node[:user]
+end
 # #
 # # Define the Crystal version and channel
 # crystal_version = ENV["CRYSTAL_VERSION"] || "latest"
