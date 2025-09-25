@@ -3,11 +3,13 @@ inherit_gem:
   standard-custom: config/base.yml
   standard-performance: config/base.yml
 
-require:
-  - standard
+plugins:
   - standard-custom
   - standard-performance
   - rubocop-performance
+
+require:
+  - standard
 
 AllCops:
   NewCops: enable
