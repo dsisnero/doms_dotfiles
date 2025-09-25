@@ -104,9 +104,6 @@ file zshrc_config do
   content %(export EDITOR=hx)
 end
 
-mise "marksman"
-mise "dprint"
-
 # Create dprint config directory
 mydir "#{config_home}/dprint"
 
