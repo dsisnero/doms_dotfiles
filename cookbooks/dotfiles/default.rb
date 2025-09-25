@@ -1,7 +1,7 @@
 home = node[:home]
 user = node[:user]
 group_ = node[:group]
-config_dir = node[:config_home]
+config_home = node[:config_home]
 repos = node[:repos]
 node[:platform]
 
@@ -14,16 +14,16 @@ mydir "#{home}/.ssh" do
   mode "700"
 end
 
-mydir "#{config_dir}"
-mydir "#{config_dir}/git"
-mydir "#{config_dir}/helix"
-mydir "#{config_dir}/zsh/z"
-mydir "#{config_dir}/nvim"
-mydir "#{config_dir}/spacemacs/layers"
-mydir "#{config_dir}/Code/User"
-mydir "#{config_dir}/dictionary"
-mydir "#{config_dir}/lazygit"
-mydir "#{config_dir}/fish"
+mydir "#{config_home}"
+mydir "#{config_home}/git"
+mydir "#{config_home}/helix"
+mydir "#{config_home}/zsh/z"
+mydir "#{config_home}/nvim"
+mydir "#{config_home}/spacemacs/layers"
+mydir "#{config_home}/Code/User"
+mydir "#{config_home}/dictionary"
+mydir "#{config_home}/lazygit"
+mydir "#{config_home}/fish"
 mydir "#{home}/.local"
 mydir "#{home}/.local/bin"
 mydir "#{home}/.local/themes"
@@ -47,7 +47,7 @@ end
 # repos = node[:ghq_root]
 
 # Initialize Fish config with mise setup
-template "#{config_dir}/fish/config.fish" do
+template "#{config_home}/fish/config.fish" do
   source "templates/fish/config.fish.erb"
   owner user
   group group
@@ -55,11 +55,11 @@ template "#{config_dir}/fish/config.fish" do
   only_if "which fish >/dev/null 2>&1" # Only create if Fish is installed
 end
 
-# template "#{config_dir}/nvim/init.vim" do
+# template "#{config_home}/nvim/init.vim" do
 #   source "templates/init.vim.erb"
 #   owner user
 #   group group
-# #   not_if "test -e #{config_dir}/nvim/init.vim"
+# #   not_if "test -e #{config_home}/nvim/init.vim"
 # end
 
 template "#{home}/.zlogin" do
@@ -133,8 +133,8 @@ end
 # github_token
 if node[:is_wsl]
   cmds = [
-    "cp /mnt/c/tools/github_token #{config_dir}/git/",
-    "chown #{user}:#{group} #{config_dir}/git/github_token"
+    "cp /mnt/c/tools/github_token #{config_home}/git/",
+    "chown #{user}:#{group} #{config_home}/git/github_token"
   ]
 
   cmds.each do |cmd|
@@ -148,15 +148,14 @@ dotfile "pip"
 dotfile "powerline"
 dotfile "broot"
 dotfile "helix/external-snippets.toml"
-dotfile "helix/languages.toml"
 dotfile "helix/config.toml"
 
 # Special handling for snippets directory
 # execute "symlink helix snippets" do
-#   command "ln -sfT #{doms_dotfiles}/config/helix/snippets #{config_dir}/helix/snippets"
+#   command "ln -sfT #{doms_dotfiles}/config/helix/snippets #{config_home}/helix/snippets"
 #   user user
 #   only_if {File.directory?( "#{doms_dotfiles}/config/helix/snippets" }
-#   not_if "check_is_symlink (#{config_dir}/helix/snippets )"
+#   not_if "check_is_symlink (#{config_home}/helix/snippets )"
 # end
 
 dotfile "solargraph"
@@ -181,13 +180,46 @@ dotfile ".textlintrc"
 #   not_if "test -e #{home}/.prh-rules/media/WEB+DB_PRESS.yml"
 # end
 
-# Create dprint config directory
-mydir "#{config_dir}/dprint"
+lldb_config_home = File.join(config_home, "lldb")
+mydir lldb_config_home
 
-# Copy dprint config file
-remote_file "#{config_dir}/dprint/config.json" do
-  source "files/dprint_config.json"
-  owner node[:user]
-  mode "644"
+rust_lldb_file = "#{lldb_config_home}/lldb_rust.py"
+
+rust_lldb_source = File.join(doms_dotfiles, "config", "lldb", "lldb_rust.py")
+
+# Install lldb_rust.py script
+link rust_lldb_file do
+  to rust_lldb_source
+  not_if { File.file? rust_lldb_file }
 end
-# alias is added for dprint in zshrc.erb
+
+node.reverse_merge!(
+  rust_lldb_file: rust_lldb_file
+)
+
+crystal_lldb_file = File.join(doms_dotfiles, "config", "lldb", "crystal_formatters.py")
+
+http_request crystal_lldb_file do
+  url "https://raw.githubusercontent.com/crystal-lang/crystal/refs/heads/master/etc/lldb/crystal_formatters.py"
+  user node[:user]
+end
+
+# Create link to config home
+link "#{config_home}/lldb/crystal_formatters.py" do
+  to "#{doms_dotfiles}/config/lldb/crystal_formatters.py"
+  user node[:user]
+end
+
+helix_language_file = File.join(config_home, "helix", "languages.toml")
+
+template helix_language_file do
+  MItamae.logger.info "in language.toml template creation"
+  source "templates/helix/languages.toml.erb"
+  owner user
+  group group
+  mode "644"
+  variables(
+    rust_import_file: rust_lldb_file,
+    crystal_import_file: crystal_lldb_file
+  )
+end
