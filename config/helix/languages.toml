@@ -6,22 +6,21 @@ command = "harper-ls"
 args = ["--stdio"]
 
 [language-server.scls.config]
-max_completion_items = 20    # set max completion results len for each group: words, snippets, unicode-input
-snippets_first = true        # completions will return before snippets by default
-feature_words = true         # enable completion by word
-feature_snippets = true      # enable snippets
+max_completion_items = 20 # set max completion results len for each group: words, snippets, unicode-input
+snippets_first = true # completions will return before snippets by default
+feature_words = true # enable completion by word
+feature_snippets = true # enable snippets
 feature_unicode_input = true # enable "unicode input"
-feature_paths = true         # enable path completion
+feature_paths = true # enable path completion
 
 [[sources]] # list of sources to load
-name = "friendly-snippets"                                  # optional name shown on snippet description
+name = "friendly-snippets" # optional name shown on snippet description
 git = "https://github.com/rafamadriz/friendly-snippets.git" # git repo with snippets collections
 
 # write logs to /tmp/completion.log
 [language-server.scls.environment]
 RUST_LOG = "info,simple-completion-langauge-server=info"
 LOG_FILE = "d:/tmp/completion.log"
-
 
 [language-server.rust-analyzer.config]
 check = { command = "clippy", features = "all" }
@@ -41,7 +40,6 @@ command = "ltex-ls"
 command = "buck2"
 args = ["--lsp"]
 
-
 [language-server.solargraph]
 command = "bundle"
 args = ["exec", "solargraph", "stdio"]
@@ -60,7 +58,6 @@ config = { codeActions = true, codeLens = true, completion = true, definition = 
 formatter = "rubocop"
 experimentalFeaturesEnabled = true
 
-
 # [language-server.ruby-lsp.config.indexing]
 # excludedPatterns = [ "path/to/excluded/file.rb" ]
 # includedPatterns = [ "path/to/included/file.rb" ]
@@ -75,14 +72,12 @@ args = ["exec", "rubocop", "--lsp"]
 # foldinfRanges = true, formatting = true,hover = true, inlayHint = true,onTypeFormatting = true,selectionRanges = true,semanticHighlighting = true,
 # completion = true}
 
-
 [language-server.standardrb]
 command = "standardrb"
 args = ["--lsp"]
 
 [language-server.standardrb.config.standardrb]
 formatting = true
-
 
 [[language]]
 name = "asciidoc"
@@ -109,27 +104,13 @@ language-servers = ["marksman", "markdown-oxide", "harper-ls", "ltex"]
 name = "ruby"
 roots = ["Gemfile", "Rakefile", "Gemfile.lock"]
 language-servers = [
-  { name = "ruby-lsp", except-features = [
-    "diagnostics",
-  ] },
-  { name = "solargraph", only-features = [
-    "diagnostics",
-  ] },
+  { name = "ruby-lsp", except-features = ["diagnostics"] },
+  { name = "solargraph", only-features = ["diagnostics"] },
   { name = "scls" },
   { name = "rubocop" },
 ]
-formatter = { command = "bundle", args = [
-  "exec",
-  "rubocop",
-  "--stdin",
-  "foo.rb",
-  "-a",
-  "--stderr",
-  "--fail-level",
-  "fatal",
-] }
+formatter = { command = "bundle", args = ["exec", "rubocop", "--stdin", "foo.rb", "-a", "--stderr", "--fail-level", "fatal"] }
 auto-format = true
-
 
 [language.debugger]
 name = "rdbg"
@@ -144,7 +125,6 @@ name = "script"
 request = "launch"
 completion = [{ name = "script", completion = "filename", default = "." }]
 args = { program = "{0}" }
-
 
 [[language.debugger.templates]]
 name = "attach"
@@ -185,9 +165,7 @@ command = "lldb-vscode"
 name = "binary"
 request = "launch"
 completion = [{ name = "binary", completion = "filename" }]
-args = { program = "{0}", initCommands = [
-  "command script import c:/windows_home/.local/share/crystal/crystal_formatters.py",
-] }
+args = { program = "{0}", initCommands = ["command script import c:/windows_home/.local/share/crystal/crystal_formatters.py"] }
 
 [[language]]
 name = "rust"
@@ -201,9 +179,7 @@ command = "lldb-vscode"
 name = "binary"
 request = "launch"
 completion = [{ name = "binary", completion = "filename" }]
-args = { program = "{0}", initCommands = [
-  "command script import c:/windows_home/.config/llvm/lldb_vscode_rustc_primer.py",
-] }
+args = { program = "{0}", initCommands = ["command script import c:/windows_home/.config/llvm/lldb_vscode_rustc_primer.py"] }
 
 [language-server.deno]
 command = "deno"
@@ -242,7 +218,6 @@ scss = { validate = { enable = true } }
 less = { validate = { enable = true } }
 provideFormatter = true
 
-
 [[language]]
 name = "typescript"
 language-servers = ["typescript-language-server", "eslint", "emmet-ls"]
@@ -261,38 +236,20 @@ auto-format = true
 name = "javascript"
 language-servers = ["typescript-language-server", "eslint", "emmet-ls"]
 # formatter = { command = "prettier", args = [ "--parser", "typescript" ] }
-formatter = { command = "dprint", args = [
-  "-c",
-  "c:/windows_home/.config/dprint/dprint.json",
-  "fmt",
-  "--stdin",
-  "javascript",
-] }
+formatter = { command = "dprint", args = ["-c", "c:/windows_home/.config/dprint/dprint.json", "fmt", "--stdin", "javascript"] }
 auto-format = true
 
 [[language]]
 name = "jsx"
 language-servers = ["typescript-language-server", "eslint", "emmet-ls"]
 # formatter = { command = "prettier", args = [ "--parser", "typescript" ] }
-formatter = { command = "dprint", args = [
-  "-c",
-  "c:/windows_home/.config/dprint/dprint.json",
-  "fmt",
-  "--stdin",
-  "jsx",
-] }
+formatter = { command = "dprint", args = ["-c", "c:/windows_home/.config/dprint/dprint.json", "fmt", "--stdin", "jsx"] }
 auto-format = true
 
 [[language]]
 name = "json"
 # formatter = { command = "prettier", args = [ "--parser", "json" ] }
-formatter = { command = "dprint", args = [
-  "-c",
-  "c:/windows_home/.config/dprint/dprint.json",
-  "fmt",
-  "--stdin",
-  "json",
-] }
+formatter = { command = "dprint", args = ["-c", "c:/windows_home/.config/dprint/dprint.json", "fmt", "--stdin", "json"] }
 auto-format = true
 
 [[language]]
@@ -308,7 +265,7 @@ auto-format = true
 
 [[language]]
 name = "lua"
-formatter = { command = "stylua" , args = ["-"] }
+formatter = { command = "stylua", args = ["-"] }
 auto-format = true
 
 [[language]]
@@ -386,5 +343,3 @@ file-types = [
 ]
 block-comment-tokens = { start = "<!--", end = "-->" }
 indent = { tab-width = 2, unit = "  " }
-
-
