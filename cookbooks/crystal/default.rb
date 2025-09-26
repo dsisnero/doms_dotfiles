@@ -17,7 +17,7 @@ mydir "#{doms_dotfiles}/config/lldb"
 mydir "#{config_home}/lldb"
 
 # Download the crystal formatters file
-http "#{doms_dotfiles}/config/lldb/crystal_formatters.py" do
+http_request "#{doms_dotfiles}/config/lldb/crystal_formatters.py" do
   url "https://raw.githubusercontent.com/crystal-lang/crystal/refs/heads/master/etc/lldb/crystal_formatters.py"
   user node[:user]
 end
