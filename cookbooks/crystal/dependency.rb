@@ -21,8 +21,6 @@ when "debian", "ubuntu", "mint", "pop"
     libxml2-dev
     libyaml-dev
     lld
-    llvm
-    llvm-dev
     libz-dev
     clang
     libclang-dev
@@ -30,6 +28,8 @@ when "debian", "ubuntu", "mint", "pop"
   ].each do |pkg|
     package pkg
   end
+  include_cookbook "llvm"
 when "osx", "darwin"
+  include_cookbook "llvm"
 when "redhat"
 end
