@@ -73,7 +73,6 @@ template "#{home}/.zshrc" do
   source "templates/.zshrc.erb"
   owner user
   group group
-  # not_if "test -e #{home}/.zshrc"
 end
 
 template "#{home}/.zshenv" do

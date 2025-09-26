@@ -1,5 +1,8 @@
 # vim: set ft=zsh:
 
+# Set PERSONAL_ZSH_DIR to ensure plugin file is loaded
+export PERSONAL_ZSH_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
+
 if [[ -z "${PIP_SITE_LOCATION}" ]]; then
   export PIP_SITE_LOCATION=$(mise exec -- pip show -f powerline-status | grep Location | awk '{print $2}')
   echo "Please set env: export PIP_SITE_LOCATION=$PIP_SITE_LOCATION"
@@ -18,6 +21,22 @@ source ~/repos/github.com/dsisnero/doms_dotfiles/config/zsh/.zshrc_wsl
 <%- if node[:is_wsl] -%>
 alias explorer='/mnt/c/Windows/explorer.exe'
 <%- end -%>
+
+# Define peco_history function for command history completion
+peco_history() {
+  local history_cmd
+  if [ -n "$FILTER_CMD" ]; then
+    # Use platform-appropriate reverse command
+    if command -v tac >/dev/null 2>&1; then
+      history_cmd="history -n 1 | tac | $FILTER_CMD"
+    else
+      history_cmd="history -n 1 | tail -r | $FILTER_CMD"
+    fi
+    eval "$history_cmd"
+  else
+    echo "Error: FILTER_CMD is not set. Install peco or fzf."
+  fi
+}
 
 # profiling
 if (which zprof > /dev/null 2>&1) ;then
