@@ -104,19 +104,4 @@ file zshrc_config do
   content %(export EDITOR=hx)
 end
 
-# Create dprint config directory
-mydir "#{config_home}/dprint"
-
-# Copy dprint config file
-remote_file "#{config_dir}/dprint/config.json" do
-  source "files/dprint_config.json"
-  owner node[:user]
-  mode "644"
-end
-
-# Add alias for dprint to use the config file
-file zshrc_config do
-  action :edit
-  content %(alias dprint="dprint --config #{config_dir}/dprint/config.json")
-  not_if %(grep "alias dprint=" #{zshrc_config})
-end
+include_cookbook "language_servers"
