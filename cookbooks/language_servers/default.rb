@@ -11,7 +11,7 @@ when "darwin"
   package "docker-ls"
   package "ansible-language-server"
 
-  npm_installed = %w[vscode-langservers-extracted typescript typescript-language-server]
+  npm_installed = %w[vscode-langservers-extracted typescript typescript-language-server tombi]
 
   npm_installed.each do |lsp|
     execute("installing #{lsp}") do
@@ -24,6 +24,7 @@ when "darwin"
 
   mise "marksman"
   mise "dprint"
+  mise "taplo"
   # Copy dprint config file
   remote_file "#{config_home}/dprint/config.json" do
     source "files/dprint_config.json"
