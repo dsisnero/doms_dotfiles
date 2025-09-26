@@ -1,10 +1,11 @@
 # theme = "amberwood"
-theme = "nord-night"
+# theme = "nord-night"
+theme = "monokai_pro_spectrum"
 
 [editor]
 line-number = "relative"
 mouse = true
-rulers = [80]
+rulers = [80, 120]
 bufferline = "multiple"
 completion-trigger-len = 2
 default-line-ending = "lf"
