@@ -1,21 +1,19 @@
+[language-server]
+buck2 = { command = "buck2", args = ["--lsp"] }
+solargraph = { command = "bundle", args = ["exec", "solargraph", "stdio"] }
+deno = { command = "deno", args = ["lsp"] }
+emmet-ls = { command = "emmet-ls", args = ["--stdio"] }
+
 [language-server.scls]
 command = "simple-completion-language-server"
 
-[language-server.harper-ls]
-command = "harper-ls"
-args = ["--stdio"]
-
 [language-server.scls.config]
-max_completion_items = 20 # set max completion results len for each group: words, snippets, unicode-input
-snippets_first = true # completions will return before snippets by default
-feature_words = true # enable completion by word
-feature_snippets = true # enable snippets
-feature_unicode_input = true # enable "unicode input"
-feature_paths = true # enable path completion
-
-[[sources]] # list of sources to load
-name = "friendly-snippets" # optional name shown on snippet description
-git = "https://github.com/rafamadriz/friendly-snippets.git" # git repo with snippets collections
+max_completion_items = 20  # set max completion results len for each group: words, snippets, unicode-input
+snippets_first = true  # completions will return before snippets by default
+feature_words = true  # enable completion by word
+feature_snippets = true  # enable snippets
+feature_unicode_input = true  # enable "unicode input"
+feature_paths = true  # enable path completion
 
 # write logs to /tmp/completion.log
 [language-server.scls.environment]
@@ -32,17 +30,6 @@ procMacro = { enable = true }
 
 # [language-server.llm-ls]
 # command = "llm-ls"on timeout = 5
-
-[language-sever.ltex]
-command = "ltex-ls"
-
-[language-server.buck2]
-command = "buck2"
-args = ["--lsp"]
-
-[language-server.solargraph]
-command = "bundle"
-args = ["exec", "solargraph", "stdio"]
 
 [language-server.yaml-language-server.config.yaml]
 format = { enable = true }
@@ -79,6 +66,39 @@ args = ["--lsp"]
 [language-server.standardrb.config.standardrb]
 formatting = true
 
+[language-server.eslint]
+command = "vscode-eslint-language-server"
+args = ["--stdio"]
+
+[language-server.eslint.config]
+codeActionsOnSave = { mode = "all", "source.fixAll.eslint" = true }
+format = { enable = true }
+nodePath = ""
+quiet = false
+rulesCustomizations = []
+run = "onType"
+validate = "on"
+experimental = {  }
+problems = { shortenToSingleLine = false }
+
+[language-server.eslint.config.codeAction]
+disableRuleComment = { enable = true, location = "separateLine" }
+showDocumentation = { enable = false }
+
+[language-server.vscode-json-language-server.config]
+json = { validate = { enable = true }, format = { enable = true } }
+provideFormatter = true
+
+[language-server.vscode-css-language-server.config]
+css = { validate = { enable = true } }
+scss = { validate = { enable = true } }
+less = { validate = { enable = true } }
+provideFormatter = true
+
+[[sources]]  # list of sources to load
+name = "friendly-snippets"  # optional name shown on snippet description
+git = "https://github.com/rafamadriz/friendly-snippets.git"  # git repo with snippets collections
+
 [[language]]
 name = "asciidoc"
 scope = "source.adoc"
@@ -91,10 +111,6 @@ language-servers = ["ltex", "scls", "harper-ls"]
 grammar = "asciidoc"
 text-width = 80
 roots = []
-
-[[grammar]]
-name = "asciidoc"
-source = { git = "https://github.com/cathaysia/tree-sitter-asciidoc", rev = "master", subpath = "tree-sitter-asciidoc" }
 
 [[language]]
 name = "markdown"
@@ -109,7 +125,16 @@ language-servers = [
   { name = "scls" },
   { name = "rubocop" },
 ]
-formatter = { command = "bundle", args = ["exec", "rubocop", "--stdin", "foo.rb", "-a", "--stderr", "--fail-level", "fatal"] }
+formatter = { command = "bundle", args = [
+  "exec",
+  "rubocop",
+  "--stdin",
+  "foo.rb",
+  "-a",
+  "--stderr",
+  "--fail-level",
+  "fatal",
+] }
 auto-format = true
 
 [language.debugger]
@@ -165,7 +190,25 @@ command = "lldb-dap"
 name = "binary"
 request = "launch"
 completion = [{ name = "binary", completion = "filename" }]
-args = { program = "{0}", initCommands = ["command script import <%= @crystal_import_file %>"] }
+args = { program = "{0}", initCommands = [
+  "command script import <%= @crystal_import_file %>"] }
+
+# -----------------------------------------------------------------
+# TEMPLATE 3: DEBUG CURRENT FILE (USING COMPLETION)
+# Designed to debug the source file you are currently viewing.
+# -----------------------------------------------------------------
+# args # {0} is the user-selected file path, typically defaulting to the current file or directory entry point.
+[[language.debugger.templates]]
+name = "Debug Current File (Source/Binary)"
+request = "launch"
+completion = [
+  # Use completion to automatically suggest the current directory ('.').
+  # The user is prompted to select the specific source file (or target compiled binary path).
+  { name = "File to Debug", completion = "filename", default = "." },
+]
+args = { mode = "debug", program = "{0}", args = [], initCommands = [
+  "command script import <%= crystal_import_file %>",
+] }
 
 [[language]]
 name = "rust"
@@ -179,44 +222,10 @@ command = "lldb-dap"
 name = "binary"
 request = "launch"
 completion = [{ name = "binary", completion = "filename" }]
-args = { program = "{0}", initCommands = ["command script import <%= @rust_import_file %>"] }
-
-[language-server.deno]
-command = "deno"
-args = ["lsp"]
-
-[language-server.emmet-ls]
-command = "emmet-ls"
-args = ["--stdio"]
-
-[language-server.eslint]
-command = "vscode-eslint-language-server"
-args = ["--stdio"]
-
-[language-server.eslint.config]
-codeActionsOnSave = { mode = "all", "source.fixAll.eslint" = true }
-format = { enable = true }
-nodePath = ""
-quiet = false
-rulesCustomizations = []
-run = "onType"
-validate = "on"
-experimental = {}
-problems = { shortenToSingleLine = false }
-
-[language-server.eslint.config.codeAction]
-disableRuleComment = { enable = true, location = "separateLine" }
-showDocumentation = { enable = false }
-
-[language-server.vscode-json-language-server.config]
-json = { validate = { enable = true }, format = { enable = true } }
-provideFormatter = true
-
-[language-server.vscode-css-language-server.config]
-css = { validate = { enable = true } }
-scss = { validate = { enable = true } }
-less = { validate = { enable = true } }
-provideFormatter = true
+args = { program = "{0}", initCommands = [
+  "command script import <%= rust_import_file %>",
+] }
+eslint = { command = "vscode-eslint-language-server", args = ["--stdio"] }
 
 [[language]]
 name = "typescript"
@@ -236,26 +245,44 @@ auto-format = true
 name = "javascript"
 language-servers = ["typescript-language-server", "eslint", "emmet-ls"]
 # formatter = { command = "prettier", args = [ "--parser", "typescript" ] }
-formatter = { command = "dprint", args = ["-c", "c:/windows_home/.config/dprint/dprint.json", "fmt", "--stdin", "javascript"] }
+formatter = { command = "dprint", args = [
+  "-c",
+  "c:/windows_home/.config/dprint/dprint.json",
+  "fmt",
+  "--stdin",
+  "javascript",
+] }
 auto-format = true
 
 [[language]]
 name = "jsx"
 language-servers = ["typescript-language-server", "eslint", "emmet-ls"]
 # formatter = { command = "prettier", args = [ "--parser", "typescript" ] }
-formatter = { command = "dprint", args = ["-c", "c:/windows_home/.config/dprint/dprint.json", "fmt", "--stdin", "jsx"] }
+formatter = { command = "dprint", args = [
+  "-c",
+  "c:/windows_home/.config/dprint/dprint.json",
+  "fmt",
+  "--stdin",
+  "jsx",
+] }
 auto-format = true
 
 [[language]]
 name = "json"
 # formatter = { command = "prettier", args = [ "--parser", "json" ] }
-formatter = { command = "dprint", args = ["-c", "c:/windows_home/.config/dprint/dprint.json", "fmt", "--stdin", "json"] }
+formatter = { command = "dprint", args = [
+  "-c",
+  "c:/windows_home/.config/dprint/dprint.json",
+  "fmt",
+  "--stdin",
+  "json",
+] }
 auto-format = true
 
 [[language]]
 name = "html"
 language-servers = ["vscode-html-language-server", "emmet-ls"]
-formatter = { command = 'prettier', args = ["--parser", "html"] }
+formatter = { command = "prettier", args = ["--parser", "html"] }
 auto-format = true
 
 [[language]]
@@ -343,3 +370,11 @@ file-types = [
 ]
 block-comment-tokens = { start = "<!--", end = "-->" }
 indent = { tab-width = 2, unit = "  " }
+
+[[language]]
+name = "toml"
+formatter = { command = "tombi", args = ["format"] }
+
+[[grammar]]
+name = "asciidoc"
+source = { git = "https://github.com/cathaysia/tree-sitter-asciidoc", rev = "master", subpath = "tree-sitter-asciidoc" }
