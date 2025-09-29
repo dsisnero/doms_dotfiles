@@ -1,12 +1,22 @@
 #!/usr/bin/env zsh
 
-# docker compose run の省略系
-service_name=$1
-shift
+# Docker Compose Run/Exec Wrapper (dcrun)
+# Smart Docker Compose command that chooses between 'run' and 'exec'
+# If the service container is not running, uses 'docker compose run --rm'
+# If the service container is already running, uses 'docker compose exec'
+# This provides an intuitive interface for interacting with Docker services
 
+# Extract the service name from the first argument
+service_name=$1
+shift  # Remove the service name from arguments, leaving the command to run
+
+# Check if the service container is currently running
 if [ -z "$(docker compose ps $service_name --format "{{ .Status }}" --filter "status=running")" ]; then
+  # Service is not running - start a new container with 'run --rm'
+  # The '--rm' flag automatically removes the container when it exits
   docker compose run --rm $service_name $@
 else
-  # execのときはクオート不要だった
+  # Service is already running - execute command in existing container with 'exec'
+  # Note: No quotes needed around arguments for 'exec' command
   docker compose exec $service_name $@
 fi
