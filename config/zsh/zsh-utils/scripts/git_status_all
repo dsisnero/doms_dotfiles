@@ -1,21 +1,34 @@
 #!/bin/bin/env zsh
 
+# Script to check git status for all repositories matching a search pattern
+# Uses ghq to list repositories and shows number of changed files for each
+# Usage: git_status_all [search_word]
+
+# Check if search word argument is provided
 if [ $# -eq 0 ]; then
   echo "usage"
   echo " git_status_all [search word]"
   return 1
 fi
 
+# Save current directory to return to later
 CURDIR=$(pwd)
 search_word=$1
 
+# Iterate through all repositories managed by ghq that match the search pattern
 for repo in $(ghq list -p | grep $search_word); do
   cd $repo
+  # Extract hostname (e.g., github.com) from repository path
   hostname=$(basename $(cd ../..;pwd))
+  # Extract repository name from current directory
   reposname=$(basename $(pwd))
 
+  # Fetch latest changes from remote (silently)
   git fetch 1>/dev/null 2>&1
+  # Count number of changed files in working directory using git status
   linenum=$(git status --short | wc -l)
+  # Output: [number of changes] [hostname]:[username]/[repository name]
   echo "$linenum $hostname:$username/$reposname"
+  # Return to original directory
   cd $CURDIR
 done
