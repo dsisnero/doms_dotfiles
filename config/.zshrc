@@ -515,9 +515,9 @@ if [ -f ${PERSONAL_ZSH_DIR}/.zshrc.plugin ]; then
 fi
 
 # Load utility scripts (commented out) {{{
-# utils_dir=~/repos/github.com/bundai223/dotfiles/config/zsh/zsh-utils
-# source ~/repos/github.com/bundai223/dotfiles/config/zsh/zsh-utils/scripts/functions.zsh
-# source_scripts_in_tree $utils_dir
+ utils_dir=~/repos/github.com/dsisnero/doms_dotfiles/config/zsh/zsh-utils
+ source ~/repos/github.com/dsisnero/doms_dotfiles/config/zsh/zsh-utils/scripts/functions.zsh
+ source_scripts_in_tree $utils_dir
 # }}}
 
 # Prompt configuration {{{
