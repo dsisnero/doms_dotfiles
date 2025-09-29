@@ -1,5 +1,14 @@
-#.local_zshrc
-alias explorer='/mnt/c/Windows/explorer.exe'
-alias zeal="${WINHOME}/scoop/shims/zeal.exe"
+# Windows Subsystem for Linux (WSL) Specific Configuration
+# This file contains aliases and settings specific to WSL environments
+# Provides integration with Windows host system
 
-#
+# Windows Integration Aliases
+alias explorer='/mnt/c/Windows/explorer.exe'  # Open Windows Explorer from WSL
+alias zeal="${WINHOME}/scoop/shims/zeal.exe"  # Launch Zeal documentation browser (Windows version)
+
+# Note: Additional WSL-specific configurations can be added here
+# Common WSL integrations include:
+# - Accessing Windows executables
+# - Mounting Windows drives
+# - Clipboard integration
+# - Windows browser launching

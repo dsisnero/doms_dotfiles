@@ -1,43 +1,48 @@
-#.zshrc_local
+# macOS-specific Zsh Configuration
+# This file contains aliases and functions specific to macOS environment
+# Loaded automatically when running on macOS/Darwin systems
 
-# Alias
+# Editor Aliases - macOS-specific editor paths
 alias vi='/Applications/MacVim.app/Contents/MacOS/Vim -u NONE -U NONE --noplugin "$@"'
 alias vim='/Applications/MacVim.app/Contents/MacOS/Vim "$@"'
 alias nvim='nvim -i NONE $@'
 alias vimdiff='/Applications/MacVim.app/Contents/MacOS/Vim -d "$@"'
 alias mvimdiff='/Applications/MacVim.app/Contents/MacOS/mvimdiff "$@"'
 
-alias updatedb='sudo /usr/libexec/locate.updatedb'
-#alias updatedb="sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist"
-alias chrome='open -a Google\ Chrome'
-alias xcode='open -a /Applications/Xcode.app/Contents/MacOS/Xcode'
-alias ios_sim='open -a /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone\ Simulator.app'
-alias android_sim='open -a ~/Applications/Genymotion.app'
-alias createTags='~/repos/github.com/bundai223/codepocket/shell/mac/create_ctags.sh'
-alias startup='open -a startup'
-alias swift='/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift'
-alias bd='boot2docker'
+# System Utilities
+alias updatedb='sudo /usr/libexec/locate.updatedb'  # Update locate database
+alias chrome='open -a Google\ Chrome'               # Open with Chrome browser
+alias xcode='open -a /Applications/Xcode.app/Contents/MacOS/Xcode'  # Launch Xcode
+alias ios_sim='open -a /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone\ Simulator.app'  # iOS Simulator
+alias android_sim='open -a ~/Applications/Genymotion.app'  # Android emulator
+alias swift='/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift'  # Swift compiler
+alias bd='boot2docker'  # Docker boot2docker wrapper
 
+# Development Tools
+alias createTags='~/repos/github.com/bundai223/codepocket/shell/mac/create_ctags.sh'  # Generate ctags
+alias startup='open -a startup'  # Launch startup applications
+alias eclipse_clean='/Applications/eclipse/Eclipse.app/Contents/MacOS/eclipse -clean'  # Clean Eclipse cache
+
+# File extension association - automatically open .xcodeproj files with Xcode
 alias -s xcodeproj=xcode
 
-#alias rm='~/tool/osx-mv2trash/bin/mv2trash'
-#alias rm-vimbackup='find **/*~| xargs ~/tool/osx-mv2trash/bin/mv2trash'
+# Memory management (commented out - reference only)
+# alias refmem='refresh_memory &>/dev/null &'  # Refresh system memory
 
-alias eclipse_clean='/Applications/eclipse/Eclipse.app/Contents/MacOS/eclipse -clean'
-
-# ref) http://tukaikta.blog135.fc2.com/blog-entry-228.html
-# refresh memory
-alias refmem='refresh_memory &>/dev/null &'
-
-# android
+# Android Development Tools
 SCREENSHOT_DIR='~/Desktop'
-alias adb='adbp'
-alias pidcat='pidcatp'
-alias restart-adb='adbp kill-server; adbp start-server'
+alias adb='adbp'  # Android Debug Bridge with custom wrapper
+alias pidcat='pidcatp'  # Colored logcat output
+alias restart-adb='adbp kill-server; adbp start-server'  # Restart ADB server
+# Interactive app uninstallation using peco/fzf
 alias uninstallapp='adbp shell pm list package | sed -e s/package:// | peco | xargs adbp uninstall'
+# Interactive app installation
 alias installapp='find ./ -name "*.apk" | peco | xargs adbp install -r'
+# Take screenshot and open it
 alias screenshot='screenshot2 $SCREENSHOT_DIR/screenshot.png; open $SCREENSHOT_DIR/screenshot.png'
 
+# Vagrant helper function
+# Lists Vagrant virtualbox machines and extracts their names
 vagrant_list()
 {
   v status | grep virtualbox | awk '{ print $1 }'
