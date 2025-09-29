@@ -1,9 +1,15 @@
+# macOS-specific Peco utility functions
+
+# Navigate to work directories using fuzzy finder
+# Searches ~/work directory (max depth 2) and changes to selected directory
 peco_work() {
     target=`find ~/work -maxdepth 2 -mindepth 1 -type d | peco`
     echo $target
     cd $target
 }
 
+# Launch Genymotion Android emulator using fuzzy finder to select VM
+# Lists all VirtualBox VMs and boots the selected one in Genymotion
 genymotion_peco() {
     if [ -z "$GENYMOTION_APP_HOME" ]
     then
