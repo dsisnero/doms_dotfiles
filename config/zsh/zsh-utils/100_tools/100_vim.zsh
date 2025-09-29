@@ -1,4 +1,6 @@
-# create .local.vimrc
+# Create a local .vimrc file for project-specific Vim settings
+# This sets up a project root variable and changes the working directory in Vim
+# Usage: local_vimrc_create /path/to/target
 local_vimrc_create()
 {
     if [[ "" == ${1} ]]; then
@@ -15,6 +17,7 @@ local_vimrc_create()
         if [ -f ${filepath} ]; then
             echo "*Error* Already exist file. : ${filepath}"
         else
+            # Create the local vimrc file with project-specific settings
             echo "\" .local.vimrc">${filepath}
             echo "let \$PROJECT_ROOT=expand(\"${dirpath}\")">>${filepath}
             echo "lcd \$PROJECT_ROOT">>${filepath}
