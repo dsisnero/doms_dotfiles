@@ -207,7 +207,7 @@ completion = [
   { name = "File to Debug", completion = "filename", default = "." },
 ]
 args = { mode = "debug", program = "{0}", args = [], initCommands = [
-  "command script import <%= crystal_import_file %>",
+  "command script import <%= @crystal_import_file %>",
 ] }
 
 [[language]]
@@ -223,7 +223,7 @@ name = "binary"
 request = "launch"
 completion = [{ name = "binary", completion = "filename" }]
 args = { program = "{0}", initCommands = [
-  "command script import <%= rust_import_file %>",
+  "command script import <%= @rust_import_file %>",
 ] }
 eslint = { command = "vscode-eslint-language-server", args = ["--stdio"] }
 
