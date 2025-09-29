@@ -606,3 +606,4 @@ export EDITOR=hx                # Set Helix as default editor
 export OLLAMA_MODELS=/Volumes/extreme_ssd/ollama_models  # Ollama model storage location
 alias ollama_start='launchctl load ~/Library/LaunchAgents/com.ollama.serve.plist'
 alias ollama_stop='launchctl unload ~/Library/LaunchAgents/com.ollama.serve.plist'
+eval "$(atuin init zsh)"
