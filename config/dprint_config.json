@@ -29,7 +29,7 @@
     "https://plugins.dprint.dev/dockerfile-0.3.3.wasm",
     "https://plugins.dprint.dev/ruff-0.5.0.wasm",
     "https://plugins.dprint.dev/g-plane/malva-v0.14.3.wasm",
-    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.24.0.wasm",
+    "https://plugins.dprint.dev/g-plane/markup_fmt-v0.23.4.wasm",
     "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.1.wasm"
   ]
 }

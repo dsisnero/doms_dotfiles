@@ -83,7 +83,9 @@ local config = {
 	}),
 	font_size = 13.0,
 	-- color_scheme = "iceberg-dark", -- 自分の好きなテーマ探す https://wezfurlong.org/wezterm/colorschemes/index.html
-	color_scheme = "nord", -- 自分の好きなテーマ探す https://wezfurlong.org/wezterm/colorschemes/index.html
+	-- color_scheme = "nord", -- 自分の好きなテーマ探す https://wezfurlong.org/wezterm/colorschemes/index.html
+	-- color_scheme = "Kanagawa (Gogh)",
+	color_scheme = "Solarized Dark Higher Contrast"
 	-- window_background_opacity = 0.8,
 	window_frame = {
 		font = wezterm.font({ family = "Noto Sans", weight = "Regular" }),
