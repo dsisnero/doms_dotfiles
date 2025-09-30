@@ -6,6 +6,7 @@ when "arch"
   yay "visual-studio-code-bin"
 
 when "osx", "darwin"
+  package "visual-studio-code"
 when "fedora", "redhat", "amazon"
 when "debian", "ubuntu", "mint"
   execute "add vscode repos" do
@@ -26,9 +27,10 @@ when "debian", "ubuntu", "mint"
 when "opensuse"
 end
 
-user = node[:user]
-home = node[:home]
+config_home = node[:config_home]
+data_home = node[:data_home]
 
-directory "#{home}/.config/Code" do
-  owner user
-end
+mydir "#{config_home}/Code"
+mydir "#{data_home}/Code"
+
+include_cookbook "language_servers"

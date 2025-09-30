@@ -8,6 +8,7 @@ alias vim='/Applications/MacVim.app/Contents/MacOS/Vim "$@"'
 alias nvim='nvim -i NONE $@'
 alias vimdiff='/Applications/MacVim.app/Contents/MacOS/Vim -d "$@"'
 alias mvimdiff='/Applications/MacVim.app/Contents/MacOS/mvimdiff "$@"'
+alias vscode="open -a Visual\ Studio\ Code.app"
 
 # System Utilities
 alias updatedb='sudo /usr/libexec/locate.updatedb'  # Update locate database

@@ -2,6 +2,8 @@
 # This file contains Unix/Linux specific configurations (currently mostly empty)
 # Intended for non-macOS Unix systems (Linux, BSD, etc.)
 
+alias vscode='code --user-data-dir="~/.config/Code" --extensions-dir="~/.local/share/Code"'
+
 # Note: This file is currently mostly commented out and serves as a placeholder
 # for future Unix/Linux specific customizations
 

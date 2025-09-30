@@ -41,6 +41,7 @@ include_cookbook "rust"
 include_cookbook "helix"
 include_cookbook "go"
 include_cookbook "zig"
+include_cookbook "vscode"
 
 include_cookbook "treesitter"
 
