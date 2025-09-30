@@ -13,7 +13,7 @@ myrepos = [
   "gmaps",
   "cltk",
   "perdiem",
-  "shell2batch.cr"
+  "shell2batch.cr",
   "terminal-tools"
 ]
 myrepos.each { |name| get_repo "dsisnero/#{name}" }
