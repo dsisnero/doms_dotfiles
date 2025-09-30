@@ -3,6 +3,7 @@ buck2 = { command = "buck2", args = ["--lsp"] }
 solargraph = { command = "bundle", args = ["exec", "solargraph", "stdio"] }
 deno = { command = "deno", args = ["lsp"] }
 emmet-ls = { command = "emmet-ls", args = ["--stdio"] }
+larimar = { command = "larimar" }
 
 [language-server.scls]
 command = "simple-completion-language-server"
@@ -178,8 +179,19 @@ grammar = "python"
 
 [[language]]
 name = "crystal"
-formatter = { command = "ameba", args = ["--fix ${INPUT}"] }
-language-servers = ["scls"]
+scope = "source.cr"
+file-types = ["cr"]
+roots = ["shard.yml", "shard.lock"]
+comment-token = "#"
+indent = { tab-width = 2, unit = "  " }
+language-servers = [ "larimar", "ameba-ls", "scls" ]
+formatter = { command = "crystal", args = ["tool", "format", "-"] }
+# formatter = { command = "ameba", args = ["--fix ${INPUT}"] }
+
+[[grammar]]
+name = "crystal"
+source = { git = "https://github.com/crystal-lang-tools/tree-sitter-crystal", rev = "76afc1f53518a2b68b51a5abcde01d268a9cb47c" }
+
 
 [language.debugger]
 name = "lldb-dap"
@@ -190,8 +202,7 @@ command = "lldb-dap"
 name = "binary"
 request = "launch"
 completion = [{ name = "binary", completion = "filename" }]
-args = { program = "{0}", initCommands = [
-  "command script import <%= @crystal_import_file %>"] }
+args = { program = "{0}", initCommands = ["command script import <%= @crystal_import_file %>"] }
 
 # -----------------------------------------------------------------
 # TEMPLATE 3: DEBUG CURRENT FILE (USING COMPLETION)
