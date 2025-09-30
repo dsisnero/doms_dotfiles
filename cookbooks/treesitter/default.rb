@@ -1,7 +1,9 @@
-cargo "tree-sitter-cli"
 case node[:platform]
 when "debian", "ubuntu", "mint", "pop"
   package "libtree-sitter-dev"
-when "osx"
-  package "treesitter"
+when "darwin"
+  package "tree-sitter"
+  package "tree-sitter-cli"
 end
+
+mydir "#{node[:config_home]}/tree-sitter"
