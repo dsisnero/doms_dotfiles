@@ -44,6 +44,12 @@ export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=242'
 if [ -f ~/.zshenv_local ]; then
   source ~/.zshenv_local
 fi
+# Set XDG environment variables if they are not already set
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-$TMPDIR/xdg_runtime}"
 
 # export NVIM_PYTHON_LOG_FILE=~/.config/nvim/nvim.log
 # export NVIM_PYTHON_LOG_LEVEL=INFO#DEBUG

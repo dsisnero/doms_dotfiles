@@ -509,7 +509,11 @@ alias t='tmux_start'    # Start or attach to tmux session
 alias tm='tmux_multissh'  # Multi-ssh with tmux
 #}}}
 
+# hook into atuin first for history system
+eval "$(atuin init zsh)"
+
 # Plugin system - load local plugin configurations
+# this include autosuggest
 if [ -f ${PERSONAL_ZSH_DIR}/.zshrc.plugin ]; then
   source ${PERSONAL_ZSH_DIR}/.zshrc.plugin  # Load personal plugin settings
 fi
@@ -602,8 +606,8 @@ alias tenki='curl -4 http://wttr.in/kanagawa'
 
 # Environment variables
 export PATH=~/.local/bin:$PATH  # Add local bin to PATH
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
 export EDITOR=hx                # Set Helix as default editor
 export OLLAMA_MODELS=/Volumes/extreme_ssd/ollama_models  # Ollama model storage location
 alias ollama_start='launchctl load ~/Library/LaunchAgents/com.ollama.serve.plist'
 alias ollama_stop='launchctl unload ~/Library/LaunchAgents/com.ollama.serve.plist'
-eval "$(atuin init zsh)"
