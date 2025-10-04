@@ -66,11 +66,12 @@ execute "Add mise to #{zshrc_config}" do
     )
 end
 
-define :mise, version: nil, cargo: nil, exe: nil, rename: nil do
+define :mise, version: nil, backend: nil, exe: nil, rename: nil do
   tool_name = params[:name]
   version = params[:version] || "latest"
-  cmd = if params[:cargo] == true
-    "mise use -g cargo:#{tool_name}@#{version}"
+  backend = params[:backend]
+  cmd = if backend
+    "mise use -g #{backend}:#{tool_name}@#{version}"
   else
     "mise use -g #{tool_name}@#{version}"
   end
