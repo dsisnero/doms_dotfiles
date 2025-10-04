@@ -30,6 +30,9 @@ mise "watchexec"
 mise "zoxide"
 mise "rclone"
 mise "atuin"
+mise "mermaid" do
+  backend "npm"
+end
 
 include_cookbook "dprint"
 include_cookbook "starship"
