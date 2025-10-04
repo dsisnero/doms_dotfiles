@@ -33,6 +33,7 @@ mise "atuin"
 mise "mermaid" do
   backend "npm"
 end
+mise "pandoc"
 
 include_cookbook "dprint"
 include_cookbook "starship"
