@@ -94,44 +94,69 @@ unless pguser_password
   raise "PGUSER_PASSWORD environment variable is required but not set"
 end
 
-if pguser_password && !pguser_password.empty?
-  execute "create postgres user" do
-    user postgres_user
-    command %(psql -c "CREATE USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
-    not_if %(psql -c "du" | grep -q #{node[:user]})
+case node[:platform]
+when "osx", "darwin"
+  # On macOS with Homebrew, current user is already the superuser
+  # Just set the password for the current user and ensure database exists
+  
+  execute "set current user password" do
+    command %(psql -c "ALTER USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
+    not_if %(psql -c "\\du" | grep -q #{node[:user]})
   end
-end
 
-execute "create database for user" do
-  user postgres_user
-  command %(createdb #{node[:user]})
-  not_if %(psql -l | grep -q #{node[:user]})
-end
+  execute "create database for user" do
+    command %(createdb #{node[:user]})
+    not_if %(psql -l | grep -q #{node[:user]})
+  end
 
-# Grant database creation privileges to user
-execute "grant database creation privileges" do
-  user postgres_user
-  command %(psql -c "ALTER USER #{node[:user]} CREATEDB;")
-  not_if %(psql -c "\\du" | grep #{node[:user]} | grep -q CREATEDB)
-end
+  # Set PostgreSQL superuser password (using PG_PASSWORD) if provided
+  if postgres_superuser_password && !postgres_superuser_password.empty?
+    execute "create postgres superuser and set password" do
+      command %(psql -c "CREATE USER postgres WITH SUPERUSER PASSWORD '#{postgres_superuser_password}';")
+      not_if %(psql -c "\\du" | grep -q postgres)
+    end
+  end
+else
+  # Original logic for other platforms
+  if pguser_password && !pguser_password.empty?
+    execute "create postgres user" do
+      user postgres_user
+      command %(psql -c "CREATE USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
+      not_if %(psql -c "du" | grep -q #{node[:user]})
+    end
+  end
 
-# Grant full privileges on user's own database
-execute "grant full privileges on user database" do
-  user postgres_user
-  command %(psql -c "GRANT ALL PRIVILEGES ON DATABASE #{node[:user]} TO #{node[:user]};")
-end
-
-# Grant schema creation privileges in user's database
-execute "grant schema creation privileges" do
-  user postgres_user
-  command %(psql -d #{node[:user]} -c "GRANT CREATE ON SCHEMA public TO #{node[:user]};")
-end
-
-# Set PostgreSQL superuser password (using PG_PASSWORD) if provided
-if postgres_superuser_password && !postgres_superuser_password.empty?
-  execute "set postgres superuser password" do
+  execute "create database for user" do
     user postgres_user
-    command %(psql -c "ALTER USER postgres WITH PASSWORD '#{postgres_superuser_password}';")
+    command %(createdb #{node[:user]})
+    not_if %(psql -l | grep -q #{node[:user]})
+  end
+
+  # Grant database creation privileges to user
+  execute "grant database creation privileges" do
+    user postgres_user
+    command %(psql -c "ALTER USER #{node[:user]} CREATEDB;")
+    not_if %(psql -c "\\du" | grep #{node[:user]} | grep -q CREATEDB)
+  end
+
+  # Grant full privileges on user's own database
+  execute "grant full privileges on user database" do
+    user postgres_user
+    command %(psql -c "GRANT ALL PRIVILEGES ON DATABASE #{node[:user]} TO #{node[:user]};")
+  end
+
+  # Grant schema creation privileges in user's database
+  execute "grant schema creation privileges" do
+    user postgres_user
+    command %(psql -d #{node[:user]} -c "GRANT CREATE ON SCHEMA public TO #{node[:user]};")
+  end
+
+  # Set PostgreSQL superuser password (using PG_PASSWORD) if provided
+  if postgres_superuser_password && !postgres_superuser_password.empty?
+    execute "set postgres superuser password" do
+      user postgres_user
+      command %(psql -c "ALTER USER postgres WITH PASSWORD '#{postgres_superuser_password}';")
+    end
   end
 end
 
