@@ -62,8 +62,14 @@ when "osx", "darwin"
   package "postgresql@#{version}"
 
   unless node[:is_wsl]
-    service "postgresql" do
-      action %i[start enable]
+    brew_path = "/opt/homebrew/bin:/usr/local/bin"
+    environment = { 'PATH' => "#{ENV['PATH']}:#{brew_path}" }
+
+    execute "start and enable postgresql" do
+      command "brew services start postgresql@#{version}"
+      user node[:user]
+      environment environment
+      not_if "brew services list | grep postgresql@#{version} | grep -q started"
     end
   end
 when "opensuse"
