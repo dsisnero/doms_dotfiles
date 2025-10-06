@@ -106,23 +106,27 @@ end
 case node[:platform]
 when "osx", "darwin"
   # On macOS with Homebrew, current user is already the superuser
-  # Just set the password for the current user and ensure database exists
+  # Create user if not exists, set password, and ensure database exists
   
+  execute "create current user if not exists" do
+    command %(#{pg_bin}/psql -d postgres -c "CREATE USER #{node[:user]};")
+    not_if %(#{pg_bin}/psql -d postgres -c "\\du" | grep -q #{node[:user]})
+  end
+
   execute "set current user password" do
-    command %(#{pg_bin}/psql -c "ALTER USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
-    not_if %(#{pg_bin}/psql -c "\\du" | grep -q #{node[:user]})
+    command %(#{pg_bin}/psql -d postgres -c "ALTER USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
   end
 
   execute "create database for user" do
     command %(#{pg_bin}/createdb #{node[:user]})
-    not_if %(#{pg_bin}/psql -l | grep -q #{node[:user]})
+    not_if %(#{pg_bin}/psql -d postgres -l | grep -q #{node[:user]})
   end
 
   # Set PostgreSQL superuser password (using PG_PASSWORD) if provided
   if postgres_superuser_password && !postgres_superuser_password.empty?
     execute "create postgres superuser and set password" do
-      command %(#{pg_bin}/psql -c "CREATE USER postgres WITH SUPERUSER PASSWORD '#{postgres_superuser_password}';")
-      not_if %(#{pg_bin}/psql -c "\\du" | grep -q postgres)
+      command %(#{pg_bin}/psql -d postgres -c "CREATE USER postgres WITH SUPERUSER PASSWORD '#{postgres_superuser_password}';")
+      not_if %(#{pg_bin}/psql -d postgres -c "\\du" | grep -q postgres)
     end
   end
 else
