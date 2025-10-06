@@ -61,6 +61,15 @@ when "arch"
 when "osx", "darwin"
   package "postgresql@#{version}"
 
+  # Determine paths for PostgreSQL binaries
+  pg_bin = if File.exist?("/opt/homebrew/opt/postgresql@#{version}/bin/psql")
+              "/opt/homebrew/opt/postgresql@#{version}/bin"
+            elsif File.exist?("/usr/local/opt/postgresql@#{version}/bin/psql")
+              "/usr/local/opt/postgresql@#{version}/bin"
+            else
+              "" # Fallback to hoping it's in PATH
+            end
+
   unless node[:is_wsl]
     brew_path = if File.exist?("/opt/homebrew/bin/brew")
                   "/opt/homebrew/bin/brew"
@@ -100,20 +109,20 @@ when "osx", "darwin"
   # Just set the password for the current user and ensure database exists
   
   execute "set current user password" do
-    command %(psql -c "ALTER USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
-    not_if %(psql -c "\\du" | grep -q #{node[:user]})
+    command %(#{pg_bin}/psql -c "ALTER USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
+    not_if %(#{pg_bin}/psql -c "\\du" | grep -q #{node[:user]})
   end
 
   execute "create database for user" do
-    command %(createdb #{node[:user]})
-    not_if %(psql -l | grep -q #{node[:user]})
+    command %(#{pg_bin}/createdb #{node[:user]})
+    not_if %(#{pg_bin}/psql -l | grep -q #{node[:user]})
   end
 
   # Set PostgreSQL superuser password (using PG_PASSWORD) if provided
   if postgres_superuser_password && !postgres_superuser_password.empty?
     execute "create postgres superuser and set password" do
-      command %(psql -c "CREATE USER postgres WITH SUPERUSER PASSWORD '#{postgres_superuser_password}';")
-      not_if %(psql -c "\\du" | grep -q postgres)
+      command %(#{pg_bin}/psql -c "CREATE USER postgres WITH SUPERUSER PASSWORD '#{postgres_superuser_password}';")
+      not_if %(#{pg_bin}/psql -c "\\du" | grep -q postgres)
     end
   end
 else
