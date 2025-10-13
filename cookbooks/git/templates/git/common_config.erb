@@ -143,8 +143,10 @@ root = <%= @ghq_root %>
 	ff = false
 
 [delta]
-    features = side-by-side line-numbers decorations
+    features = decorations line-numbers
     syntax-theme = Dracula
+    side-by-side = true
+    navigate = true
     plus-style = syntax "#003800"
     minus-style = syntax "#3f0001"
 
@@ -159,6 +161,19 @@ root = <%= @ghq_root %>
     line-numbers-right-style = cyan
     line-numbers-minus-style = 124
     line-numbers-plus-style = 28
+
+[merge]
+    tool = nvimdiff3
+    conflictstyle = diff3
+
+[mergetool "nvimdiff3"]
+    cmd = nvim -d -c "wincmd J" "$LOCAL" "$BASE" "$REMOTE" "$MERGED"
+
+[diff]
+    tool = nvimdiff
+
+[difftool "nvimdiff"]
+    cmd = nvim -d "$LOCAL" "$REMOTE"
 
 [user]
 	email = dsisnero@gmail.com

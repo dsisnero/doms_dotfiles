@@ -1,4 +1,5 @@
 include_recipe "dependency.rb"
+include_cookbook "delta"
 include_cookbook "mise"
 
 mise "lazygit"
