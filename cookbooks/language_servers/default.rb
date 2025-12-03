@@ -19,12 +19,16 @@ when "darwin"
     end
   end
 
-  # Create dprint config directory
-  mydir "#{config_home}/dprint"
-
   mise "marksman"
   mise "dprint"
   mise "taplo"
+  mise "rumdl" do
+    backend "cargo"
+  end
+
+  # Create dprint config directory
+  mydir "#{config_home}/dprint"
+
   # Copy dprint config file
   remote_file "#{config_home}/dprint/config.json" do
     source "files/dprint_config.json"
@@ -37,5 +41,16 @@ when "darwin"
     action :edit
     content %(alias dprint="dprint --config #{config_home}/dprint/config.json")
     not_if %(grep "alias dprint=" #{zshrc_config})
+  end
+
+
+  # Create rumdl config directory
+  mydir "#{config_home}/rumdl"
+
+  # Copy rumdl config file
+  remote_file "#{config_home}/rumdl/config.json" do
+    source "files/rumdl.toml"
+    owner node[:user]
+    mode "644"
   end
 end
