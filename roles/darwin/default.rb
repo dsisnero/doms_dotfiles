@@ -13,6 +13,7 @@ package "lua"
 package "git"
 package "reattach-to-user-namespace"
 package "container"
+package "netnewswire"
 # package "z"  replaced by zoxide
 # cask
 # package "dropbox"
