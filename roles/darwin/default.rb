@@ -13,6 +13,9 @@ package "lua"
 package "git"
 package "reattach-to-user-namespace"
 package "netnewswire"
+package "open-sp"
+package "basictex"
+package "texlive"
 # package "z"  replaced by zoxide
 # cask
 # package "dropbox"
