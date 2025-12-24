@@ -12,11 +12,11 @@ package "luajit"
 package "lua"
 package "git"
 package "reattach-to-user-namespace"
-package "container"
 package "netnewswire"
 # package "z"  replaced by zoxide
 # cask
 # package "dropbox"
+include_cookbook "container"
 package "vlc"
 package "virtualbox"
 package "vagrant"
