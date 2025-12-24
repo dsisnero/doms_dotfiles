@@ -19,7 +19,7 @@ include_cookbook "ghq"
 
 my_repos = node[:my_repos]
 
-get_repo("dsisnero/astronvim_config")
+get_repo("dsisnero/nvim")
 
 src = File.join(my_repos, "astronvim_config")
 dst = File.join(config_home, "nvim")
