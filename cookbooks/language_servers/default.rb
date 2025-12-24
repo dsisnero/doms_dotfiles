@@ -43,7 +43,6 @@ when "darwin"
     not_if %(grep "alias dprint=" #{zshrc_config})
   end
 
-
   # Create rumdl config directory
   mydir "#{config_home}/rumdl"
 

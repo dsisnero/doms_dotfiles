@@ -1,4 +1,4 @@
-mydotfiles
+# mydotfiles
 
 ## How to install
 
@@ -15,7 +15,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 iwr -useb https://raw.githubusercontent.com/dsisnero/doms_dotfiles/main/install.ps1 | iex
 ```
 
-## For Developer.
+## For Developer
 
 ### Windows install script is old. Is `install.ps1` cached?
 
@@ -43,7 +43,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 iwr -useb https://raw.githubusercontent.com/dsisnero/doms_dotfiles/main/install.ps1 | iex
 ```
 
-## For Developer.
+## For Developer
 
 ### Windows install script is old. Is `install.ps1` cached?
 
@@ -70,7 +70,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 iwr -useb https://raw.githubusercontent.com/dsisnero/doms_dotfiles/main/install.ps1 | iex
 ```
 
-## For Developer.
+## For Developer
 
 ### Windows install script is old. Is `install.ps1` cached?
 
