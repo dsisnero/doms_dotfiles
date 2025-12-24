@@ -1,7 +1,7 @@
 case node[:platform]
 when "arch"
   include_cookbook "git"
-  include_cookbook "go"
+  include_cookbook "golang"
   package "fakeroot"
 
   execute "install yay" do
