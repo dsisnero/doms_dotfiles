@@ -43,7 +43,7 @@ include_cookbook "git"
 include_cookbook "git-secrets"
 include_cookbook "rust"
 include_cookbook "helix"
-include_cookbook "go"
+include_cookbook "golang"
 include_cookbook "zig"
 include_cookbook "vscode"
 
