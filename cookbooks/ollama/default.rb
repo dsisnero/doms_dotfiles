@@ -1,3 +1,26 @@
+module OllamaHelper
+  def ollama_installed_version
+    case node[:platform]
+    when "debian", "ubuntu", "mint", "pop"
+      binary = "#{node[:home]}/.local/bin/ollama"
+      if File.exist?(binary)
+        result = run_command("#{binary} --version", error: false)
+        result.success? ? result.stdout.strip : nil
+      end
+    when "darwin"
+      plist = "/Applications/Ollama.app/Contents/Info.plist"
+      if File.exist?(plist)
+        result = run_command("defaults read '#{plist}' CFBundleShortVersionString 2>/dev/null", error: false)
+        result.success? ? result.stdout.strip : nil
+      end
+    end
+  end
+end
+
+::MItamae::RecipeContext.include OllamaHelper
+
+::MItamae::ResourceContext.include OllamaHelper
+
 include_cookbook "mise"
 home = node[:home]
 log_dir = "#{home}/.local/state/ollama"
