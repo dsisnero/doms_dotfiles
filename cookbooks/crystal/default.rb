@@ -11,7 +11,7 @@ end
 # Download Crystal LLDB formatters
 doms_dotfiles = node[:doms_dotfiles]
 config_home = node[:config_home]
-
+user_bin = node[:user_bin]
 # Create directories
 mydir "#{doms_dotfiles}/config/lldb"
 mydir "#{config_home}/lldb"
@@ -27,6 +27,13 @@ link "#{config_home}/lldb/crystal_formatters.py" do
   to "#{doms_dotfiles}/config/lldb/crystal_formatters.py"
   user node[:user]
 end
+
+# crystalline
+# get_repo("elbywan/crystalline") do
+#     build <<-EOCMD
+#     EOCMD
+# end
+get_repo("elbywan/crystalline")
 # #
 # # Define the Crystal version and channel
 # crystal_version = ENV["CRYSTAL_VERSION"] || "latest"
