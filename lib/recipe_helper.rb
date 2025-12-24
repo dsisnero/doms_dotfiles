@@ -35,6 +35,30 @@ module PlatformHelpers
   def platform_family
     node[:family]
   end
+
+  def version_less_than?(v1, v2)
+    return false if v1.nil? || v2.nil?
+
+    # Normalize versions: strip leading 'v' and whitespace
+    v1_norm = v1.to_s.strip.gsub(/^v/, "")
+    v2_norm = v2.to_s.strip.gsub(/^v/, "")
+
+    # Manual version comparison
+    v1_parts = v1_norm.split(".").map(&:to_i)
+    v2_parts = v2_norm.split(".").map(&:to_i)
+
+    # Compare each part
+    max_length = [v1_parts.length, v2_parts.length].max
+    max_length.times do |i|
+      p1 = v1_parts[i] || 0
+      p2 = v2_parts[i] || 0
+      return true if p1 < p2
+      return false if p1 > p2
+    end
+
+    # All parts equal
+    false
+  end
 end
 
 #
@@ -116,6 +140,12 @@ module GitHubHelpers
     cmd = "curl -s https://api.github.com/repos/#{repo}/tags?per_page=100 | jq -r '.[].name'"
     result = run_command(cmd, error: false)
     (result.exit_status == 0) ? result.stdout.split("\n") : []
+  end
+
+  def github_latest_version(repo)
+    cmd = "curl -s https://api.github.com/repos/#{repo}/releases/latest | jq -r '.tag_name'"
+    result = run_command(cmd, error: false)
+    (result.exit_status == 0) ? result.stdout.strip.gsub(/^v/, "") : nil
   end
 end
 
