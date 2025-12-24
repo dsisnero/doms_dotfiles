@@ -20,13 +20,22 @@ when "debian", "ubuntu", "mint", "pop"
   download_path = "/tmp/ollama-linux-amd64.tgz"
   home = node["home"]
   local = "#{home}/.local"
+  latest_version = github_latest_version("ollama/ollama")
+  installed_version = ollama_installed_version
+  MItamae.logger.info "Ollama installed version: #{installed_version}"
+  MItamae.logger.info "Latest version: #{latest_version}"
   http_request download_path do
     url url
     path download_path
     user user_var
     notifies :run, "execute[unzip ollama]"
-    # not_if { File.exist? "#{home}.local/bin/ollama" }
-    not_if "#{sudo(user_var)} which ollama"
+    not_if do
+      if latest_version.nil?
+        run_command("#{sudo(user_var)} which ollama", error: false).success?
+      else
+        installed_version && !version_less_than?(installed_version, latest_version)
+      end
+    end
   end
 
   execute "unzip ollama" do
@@ -100,7 +109,6 @@ when "darwin"
   APP_NAME = "Ollama.app"
   DEST_APP = "/Applications/#{APP_NAME}"
   PLIST_PATH = "#{DEST_APP}/Contents/Info.plist"
-  DESIRED_VERSION = "0.4.0" # update as new releases come out
   SYMLINK_PATH = "/usr/local/bin/ollama"
   LAUNCH_AGENT = "#{home}/Library/LaunchAgents/com.ollama.serve.plist"
   SYSTEM_LAUNCH_AGENT = "/Library/LaunchDaemons/com.ollama.serve.plist"
@@ -113,23 +121,23 @@ when "darwin"
     persistent true
   end
 
-  # Helper: check installed version
-  # def installed_version
-  #   cmd = "defaults read '#{PLIST_PATH}' CFBundleShortVersionString 2>/dev/null"
-  #   begin
-  #     `#{cmd}`.strip
-  #   rescue
-  #     nil
-  #   end
-  # end
+  latest_version = github_latest_version("ollama/ollama")
+
+  installed_version = ollama_installed_version
+  MItamae.logger.info "Ollama installed version: #{installed_version}"
+  MItamae.logger.info "Latest version #{latest_version}"
+  needs_update = if latest_version.nil?
+    !File.exist?("/Applications/Ollama.app")
+  else
+    installed_version.nil? || version_less_than?(installed_version, latest_version)
+  end
+
   package "aria2"
-  # needs_update = installed_version != DESIRED_VERSION
 
   # Download the DMG if update is needed
   execute "download ollama" do
     command "aria2c #{OLLAMA_URL} -d /tmp/ -o Ollama.dmg"
-    # only_if { needs_update }
-    only_if { true }
+    only_if { needs_update }
     notifies :run, "execute[mount ollama dmg]", :immediately
   end
 
@@ -144,8 +152,10 @@ when "darwin"
   execute "install ollama" do
     user "root"
     action :nothing
-    command "cp -R '#{VOLUME}/#{APP_NAME}' /Applications/"
-    not_if { Dir.exist? "/Applications/#{APP_NAME}" }
+    command <<~EOCMD
+      rm -rf "/Applications/#{APP_NAME}"
+      cp -R "#{VOLUME}/#{APP_NAME}" "/Applications/"
+    EOCMD
     notifies :run, "execute[unmount ollama dmg]", :immediately
   end
 
