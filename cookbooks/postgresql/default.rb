@@ -63,19 +63,19 @@ when "osx", "darwin"
 
   # Determine paths for PostgreSQL binaries
   pg_bin = if File.exist?("/opt/homebrew/opt/postgresql@#{version}/bin/psql")
-              "/opt/homebrew/opt/postgresql@#{version}/bin"
-            elsif File.exist?("/usr/local/opt/postgresql@#{version}/bin/psql")
-              "/usr/local/opt/postgresql@#{version}/bin"
-            else
-              "" # Fallback to hoping it's in PATH
-            end
+    "/opt/homebrew/opt/postgresql@#{version}/bin"
+  elsif File.exist?("/usr/local/opt/postgresql@#{version}/bin/psql")
+    "/usr/local/opt/postgresql@#{version}/bin"
+  else
+    "" # Fallback to hoping it's in PATH
+  end
 
   unless node[:is_wsl]
     brew_path = if File.exist?("/opt/homebrew/bin/brew")
-                  "/opt/homebrew/bin/brew"
-                else
-                  "/usr/local/bin/brew"
-                end
+      "/opt/homebrew/bin/brew"
+    else
+      "/usr/local/bin/brew"
+    end
 
     execute "start and enable postgresql" do
       command "#{brew_path} services start postgresql@#{version}"
@@ -107,7 +107,7 @@ case node[:platform]
 when "osx", "darwin"
   # On macOS with Homebrew, current user is already the superuser
   # Create user if not exists, set password, and ensure database exists
-  
+
   execute "create current user if not exists" do
     command %(#{pg_bin}/psql -d postgres -c "CREATE USER #{node[:user]};")
     not_if %(#{pg_bin}/psql -d postgres -c "\\du" | grep -q #{node[:user]})
