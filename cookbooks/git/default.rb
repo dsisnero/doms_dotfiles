@@ -1,12 +1,13 @@
 # Create a user-specific temporary directory to avoid permission issues
 home = node[:home]
 config_home = node[:config_home]
+os = node[:os] || node[:platform]
 
 # Common XDG paths
 git_config_dir = "#{config_home}/git"
 git_hooks_dir = "#{git_config_dir}/hooks"
 
-case node[:os]
+case os
 when "windows"
   # Windows Git installation via Chocolatey
   chocolatey_package "git"
@@ -45,12 +46,12 @@ when "linux"
     package "git"
     package "git-flow"
   end
-when "macos"
+when "macos", "darwin", "osx"
   package "git"
 end
 
 # Only proceed with Unix-style config if not on Windows or if in WSL
-unless node[:os] == "windows" && !wsl?
+unless os == "windows" && !wsl?
   # Ensure parent git directory exists
   directory git_config_dir do
     user node[:user]
@@ -72,7 +73,7 @@ unless node[:os] == "windows" && !wsl?
     mode "644"
     variables(
       platform: node[:platform],
-      os: node[:os] || "linux", # Add explicit default
+      os: os || "linux", # Add explicit default
       is_wsl: node[:is_wsl],
       config_dir: git_config_dir,
       hooks_dir: git_hooks_dir
@@ -93,8 +94,19 @@ unless node[:os] == "windows" && !wsl?
     group node[:group]
     mode "644"
     variables(
-      ghq_root: node[:repos]
+      ghq_root: node[:repos],
+      config_dir: git_config_dir
     )
+  end
+
+  link "#{git_config_dir}/.gitignore_global" do
+    to "#{node[:doms_dotfiles]}/config/git/.gitignore_global"
+    not_if { File.symlink? "#{git_config_dir}/.gitignore_global" }
+  end
+
+  link "#{git_config_dir}/.gitattributes_global" do
+    to "#{node[:doms_dotfiles]}/config/git/.gitattributes_global"
+    not_if { File.symlink? "#{git_config_dir}/.gitattributes_global" }
   end
 
   # Platform-specific templates
@@ -137,7 +149,7 @@ unless node[:os] == "windows" && !wsl?
 end
 
 # Windows-specific Git configuration (when not in WSL)
-if node[:os] == "windows" && !wsl?
+if os == "windows" && !wsl?
   # Windows Git configuration
   template "#{home}/.gitconfig" do
     source "templates/git/windows_gitconfig.erb"

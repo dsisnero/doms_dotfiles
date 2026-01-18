@@ -2,8 +2,8 @@
 	defaultBranch = main
 
 [core]
-	attributesfile = .gitattributes_global
-	excludesfile   = .gitignore_global
+	attributesfile = <%= File.join(@config_dir, ".gitattributes_global") %>
+	excludesfile   = <%= File.join(@config_dir, ".gitignore_global") %>
 	autocrlf = input
 	quotepath = false
 	precomposeunicode = true
@@ -127,9 +127,11 @@ root = <%= @ghq_root %>
 [push]
 	default = simple
 
+
+; New (avoids fast-forward only issues, rebase for cleaner history)
 [pull]
-	ff = only
-	rebase = merges
+	rebase = true
+	ff = only ; You can keep this for safety if you want to explicitly avoid merges.
 
 [log]
 	decorate = auto
@@ -138,46 +140,25 @@ root = <%= @ghq_root %>
 	colorMoved = default
 	algorithm = histogram
 
-[merge]
-	conflictstyle = diff3
-	ff = false
 
+[interactive]
+	diffFilter = delta --color-only --features=interactive
+
+; Ensure all delta settings are in one block for clarity and features
 [delta]
-    features = decorations line-numbers
+    features = decorations line-numbers interactive
     syntax-theme = Dracula
     side-by-side = true
     navigate = true
     plus-style = syntax "#003800"
     minus-style = syntax "#3f0001"
 
-[delta "decorations"]
-    commit-decoration-style = bold yellow box ul
-    file-style = bold yellow ul
-    file-decoration-style = none
-    hunk-header-decoration-style = cyan box ul
-
-[delta "line-numbers"]
-    line-numbers-left-style = cyan
-    line-numbers-right-style = cyan
-    line-numbers-minus-style = 124
-    line-numbers-plus-style = 28
-
 [merge]
-    tool = nvimdiff3
-    conflictstyle = diff3
+ tool = nvimdiff3
+ conflictstyle = diff3
 
 [mergetool "nvimdiff3"]
     cmd = nvim -d -c "wincmd J" "$LOCAL" "$BASE" "$REMOTE" "$MERGED"
 
-[diff]
-    tool = nvimdiff
-
 [difftool "nvimdiff"]
     cmd = nvim -d "$LOCAL" "$REMOTE"
-
-[user]
-	email = dsisnero@gmail.com
-	name = Dominic Sisneros
-
-[interactive]
-    diffFilter = delta --color-only --features=interactive

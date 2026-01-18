@@ -5,18 +5,18 @@
 # Use OS from template
 platform="<%= @os.to_s || 'linux' %>"
 
-# Check for trailing whitespace
-if git diff --cached --name-only | xargs grep --with-filename -n "[[:blank:]]$" > /dev/null 2>&1; then
+# Check for trailing whitespace (skip deleted files)
+if git diff --cached --name-only --diff-filter=ACMR | xargs grep --with-filename -n "[[:blank:]]$" > /dev/null 2>&1; then
   echo "ERROR: Trailing whitespace found in staged changes."
   echo "Please remove trailing whitespace before committing."
-  git diff --cached --name-only | xargs grep --with-filename -n "[[:blank:]]$"
+  git diff --cached --name-only --diff-filter=ACMR | xargs grep --with-filename -n "[[:blank:]]$"
   exit 1
 fi
 
-# Check for Ruby syntax errors if Ruby files are being committed
-if git diff --cached --name-only | grep -q "\.rb$"; then
+# Check for Ruby syntax errors if Ruby files are being committed (skip deleted files)
+if git diff --cached --name-only --diff-filter=ACMR | grep -q "\.rb$"; then
   if command -v ruby >/dev/null 2>&1; then
-    for file in $(git diff --cached --name-only | grep "\.rb$"); do
+    for file in $(git diff --cached --name-only --diff-filter=ACMR | grep "\.rb$"); do
       if ! ruby -c "$file" >/dev/null 2>&1; then
         echo "ERROR: Ruby syntax error in $file"
         ruby -c "$file"
@@ -32,33 +32,33 @@ fi
 if [ "$platform" = "macos" ]; then
   # macOS specific checks
   echo "Running macOS specific checks..."
-  
-  # Check for large files
-  if git diff --cached --name-only | xargs du -h | grep -E '^[0-9]+M' > /dev/null 2>&1; then
+
+  # Check for large files (skip deleted files)
+  if git diff --cached --name-only --diff-filter=ACMR | xargs du -h 2>/dev/null | grep -E '^[0-9]+M' > /dev/null 2>&1; then
     echo "WARNING: Large files detected in commit"
-    git diff --cached --name-only | xargs du -h | grep -E '^[0-9]+M'
+    git diff --cached --name-only --diff-filter=ACMR | xargs du -h 2>/dev/null | grep -E '^[0-9]+M'
   fi
-  
+
 elif [ "$platform" = "linux" ]; then
   # Linux specific checks
   echo "Running Linux specific checks..."
-  
-  # Check for executable shell scripts without shebang
-  for file in $(git diff --cached --name-only | grep -E '\.(sh|bash)$'); do
+
+  # Check for executable shell scripts without shebang (skip deleted files)
+  for file in $(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(sh|bash)$'); do
     if [ -x "$file" ] && ! grep -q '^#!/' "$file"; then
       echo "ERROR: Executable shell script $file missing shebang"
       exit 1
     fi
   done
-  
+
 elif [ "$platform" = "windows" ]; then
   # Windows specific checks
   echo "Running Windows specific checks..."
-  
-  # Check for CRLF line endings
-  if git diff --cached --name-only | xargs grep -l $'\r' > /dev/null 2>&1; then
+
+  # Check for CRLF line endings (skip deleted files)
+  if git diff --cached --name-only --diff-filter=ACMR | xargs grep -l $'\r' > /dev/null 2>&1; then
     echo "WARNING: CRLF line endings detected in:"
-    git diff --cached --name-only | xargs grep -l $'\r'
+    git diff --cached --name-only --diff-filter=ACMR | xargs grep -l $'\r'
   fi
 fi
 
