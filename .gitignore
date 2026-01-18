@@ -12,3 +12,9 @@ Keypirinha.history
 .aider*
 d:/tmp
 .clarity2/sessions
+
+# Test files
+spec/
+
+# TODO files
+todo.json
