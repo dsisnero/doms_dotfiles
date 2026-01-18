@@ -1,0 +1,68 @@
+#!/usr/bin/env ruby
+# Git pre-commit hook using mruby pre-commit framework
+
+require_relative '../lib/pre_commit'
+
+# Configure pre-commit
+PreCommit.configure do |config|
+  # Add built-in validators
+  config.add_validator(PreCommit::Validators::Whitespace.new)
+  config.add_validator(PreCommit::Validators::LineLength.new(79))
+  config.add_validator(PreCommit::Validators::Syntax.new)
+
+  # Exclude common patterns
+  config.exclude('vendor/**/*')
+  config.exclude('*.min.js')
+  config.exclude('*.min.css')
+  config.exclude('*.png')
+  config.exclude('*.jpg')
+  config.exclude('*.gif')
+  config.exclude('*.pdf')
+  config.exclude('*.zip')
+  config.exclude('*.tar.gz')
+end
+
+# Custom validator for dotfiles-specific checks
+class DotfilesValidator
+  def validate(file_path)
+    return unless File.file?(file_path)
+
+    # Skip binary files
+    return if binary_file?(file_path)
+
+    content = File.read(file_path)
+
+    # Check for hardcoded paths that should be avoided
+    if content.include?('/home/') && !file_path.include?('README')
+      "Found hardcoded /home/ path in #{file_path} - use environment variables instead"
+    end
+  end
+
+  private
+
+  def binary_file?(file_path)
+    binary_extensions = [
+      '.png', '.jpg', '.jpeg', '.gif', '.ico', '.pdf', '.zip',
+      '.tar', '.gz', '.exe', '.dll', '.so', '.dylib'
+    ]
+    binary_extensions.any? { |ext| file_path.downcase.end_with?(ext) }
+  end
+end
+
+# Add custom validator
+PreCommit.config.add_validator(DotfilesValidator.new)
+
+# Run pre-commit checks
+puts "Running mruby pre-commit checks..."
+puts "=" * 50
+
+if PreCommit.run
+  puts "=" * 50
+  puts "✅ All pre-commit checks passed!"
+  exit 0
+else
+  puts "=" * 50
+  puts "❌ Pre-commit validation failed"
+  puts "\nPlease fix the issues above before committing."
+  exit 1
+end

@@ -1,0 +1,64 @@
+#!/usr/bin/env ruby
+# Setup script for mruby pre-commit hook
+
+require 'fileutils'
+
+def install_pre_commit_hook
+  hook_path = '.git/hooks/pre-commit'
+
+  # Check if we're in a git repository
+  unless File.directory?('.git')
+    puts "❌ Not a git repository"
+    exit 1
+  end
+
+  # Create hooks directory if it doesn't exist
+  FileUtils.mkdir_p('.git/hooks')
+
+  # Copy our pre-commit script to git hooks
+  pre_commit_script = File.expand_path('../bin/pre-commit', __dir__)
+
+  unless File.exist?(pre_commit_script)
+    puts "❌ Pre-commit script not found at #{pre_commit_script}"
+    exit 1
+  end
+
+  # Read the pre-commit script content
+  content = File.read(pre_commit_script)
+
+  # Write to git hooks
+  File.write(hook_path, content)
+
+  # Make it executable
+  File.chmod(0755, hook_path)
+
+  puts "✅ Pre-commit hook installed successfully!"
+  puts "   Location: #{hook_path}"
+  puts "\nThe hook will now run automatically before each commit."
+  puts "To skip the hook, use: git commit --no-verify"
+end
+
+def uninstall_pre_commit_hook
+  hook_path = '.git/hooks/pre-commit'
+
+  if File.exist?(hook_path)
+    File.delete(hook_path)
+    puts "✅ Pre-commit hook uninstalled successfully!"
+  else
+    puts "ℹ️  No pre-commit hook found to uninstall"
+  end
+end
+
+# Main execution
+case ARGV[0]
+when 'install'
+  install_pre_commit_hook
+when 'uninstall'
+  uninstall_pre_commit_hook
+else
+  puts "Usage: #{$0} [install|uninstall]"
+  puts "\nCommands:"
+  puts "  install   - Install the pre-commit hook"
+  puts "  uninstall - Remove the pre-commit hook"
+  exit 1
+end
