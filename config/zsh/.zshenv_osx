@@ -18,11 +18,10 @@ PATH=~/tools/bin:$PATH
 PATH=${ANDROID_HOME}/tools:$PATH
 PATH=${ANDROID_HOME}/platform-tools:$PATH
 
-export GOROOT=${BREW_PATH}/opt/go/libexec
 export GOPATH=~/go
 ## go lang
-if [ "$GOROOT" != "" ]; then
-    PATH=$GOROOT/bin:$GOPATH/bin:$PATH
+if [ "$GOPATH" != "" ]; then
+    PATH=$GOPATH/bin:$PATH
 fi
 
 PATH=~/.cargo/bin:$PATH

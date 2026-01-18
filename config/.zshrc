@@ -39,9 +39,6 @@ if [ -z "$FILTER_CMD" ]; then
   fi
 fi
 
-# Set powerline location
-export PIP_SITE_LOCATION=$(mise exec -- pip show -f powerline-status 2>/dev/null | grep Location | awk '{print $2}')
-
 # Compile .zshrc for faster loading if it's newer than the compiled version
 if [ ! -f ~/.zshrc.zwc -o ~/.zshrc -nt ~/.zshrc.zwc ]; then
    zcompile ~/.zshrc
@@ -396,7 +393,6 @@ alias dockviz="docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock 
 alias marp='docker run --rm --init -v $(pwd):/workdir -w /workdir -e LANG=$LANG -p 8080:8080 marpteam/marp-cli'  # Markdown presentation tool
 alias mysql='mycli'  # MySQL CLI with autocomplete
 alias owasp='docker run -v $(pwd):/zap/wrk/:rw -t --rm owasp/zap2docker-stable zap-baseline.py '  # OWASP ZAP security scanning
-alias pandoc='docker run --rm --volume "`pwd`:/data" --user `id -u`:`id -g` pandoc/core'  # Document conversion
 alias gixy='docker run --rm -v $(pwd):/workdir -w /workdir yandex/gixy'  # Nginx configuration analysis
 alias dive='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v  "$(pwd)":"$(pwd)" -w "$(pwd)" -v "$HOME/.dive.yaml":"$HOME/.dive.yaml" wagoodman/dive:latest'  # Docker image analysis
 
@@ -530,7 +526,7 @@ autoload -Uz colors && colors
 
 # Powerline prompt setup
 # Dynamically find powerline installation and source its zsh bindings
-export PIP_SITE_LOCATION=$(mise exec -- pip show -f powerline-status | grep Location | awk '{print $2}')
+# export PIP_SITE_LOCATION=$(mise exec -- pip show -f powerline-status | grep Location | awk '{print $2}')
 source ${PIP_SITE_LOCATION}/powerline/bindings/zsh/powerline.zsh
 
 #}}}
