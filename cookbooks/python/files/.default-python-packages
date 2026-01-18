@@ -9,3 +9,4 @@ python-language-server
 yamllint
 cfn-lint
 vim-vint
+git-filter-repo

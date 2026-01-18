@@ -1,2 +1,1 @@
-gopls
-golangci-lint
+golang.org/x/tools/gopls@latest
