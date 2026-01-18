@@ -1,3 +1,6 @@
 git:
   log:
     showGraph: always
+  pagers:
+    - colorArg: always
+      pager: delta --dark --paging=never
