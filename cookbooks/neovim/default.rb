@@ -9,10 +9,14 @@ node.reverse_merge!(
 
 config_home = node[:config_home]
 
-execute "install neovim via mise" do
-  user node[:user]
-  command "mise use -g neovim@#{node[:neovim][:version]}"
-  not_if "which nvim"
+case node[:platform]
+when "darwin"
+  package "neovim"
+else
+  mise "neovim" do
+    backend "aqua"
+    exe "nvim"
+  end
 end
 
 include_cookbook "ghq"

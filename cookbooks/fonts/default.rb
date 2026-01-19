@@ -2,6 +2,27 @@ home = node[:home]
 user = node[:user]
 share_dir = "#{home}/.local/share"
 
+# wanted_fonts = %w[
+#   BitstreamVeraSansMono
+#   CodeNewRoman
+#   DroidSansMono
+#   FiraCode
+#   FiraMono
+#   Go-Mono
+#   Hack
+#   Hurmit
+#   JetBrainsMono
+#   Meslo
+#   Noto
+#   Overpass
+#   ProggyClean
+#   RobotoMono
+#   SourceCodePro
+#   SpaceMono
+#   Ubuntu
+#   UbuntuMono
+# ]
+
 wanted_fonts = %w[
   BitstreamVeraSansMono
   CodeNewRoman
@@ -10,7 +31,6 @@ wanted_fonts = %w[
   FiraMono
   Go-Mono
   Hack
-  Hurmit
   JetBrainsMono
   Meslo
   Noto

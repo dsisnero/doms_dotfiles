@@ -4,11 +4,11 @@ case node[:platform]
 when "arch"
   raise NotImplementedError
 when "osx", "darwin"
-  package 'git-credential-manager'
+  package "git-credential-manager"
 when "fedora", "redhat", "amazon"
   raise NotImplementedError
 
-when "debian", "ubuntu", "mint"
+when "debian", "ubuntu", "mint", "pop"
   user = node["user"]
 
   version = github_latest_version("git-ecosystem/git-credential-manager")
@@ -17,10 +17,13 @@ when "debian", "ubuntu", "mint"
 
   deb_path = "/tmp/gcm-linux_amd64-#{version}.deb"
 
-  http_request "download gcm deb" do
-    url deb_url
-    path deb_path
-    owner user
+  execute "download gcm deb" do
+    command <<~EOCMD
+      for i in {1..5}; do
+        curl -fL -o #{deb_path} #{deb_url} && break || sleep 2
+      done
+    EOCMD
+    user "root"
     not_if do
       installed_version = begin
         `git-credential-manager --version`.strip
@@ -29,6 +32,11 @@ when "debian", "ubuntu", "mint"
       end
       installed_version == version
     end
+  end
+
+  file deb_path do
+    owner user
+    only_if { File.exist?(deb_path) }
   end
 
   execute "install git-credential-manager" do

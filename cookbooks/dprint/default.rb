@@ -1,6 +1,8 @@
 include_cookbook "mise"
 
 mise "dprint"
+config_home = node[:config_home]
+mydir "#{config_home}/dprint"
 doms_dotfiles = node[:doms_dotfiles]
 src = File.join(doms_dotfiles, "config", "dprint_config.json")
 dotfile "dprint/config.json" do

@@ -1,55 +1,66 @@
 include_cookbook "mise"
 include_cookbook "nodejs"
 
-config_home = node[:config_home]
-zshrc_config = node[:zshrc_config]
+node[:config_home]
+node[:zshrc_config]
+
 case node[:platform]
 when "darwin"
+  # On macOS, use Homebrew packages where available
   package "terraform-ls"
   package "bash-language-server"
   package "yaml-language-server"
   package "docker-ls"
   package "ansible-language-server"
 
+  # npm packages installed globally via npm
   npm_installed = %w[vscode-langservers-extracted typescript typescript-language-server tombi prettier]
-
   npm_installed.each do |lsp|
     execute("installing #{lsp}") do
       command %(npm i -g #{lsp})
     end
   end
 
+  # Use mise for tools that are better managed by mise
   mise "marksman"
   mise "dprint"
   mise "taplo"
-  mise "rumdl" do
-    backend "cargo"
+else
+  # For Linux platforms (debian, ubuntu, mint, pop, fedora, etc.) use mise for everything
+  # Language servers available via mise plugins
+  mise "terraform-ls"
+  mise "bash-language-server" do
+    backend "npm"
+  end
+  mise "yaml-language-server" do
+    backend "npm"
+  end
+  mise "dockerfile-language-server-nodejs" do
+    backend "npm"
+  end
+  mise "ansible-language-server" do
+    backend "npm"
   end
 
-  # Create dprint config directory
-  mydir "#{config_home}/dprint"
-
-  # Copy dprint config file
-  remote_file "#{config_home}/dprint/config.json" do
-    source "files/dprint_config.json"
-    owner node[:user]
-    mode "644"
+  # npm packages via mise with npm backend
+  mise "vscode-langservers-extracted" do
+    backend "npm"
+  end
+  mise "typescript" do
+    backend "npm"
+  end
+  mise "typescript-language-server" do
+    backend "npm"
+  end
+  mise "tombi" do
+    backend "npm"
+  end
+  mise "prettier" do
+    backend "npm"
   end
 
-  # Add alias for dprint to use the config file
-  file zshrc_config do
-    action :edit
-    content %(alias dprint="dprint --config #{config_home}/dprint/config.json")
-    not_if %(grep "alias dprint=" #{zshrc_config})
-  end
-
-  # Create rumdl config directory
-  mydir "#{config_home}/rumdl"
-
-  # Copy rumdl config file
-  remote_file "#{config_home}/rumdl/config.json" do
-    source "files/rumdl.toml"
-    owner node[:user]
-    mode "644"
-  end
+  # Additional tools via mise
+  mise "marksman"
+  mise "dprint"
+  mise "taplo"
 end
