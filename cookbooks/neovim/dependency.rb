@@ -6,56 +6,30 @@ include_cookbook "delta"
 
 package "cmake"
 
-# ruby
-# gem_package 'neovim'
-execute "gem install --user-install neovim" do
+# Install Ruby neovim gem via mise
+execute "install neovim gem" do
   user node[:user]
-  command <<-EOCMD
-  mise exec
-  gem install --user-install neovim
-  EOCMD
+  command "mise exec -- gem install --user-install neovim"
   not_if "mise exec -- gem list | grep -q 'neovim'"
 end
 
-# pip =
-%w[
-  neovim
-  neovim-remote
-].each do |pip|
-  # cmds =
-  %w[
-    pip pip
-  ].each do |pipcmd|
-    execute "#{pipcmd} install --upgrade --user #{pip}" do
-      user node[:user]
-
-      command <<-EOCMD
-        mise exec
-        #{pipcmd} install --upgrade --user #{pip}
-      EOCMD
-      only_if "mise activate; which #{pipcmd}"
-    end
+# Install Python neovim packages via mise
+%w[neovim neovim-remote].each do |pkg|
+  execute "install #{pkg} via pip" do
+    user node[:user]
+    command "mise exec -- pip install --upgrade --user #{pkg}"
+    not_if "mise exec -- pip list --user | grep -q '^#{pkg} '"
   end
 end
 
-# Node.js
-# execute "install neovim yarn package" do
-#   command "mise exec -- yarn global add neovim"
-#   user node[:user]
-#   not_if "mise exec -- yarn global list | grep -q 'neovim@'"
-# end
-
-# include_cookbook 'perl'
-# execute 'cpanm Neovim::Ext'
-
-# go_get 'github.com/tennashi/vimalter'
+# Install vimalter (neovim version manager)
 execute "install vimalter" do
   command <<-EOCMD
-    mkdir work_vimalter
+    mkdir -p work_vimalter
     cd work_vimalter
-    wget https://github.com/tennashi/vimalter/releases/download/0.1.0/vimalter_0.1.0_Linux_64-bit.tar.gz -O vimalter.tar.gz
-    tar xfz  vimalter.tar.gz
-    mv vimalter ~/.local/bin
+    wget -q https://github.com/tennashi/vimalter/releases/download/0.1.0/vimalter_0.1.0_Linux_64-bit.tar.gz -O vimalter.tar.gz
+    tar xfz vimalter.tar.gz
+    mv vimalter ~/.local/bin/
     cd ..
     rm -rf work_vimalter
   EOCMD
