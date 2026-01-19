@@ -198,18 +198,14 @@ node.reverse_merge!(
 
 crystal_lldb_file = File.join(doms_dotfiles, "config", "lldb", "crystal_formatters.py")
 
-http_request crystal_lldb_file do
-  url "https://raw.githubusercontent.com/crystal-lang/crystal/refs/heads/master/etc/lldb/crystal_formatters.py"
-  user node[:user]
-end
-
-# Create link to config home
-link "#{config_home}/lldb/crystal_formatters.py" do
-  to "#{doms_dotfiles}/config/lldb/crystal_formatters.py"
-  user node[:user]
-end
-
 helix_language_file = File.join(config_home, "helix", "languages.toml")
+
+# Remove dangling symlink for helix languages.toml if it exists
+execute "remove dangling helix languages.toml symlink" do
+  command "rm -f #{helix_language_file}"
+  only_if "test -L #{helix_language_file}"
+  user user
+end
 
 template helix_language_file do
   MItamae.logger.info "in language.toml template creation"
