@@ -1,16 +1,20 @@
 case node[:platform]
 when "osx", "darwin"
   package "calibre"
-  
+
   calibre_customize = "/Applications/calibre.app/Contents/MacOS/calibre-customize"
-  
+
   # Download DeDRM plugin
   dedrm_url = "https://github.com/noDRM/DeDRM_tools/releases/download/v10.0.3/DeDRM_tools_10.0.3.zip"
   dedrm_zip = "/tmp/DeDRM_tools_10.0.3.zip"
   dedrm_plugin_zip = "/tmp/DeDRM_plugin.zip"
 
-  http_request dedrm_zip do
-    url dedrm_url
+  execute "download DeDRM tools" do
+    command <<~EOCMD
+      for i in {1..5}; do
+        curl -fL -o #{dedrm_zip} #{dedrm_url} && break || sleep 2
+      done
+    EOCMD
     user node[:user]
     not_if "test -f #{dedrm_zip}"
   end
@@ -39,16 +43,20 @@ when "osx", "darwin"
     not_if "#{calibre_customize} --list-plugins 2>/dev/null | grep -q 'KFX Input'"
   end
 
-when "ubuntu", "mint"
+when "debian", "ubuntu", "mint", "pop"
   package "calibre"
-  
+
   # Download DeDRM plugin
   dedrm_url = "https://github.com/noDRM/DeDRM_tools/releases/download/v10.0.3/DeDRM_tools_10.0.3.zip"
   dedrm_zip = "/tmp/DeDRM_tools_10.0.3.zip"
   dedrm_plugin_zip = "/tmp/DeDRM_plugin.zip"
 
-  http_request dedrm_zip do
-    url dedrm_url
+  execute "download DeDRM tools" do
+    command <<~EOCMD
+      for i in {1..5}; do
+        curl -fL -o #{dedrm_zip} #{dedrm_url} && break || sleep 2
+      done
+    EOCMD
     user node[:user]
     not_if "test -f #{dedrm_zip}"
   end
