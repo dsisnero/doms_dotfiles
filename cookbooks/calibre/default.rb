@@ -1,3 +1,28 @@
+dedrm_repo = "noDRM/DeDRM_tools"
+dedrm_tag = github_latest_tag(dedrm_repo)
+dedrm_version = github_latest_version(dedrm_repo)
+
+if dedrm_tag.nil? || dedrm_version.nil?
+  MItamae.logger.warn "Failed to fetch latest DeDRM version from GitHub, using fallback v10.0.3"
+  dedrm_tag = "v10.0.3"
+  dedrm_version = "10.0.3"
+else
+  MItamae.logger.info "Latest DeDRM version: #{dedrm_tag}"
+end
+
+# Check installed version
+installed_version = dedrm_installed_version
+MItamae.logger.info "Installed DeDRM version: #{installed_version || "not installed"}"
+
+# Determine if update is needed
+needs_update = installed_version.nil? || version_less_than?(installed_version, dedrm_version)
+
+if needs_update
+  MItamae.logger.info "DeDRM update required: #{installed_version || "not installed"} -> #{dedrm_version}"
+else
+  MItamae.logger.info "DeDRM is up to date: #{installed_version}"
+end
+
 case node[:platform]
 when "osx", "darwin"
   package "calibre"
@@ -5,8 +30,8 @@ when "osx", "darwin"
   calibre_customize = "/Applications/calibre.app/Contents/MacOS/calibre-customize"
 
   # Download DeDRM plugin
-  dedrm_url = "https://github.com/noDRM/DeDRM_tools/releases/download/v10.0.3/DeDRM_tools_10.0.3.zip"
-  dedrm_zip = "/tmp/DeDRM_tools_10.0.3.zip"
+  dedrm_url = "https://github.com/#{dedrm_repo}/releases/download/#{dedrm_tag}/DeDRM_tools_#{dedrm_version}.zip"
+  dedrm_zip = "/tmp/DeDRM_tools_#{dedrm_version}.zip"
   dedrm_plugin_zip = "/tmp/DeDRM_plugin.zip"
 
   execute "download DeDRM tools" do
@@ -27,12 +52,21 @@ when "osx", "darwin"
     not_if "test -f #{dedrm_plugin_zip}"
   end
 
-  # Install DeDRM plugin
+  # Install DeDRM plugin if update is needed
   execute "install DeDRM plugin" do
     command "#{calibre_customize} --add-plugin #{dedrm_plugin_zip}"
     user node[:user]
     only_if "test -f #{calibre_customize} && test -f #{dedrm_plugin_zip}"
-    not_if "#{calibre_customize} --list-plugins 2>/dev/null | grep -q 'DeDRM'"
+    not_if do
+      # Skip if already installed and up to date
+      if needs_update
+        false  # We need to install/update
+      else
+        # Check if plugin is actually installed (belt-and-suspenders)
+        result = run_command("#{calibre_customize} --list-plugins 2>/dev/null | grep -q 'DeDRM'", error: false)
+        result.success?
+      end
+    end
   end
 
   # Enable KFX Input plugin (included in Calibre distribution)
@@ -47,8 +81,8 @@ when "debian", "ubuntu", "mint", "pop"
   package "calibre"
 
   # Download DeDRM plugin
-  dedrm_url = "https://github.com/noDRM/DeDRM_tools/releases/download/v10.0.3/DeDRM_tools_10.0.3.zip"
-  dedrm_zip = "/tmp/DeDRM_tools_10.0.3.zip"
+  dedrm_url = "https://github.com/#{dedrm_repo}/releases/download/#{dedrm_tag}/DeDRM_tools_#{dedrm_version}.zip"
+  dedrm_zip = "/tmp/DeDRM_tools_#{dedrm_version}.zip"
   dedrm_plugin_zip = "/tmp/DeDRM_plugin.zip"
 
   execute "download DeDRM tools" do
@@ -69,12 +103,21 @@ when "debian", "ubuntu", "mint", "pop"
     not_if "test -f #{dedrm_plugin_zip}"
   end
 
-  # Install DeDRM plugin
+  # Install DeDRM plugin if update is needed
   execute "install DeDRM plugin" do
     command "calibre-customize --add-plugin #{dedrm_plugin_zip}"
     user node[:user]
     only_if "which calibre-customize && test -f #{dedrm_plugin_zip}"
-    not_if "calibre-customize --list-plugins 2>/dev/null | grep -q 'DeDRM'"
+    not_if do
+      # Skip if already installed and up to date
+      if needs_update
+        false  # We need to install/update
+      else
+        # Check if plugin is actually installed (belt-and-suspenders)
+        result = run_command("calibre-customize --list-plugins 2>/dev/null | grep -q 'DeDRM'", error: false)
+        result.success?
+      end
+    end
   end
 
   # Enable KFX Input plugin (included in Calibre distribution)
