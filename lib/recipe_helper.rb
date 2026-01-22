@@ -39,9 +39,9 @@ module PlatformHelpers
   def version_less_than?(v1, v2)
     return false if v1.nil? || v2.nil?
 
-    # Normalize versions: strip leading 'v' and whitespace
-    v1_norm = v1.to_s.strip.gsub(/^v/, "")
-    v2_norm = v2.to_s.strip.gsub(/^v/, "")
+    # Normalize versions: strip any leading non-digit characters
+    v1_norm = v1.to_s.strip.gsub(/^[^0-9]+/, "")
+    v2_norm = v2.to_s.strip.gsub(/^[^0-9]+/, "")
 
     # Manual version comparison
     v1_parts = v1_norm.split(".").map(&:to_i)
@@ -158,19 +158,30 @@ module GitHubHelpers
     []
   end
 
-  def github_latest_version(repo)
+  def normalize_version(version_string)
+    return nil if version_string.nil?
+    # Strip any leading non-digit characters
+    version_string.strip.gsub(/^[^0-9]+/, "")
+  end
+
+  def github_latest_tag(repo)
     max_retries = 3
     retry_count = 0
     while retry_count < max_retries
       cmd = "curl -s https://api.github.com/repos/#{repo}/releases/latest | jq -r '.tag_name'"
       result = run_command(cmd, error: false)
       if result.exit_status == 0
-        return result.stdout.strip.gsub(/^v/, "")
+        return result.stdout.strip
       end
       retry_count += 1
       sleep 2 if retry_count < max_retries
     end
     nil
+  end
+
+  def github_latest_version(repo)
+    tag = github_latest_tag(repo)
+    tag ? normalize_version(tag) : nil
   end
 
   # Helper to compute target string like install_opencode.1.sh
@@ -242,11 +253,29 @@ module GitHubHelpers
 
     target
   end
+end
 
-  def github_latest_version(repo)
-    cmd = "curl -s https://api.github.com/repos/#{repo}/releases/latest | jq -r '.tag_name'"
+#
+# ─── CALIBRE HELPERS ───────────────────────────────────────────────────────
+#
+module CalibreHelpers
+  def dedrm_installed_version
+    # Try to get DeDRM version from calibre-debug command
+    cmd = 'calibre-debug -r "DeDRM" 2>&1 | head -1'
     result = run_command(cmd, error: false)
-    (result.exit_status == 0) ? result.stdout.strip.gsub(/^v/, "") : nil
+
+    if result.success?
+      # Extract version from output like "DeDRM v10.0.9 - DRM removal plugin by noDRM"
+      match = result.stdout.match(/DeDRM\s+v?([\d.]+)/i)
+      return match[1] if match
+    end
+
+    nil
+  end
+
+  def dedrm_needs_update?(installed_version, latest_version)
+    return true if installed_version.nil? || latest_version.nil?
+    version_less_than?(installed_version, latest_version)
   end
 end
 
@@ -265,9 +294,11 @@ include_definition "launch_env"
 ::MItamae::RecipeContext.include NodeInitializer
 ::MItamae::RecipeContext.include UserContextHelpers
 ::MItamae::RecipeContext.include GitHubHelpers
+::MItamae::RecipeContext.include CalibreHelpers
 
 ::MItamae::ResourceContext.include PlatformHelpers
 ::MItamae::ResourceContext.include UserContextHelpers
+::MItamae::ResourceContext.include CalibreHelpers
 ::MItamae::RecipeContext.include GitHubHelpers
 
 # go_get definition moved to cookbooks/go/default.rb
