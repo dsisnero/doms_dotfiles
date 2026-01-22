@@ -24,6 +24,7 @@ package "apt-file"
 package "ltunify"
 package "okular"
 package "deja-dup"
+# for kindle
 
 package "patch"
 # package 'ruby-dev'
