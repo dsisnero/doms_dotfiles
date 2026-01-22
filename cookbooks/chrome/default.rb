@@ -1,14 +1,15 @@
 # install chrome
 case node[:platform]
 when "debian", "ubuntu", "mint"
-  execute "add repo" do
-    command <<-EOCMD
-      sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-      wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-      apt-get update
-    EOCMD
+  # Remove duplicate google.list file if it exists
+  file "/etc/apt/sources.list.d/google.list" do
+    action :delete
+    only_if "grep -q 'deb http://dl.google.com/linux/chrome/deb/ stable main' /etc/apt/sources.list.d/google.list"
+  end
 
-    not_if "test -f /etc/apt/sources.list.d/google.list"
+  apt_repository "google-chrome" do
+    url "deb http://dl.google.com/linux/chrome/deb/ stable main"
+    gpg_key "https://dl-ssl.google.com/linux/linux_signing_key.pub"
   end
 
   package "google-chrome-stable"
