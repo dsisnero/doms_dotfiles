@@ -81,7 +81,6 @@ include_cookbook "yarn"
 # include_cookbook "alacritty"
 include_cookbook "crystal"
 
-include_cookbook "rpi_imager"
 include_cookbook "wezterm"
 include_cookbook "lazygit"
 include_cookbook "tmux"
