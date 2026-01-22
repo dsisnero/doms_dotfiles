@@ -13,6 +13,7 @@ execute "sudo apt purge -y nano" do
   only_if "which nano"
 end
 
+include_cookbook "rpi_imager"
 # include_cookbook 'genie' if node['is_wsl']
 execute "sudo apt update"
 execute "sudo apt upgrade -y"

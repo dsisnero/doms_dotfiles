@@ -20,6 +20,8 @@ package "texlive"
 # cask
 # package "dropbox"
 include_cookbook "container"
+include_cookbook "rpi_imager"
+
 package "vlc"
 package "virtualbox"
 package "vagrant"
