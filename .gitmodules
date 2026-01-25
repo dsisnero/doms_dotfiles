@@ -13,3 +13,6 @@
 [submodule "plugins/mitamae-plugin-resource-apt-repository"]
 	path = plugins/mitamae-plugin-resource-apt-repository
 	url = git@github.com:moritzheiber/mitamae-plugin-resource-apt-repository.git
+[submodule "plugins/mitamae-plugin-resource-github_binary"]
+	path = plugins/mitamae-plugin-resource-github_binary
+	url = https://github.com/dsisnero/mitamae-plugin-resource-github_binary.git
