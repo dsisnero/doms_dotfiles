@@ -15,6 +15,14 @@ d:/tmp
 
 # Test files
 spec/
+test_*.rb
+
+# Third-party tools
+mitamae/
+specinfra/
 
 # TODO files
 todo.json
+
+# bd database
+.beads/
