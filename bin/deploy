@@ -35,9 +35,10 @@ done
 run_mitamae() {
   local level=$1
   local recipe=$2
-  cmd="bin/mitamae local --shell /bin/bash -l $level $recipe"
+  # Load github_binary plugin
+  cmd="bin/mitamae local --shell /bin/bash -l $level -r ./plugins/mitamae-plugin-resource-github_binary/mrblib $recipe"
   case "$(uname)" in
-    "Darwin") bin/mitamae local -l $level $recipe ;;
+    "Darwin") bin/mitamae local -l $level -r ./plugins/mitamae-plugin-resource-github_binary/mrblib $recipe ;;
     *) sudo -E bash -c "cd $(pwd) && ZSH_DISABLE_COMPFIX=true SHELL=/bin/bash NO_RCS=true SSH_AUTH_SOCK=${HOME}/.ssh/agent.sock $cmd" ;;
   esac
 }
