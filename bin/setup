@@ -3,19 +3,42 @@
 set -eu
 
 ## setup mitamae
-if [ "$(uname)" == 'Darwin' ]; then
+# Detect architecture
+ARCH=$(uname -m)
+case "$ARCH" in
+  x86_64|amd64)
+    ARCH_SUFFIX="x86_64"
+    ;;
+  aarch64|arm64)
+    ARCH_SUFFIX="aarch64"
+    ;;
+  armv7l|armhf)
+    ARCH_SUFFIX="armhf"
+    ;;
+  i686|i386)
+    ARCH_SUFFIX="i686"
+    ;;
+  *)
+    echo "Unsupported architecture: $ARCH"
+    exit 1
+    ;;
+esac
+
+# Check for Linux container environment first (e.g., when running in container on macOS)
+if [ -f /etc/os-release ]; then
+  OS='Linux'
+  MITAMAE_URL="https://github.com/itamae-kitchen/mitamae/releases/download/v1.12.7/mitamae-${ARCH_SUFFIX}-linux"
+  if grep 'Arch Linux' /etc/os-release>/dev/null; then
+    which unzip >/dev/null 2>&1 || sudo pacman -S --noconfirm unzip
+  elif grep 'Ubuntu' /etc/os-release>/dev/null; then
+    which unzip >/dev/null 2>&1 || sudo apt install -y unzip
+  fi
+elif [ "$(uname)" == 'Darwin' ]; then
   OS='Mac'
-  MITAMAE_URL=https://github.com/itamae-kitchen/mitamae/releases/download/v1.12.7/mitamae-x86_64-darwin
+  MITAMAE_URL="https://github.com/itamae-kitchen/mitamae/releases/download/v1.12.7/mitamae-${ARCH_SUFFIX}-darwin"
 elif [ "$(expr substr $(uname -s) 1 5)" == 'Linux' ]; then
   OS='Linux'
-  MITAMAE_URL=https://github.com/itamae-kitchen/mitamae/releases/download/v1.12.7/mitamae-x86_64-linux
-  if test -f /etc/os-release; then
-    if grep 'Arch Linux' /etc/os-release>/dev/null; then
-      which unzip >/dev/null 2>&1 || sudo pacman -S --noconfirm unzip
-    elif grep 'Ubuntu' /etc/os-release>/dev/null; then
-      which unzip >/dev/null 2>&1 || sudo apt install -y unzip
-    fi
-  fi
+  MITAMAE_URL="https://github.com/itamae-kitchen/mitamae/releases/download/v1.12.7/mitamae-${ARCH_SUFFIX}-linux"
 elif [ "$(expr substr $(uname -s) 1 10)" == 'MINGW32_NT' ]; then
   OS='Cygwin'
   echo "Your platform ($(uname -a)) is not supported."

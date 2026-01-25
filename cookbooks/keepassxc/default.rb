@@ -1,6 +1,11 @@
 case node[:platform]
 when "debian", "ubuntu", "mint", "pop"
-  flatpak "org.keepassxc.KeePassXC"
+  # Try to use flatpak if plugin is available, otherwise use apt
+  begin
+    flatpak "org.keepassxc.KeePassXC"
+  rescue NoMethodError
+    package "keepassxc"
+  end
 when "windows"
 when "darwin"
   package "KeePassXC"
