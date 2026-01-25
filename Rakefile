@@ -67,7 +67,7 @@ def container_runtime
       return 'oci'
     end
   end
-  
+
   # Fall back to podman/docker
   if command_exists?('podman')
     'podman'
@@ -86,17 +86,17 @@ end
 desc 'Test deploy script in container (simulated if containers not available)'
 task 'test:deploy' do
   puts "=== Testing ./bin/deploy --debug ==="
-  
+
   # Check for container runtime
   runtime = container_runtime
-  
+
   if runtime.nil?
     puts "No container runtime found. Would install podman via: ./bin/deploy podman"
     puts "For now, running simulated test..."
     run_simulated_test
   else
     puts "Container runtime found: #{runtime}"
-    
+
     # Test if runtime actually works
     if test_container_runtime(runtime)
       puts "#{runtime} is functional. Running container test..."
@@ -113,32 +113,32 @@ def test_container_runtime(runtime)
   case runtime
   when 'oci', 'container'
     # Apple's container runtime - check if it's working
-    system("#{runtime} run --rm alpine:latest echo 'test' > /dev/null 2>&1")
+    system("#{runtime} run --rm ubuntu:20.04 echo 'test' > /dev/null 2>&1")
   else
     # podman/docker - try to run a simple container
-    system("#{runtime} run --rm alpine:latest echo 'test' > /dev/null 2>&1")
+    system("#{runtime} run --rm ubuntu:20.04 echo 'test' > /dev/null 2>&1")
   end
 end
 
 def run_container_test(runtime)
   puts "Starting #{runtime} container test..."
-  
+
   # Create test directory
   test_dir = "/tmp/doms_dotfiles_test_#{Time.now.to_i}"
   FileUtils.mkdir_p(test_dir)
-  
+
   # Copy essential files
   puts "Copying files to test directory..."
   essential_files = [
-    'cookbooks/', 'plugins/', 'lib/', 'Gemfile', 'Gemfile.lock'
+    'cookbooks/', 'plugins/', 'lib/', 'definitions/', 'roles/', 'config/', 'Gemfile', 'Gemfile.lock'
   ]
-  
+
   essential_files.each do |file|
     if File.exist?(file)
       FileUtils.cp_r(file, "#{test_dir}/#{file}")
     end
   end
-  
+
   # Copy bin directory but exclude mitamae binary to test fresh download
   if File.exist?('bin')
     FileUtils.mkdir_p("#{test_dir}/bin")
@@ -154,80 +154,103 @@ def run_container_test(runtime)
       end
     end
   end
-  
+
   # Create test script - use sh for maximum compatibility
   test_script = <<~SH
     #!/bin/sh
     set -e
-    
+
     echo "=== Container Test Environment ==="
     echo "OS: \$(cat /etc/os-release 2>/dev/null | grep PRETTY_NAME || uname -a)"
     echo "Current dir: \$(pwd)"
     echo "Contents:"
     ls -la
-    
+
     echo ""
-    echo "=== Running bin/setup ==="
-    
-    # Check if setup script exists
-    if [ -f ./bin/setup ]; then
-      echo "Setup script found, making executable..."
+    echo "=== Installing dependencies ==="
+    apt-get update
+    apt-get install -y sudo git jq curl file 2>/dev/null || echo "Some packages failed to install"
+
+    echo ""
+    echo "=== Running ./bin/deploy mise --debug ==="
+
+    # Check if deploy script exists
+    if [ -f ./bin/deploy ]; then
+      echo "Deploy script found, making executable..."
+      chmod +x ./bin/deploy 2>/dev/null || true
       chmod +x ./bin/setup 2>/dev/null || true
-      
-      echo "Checking setup script contents..."
-      head -30 ./bin/setup
-      
+      chmod +x ./bin/mitamae 2>/dev/null || true
+
+      echo "Checking deploy script contents..."
+      head -20 ./bin/deploy
+
       echo ""
-      echo "Attempting to run ./bin/setup..."
-      # Try to run setup - it might fail due to missing dependencies
-      if ./bin/setup 2>&1; then
-        echo "Setup completed successfully"
+      echo "Checking plugin directory..."
+      ls -la plugins/mitamae-plugin-resource-github_binary/ || echo "Plugin directory not found"
+
+      echo ""
+      echo "Running deploy (this will also run setup)..."
+      if ./bin/deploy mise --debug 2>&1; then
+        echo "✓ Deploy completed successfully"
+        
+        echo ""
+        echo "=== Verifying installations ==="
+        
+        # Verify mise is installed
+        echo "Checking mise installation..."
+        if [ -f /root/.local/bin/mise ]; then
+          echo "✓ mise binary found at /root/.local/bin/mise"
+          /root/.local/bin/mise --version && echo "✓ mise version check passed"
+        else
+          echo "✗ mise binary not found at /root/.local/bin/mise"
+          exit 1
+        fi
+        
+        echo "Checking installed mise tools..."
+        /root/.local/bin/mise list || echo "mise list failed"
+        
+        # Verify ruby is installed via mise (optional)
+        echo "Checking ruby installation via mise..."
+        if /root/.local/bin/mise exec -- ruby --version 2>/dev/null; then
+          echo "✓ ruby is installed via mise"
+        else
+          echo "⚠ ruby not installed via mise (optional)"
+        fi
+        
+        echo ""
+        echo "=== All verifications passed ==="
+        exit 0
       else
-        echo "Setup exited with status: \$?"
-        echo "This is expected if dependencies are missing"
+        status=\$?
+        echo "✗ Deploy exited with status: \$status"
+        exit \$status
       fi
     else
-      echo "Setup script not found at ./bin/setup"
+      echo "ERROR: ./bin/deploy not found"
+      exit 1
     fi
-    
-    echo ""
-    echo "=== Checking what setup would install ==="
-    echo "From reading setup script, it would:"
-    grep -i "install\\|apt-get\\|apk\\|yum\\|dnf\\|brew" ./bin/setup 2>/dev/null | head -10 || echo "Could not parse setup script"
-    
-    echo ""
-    echo "=== Testing mitamae after setup ==="
-    if [ -f ./bin/mitamae ]; then
-      echo "Checking mitamae file type..."
-      file ./bin/mitamae 2>/dev/null || echo "file command not available"
-      echo "Attempting to run mitamae..."
-      ./bin/mitamae version 2>&1 | head -5 || echo "Mitamae not executable in this environment"
-    fi
-    
-    echo ""
-    echo "=== Test completed ==="
   SH
-  
+
   File.write("#{test_dir}/test.sh", test_script)
   File.chmod(0755, "#{test_dir}/test.sh")
-  
+
   # Run container - different syntax for Apple's container runtime
   begin
     # Ensure files are written to disk
     FileUtils.touch("#{test_dir}/.sync")
-    
-      if runtime == 'container' || runtime == 'oci'
-        # Apple's container runtime syntax - use absolute path and ensure script is executable
-        puts "Running Apple container test..."
-        sh %Q{#{runtime} run --rm -v #{test_dir}:/test alpine:latest /bin/sh -c "cd /test && chmod +x test.sh && apk add --no-cache bash file curl 2>/dev/null || true && ./test.sh"}
-      else
-        # podman/docker syntax
-        puts "Running #{runtime} container test..."
-        sh %Q{#{runtime} run --rm -it \
-          -v "#{test_dir}:/test" \
-          alpine:latest \
-          /bin/sh -c "cd /test && apk add --no-cache bash file curl 2>/dev/null || true && ./test.sh"}
-      end
+
+    if runtime == 'container' || runtime == 'oci'
+      # Apple's container runtime syntax - use absolute path and ensure script is executable
+      puts "Running Apple container test..."
+      sh %Q{#{runtime} run --rm -v #{test_dir}:/root/repos/github.com/dsisnero/doms_dotfiles ubuntu:20.04 /bin/sh -c "cd /root/repos/github.com/dsisnero/doms_dotfiles && chmod +x test.sh && apt-get update && apt-get install -y sudo git jq curl file 2>/dev/null || true && ./test.sh"}
+    else
+      # podman/docker syntax
+      puts "Running #{runtime} container test..."
+      sh %Q{#{runtime} run --rm -it \
+          -v "#{test_dir}:/root/repos/github.com/dsisnero/doms_dotfiles" \
+          ubuntu:20.04 \
+          /bin/sh -c "cd /root/repos/github.com/dsisnero/doms_dotfiles && apt-get update && apt-get install -y sudo git jq curl file 2>/dev/null || true && ./test.sh"}
+    end
   rescue => e
     puts "Container test failed: #{e.message}"
     puts "Falling back to simulated test..."
@@ -240,56 +263,56 @@ end
 
 def run_simulated_test
   puts "=== Running Simulated Deploy Test ==="
-  
+
   puts "1. Checking deploy script..."
   unless File.exist?('./bin/deploy')
     puts "ERROR: ./bin/deploy not found"
     return
   end
-  
+
   puts "2. Making scripts executable..."
   File.chmod(0755, './bin/deploy') rescue nil
   File.chmod(0755, './bin/mitamae') rescue nil
   File.chmod(0755, './bin/setup') rescue nil
-  
+
   puts "3. Testing deploy script syntax..."
   if system('bash -n ./bin/deploy')
     puts "  ✓ Deploy script syntax is valid"
   else
     puts "  ✗ Deploy script has syntax errors"
   end
-  
+
   puts "4. Showing what deploy would do..."
   puts "   Command that would run:"
   puts "   ./bin/setup"
   puts "   then: ./bin/mitamae local -l debug lib/recipe.rb"
-  
+
   puts "5. Testing mitamae directly..."
   if File.exist?('./bin/mitamae')
     puts "   Mitamae version:"
     system('./bin/mitamae version 2>&1') || puts("   Could not get version")
   end
-  
+
   puts "6. Testing a simple recipe..."
   simple_recipe = <<~RUBY
     directory "/tmp/deploy_test" do
       mode "0755"
     end
-    
+
     file "/tmp/deploy_test/test.txt" do
       content "Deploy test successful at #{Time.now}"
       mode "0644"
     end
-    
+
     execute "echo test" do
       command "echo 'Simple recipe executed successfully'"
     end
   RUBY
-  
+
   File.write('/tmp/simple_test.rb', simple_recipe)
   puts "   Running simple test recipe..."
   system('./bin/mitamae local /tmp/simple_test.rb 2>&1 | tail -5')
-  
+
   puts ""
   puts "=== Simulated Test Complete ==="
   puts "In a working container environment, this would fully test ./bin/deploy --debug"
@@ -301,18 +324,18 @@ task 'test:full' => ['test:deploy']
 desc 'Test podman cookbook installation'
 task 'test:podman' do
   puts "=== Testing podman cookbook ==="
-  
+
   # Check if podman is already installed
   if command_exists?('podman')
     puts "Podman is already installed at: #{`which podman`.chomp}"
     puts "Version: #{`podman --version 2>/dev/null`.chomp}"
   else
     puts "Podman not found. Testing what the cookbook would do..."
-    
+
     # Check what platform we're on
     platform = `uname -s`.chomp.downcase
     puts "Platform: #{platform}"
-    
+
     if platform == 'darwin'
       puts "On macOS, podman cookbook would:"
       puts "1. Install podman via Homebrew"
@@ -327,23 +350,23 @@ task 'test:podman' do
     else
       puts "Platform not specifically handled in cookbook"
     end
-    
+
     # Try to run the cookbook via mitamae
     puts ""
     puts "Testing podman cookbook via mitamae..."
-    
+
     test_recipe = <<~RUBY
       # Test recipe for podman cookbook
       include_recipe "cookbooks/podman/default.rb"
-      
+
       # Verify installation
       execute "check podman" do
         command "which podman"
       end
     RUBY
-    
+
     File.write('/tmp/test_podman.rb', test_recipe)
-    
+
     if File.exist?('./bin/mitamae')
       puts "Running mitamae test recipe..."
       system('./bin/mitamae local /tmp/test_podman.rb 2>&1 | tail -20')
@@ -351,7 +374,7 @@ task 'test:podman' do
       puts "Mitamae not found at ./bin/mitamae"
     end
   end
-  
+
   puts "=== Podman cookbook test complete ==="
 end
 

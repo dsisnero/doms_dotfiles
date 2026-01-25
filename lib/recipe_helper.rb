@@ -17,7 +17,7 @@ MItamae::RecipeContext.class_eval do
   end
 
   def include_definition(name)
-    include_recipe File.join(root_dir, "definitions", name)
+    include_recipe File.join(root_dir, "definitions", "#{name}.rb")
   end
 end
 

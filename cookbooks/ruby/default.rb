@@ -21,7 +21,7 @@ end
 
 execute "install latest ruby" do
   user user
-  command %(mise use -g ruby@#{version})
+  command %(#{home}/.local/bin/mise use -g ruby@#{version})
 end
 
 home = node[:home]

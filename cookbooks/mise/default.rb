@@ -37,15 +37,15 @@ define :mise, version: nil, backend: nil, exe: nil, rename: nil do
   version = params[:version] || "latest"
   backend = params[:backend]
   cmd = if backend
-    "mise use -g #{backend}:#{tool_name}@#{version}"
+    "#{home_}/.local/bin/mise use -g #{backend}:#{tool_name}@#{version}"
   else
-    "mise use -g #{tool_name}@#{version}"
+    "#{home_}/.local/bin/mise use -g #{tool_name}@#{version}"
   end
   exe = params[:exe] || tool_name
   execute "installing #{tool_name}@#{version}" do
     user user_  # Change from node[:user] to local variable
     command cmd
-    not_if "mise exec -- which #{exe}"
+    not_if "#{home_}/.local/bin/mise exec -- which #{exe}"
   end
 end
 
