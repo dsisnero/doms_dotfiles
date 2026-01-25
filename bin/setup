@@ -52,6 +52,12 @@ if [ ! -e bin ]; then
   mkdir -p bin
 fi
 
+# Initialize git submodules if this is a git repository
+if [ -d .git ]; then
+  echo "Initializing git submodules..."
+  git submodule update --init --recursive
+fi
+
 if [ ! -e bin/mitamae ]; then
   curl -s -L ${MITAMAE_URL} -o bin/mitamae
   chmod +x bin/mitamae

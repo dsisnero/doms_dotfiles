@@ -1,20 +1,24 @@
 include_recipe "dependency.rb"
 
-target_name = "hadolint"
-version = "2.12.0"
-release_url = "https://github.com/hadolint/hadolint/releases/download/v#{version}/hadolint-Linux-x86_64"
-version_cmd = "/usr/local/bin/#{target_name} -v"
-version_str = "Haskell Dockerfile Linter #{version}"
-
+# Determine platform-specific asset name
 case node[:platform]
-when "debian", "ubuntu", "mint", "fedora", "redhat", "amazon"
-  get_bin_github_release target_name do
-    version version
-    version_cmd version_cmd
-    version_str version_str
-    release_artifact_url release_url
+when "debian", "ubuntu", "mint", "fedora", "redhat", "amazon", "arch", "opensuse"
+  # Linux platforms
+  arch = (node[:kernel] && node[:kernel][:machine]) ? node[:kernel][:machine] : "x86_64"
+  asset_name = "hadolint-Linux-#{arch}"
+
+  github_binary "hadolint" do
+    repo "hadolint/hadolint"
+    version "v2.12.0"
+    asset_pattern asset_name
+    binary_name "hadolint"
+    install_path "/usr/local/bin/hadolint"
+    user "root"
+    mode "0755"
+    extract false  # Raw binary, not an archive
+    strip_components 0
   end
 when "osx", "darwin"
-when "arch"
-when "opensuse"
+  # macOS - hadolint only provides x86_64 binary, would need Rosetta
+  # Skip for now since we're on ARM64
 end
