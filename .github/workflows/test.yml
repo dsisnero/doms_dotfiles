@@ -1,0 +1,65 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+          bundler-cache: true
+          
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          sudo systemctl start docker
+          
+      - name: Run integration tests
+        run: |
+          bundle exec rake test:integration
+        env:
+          DOCKER_HOST: unix:///var/run/docker.sock
+          
+      - name: Clean up Docker containers
+        if: always()
+        run: |
+          docker rm -f doms-dotfiles-test 2>/dev/null || true
+          
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+          bundler-cache: true
+          
+      - name: Run Rubocop
+        run: |
+          bundle exec rubocop --format github
+        
+      - name: Check Gemfile.lock
+        run: |
+          bundle check
