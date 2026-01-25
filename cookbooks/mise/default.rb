@@ -6,62 +6,28 @@ config_home = node[:config_home]
 zshrc_config = node[:zshrc_config]
 node[:group]
 
-case node[:platform]
-when "debian", "mint", "ubuntu"
-
-  # Create keyring directory
-  directory "/etc/apt/keyrings" do
-    mode "755"
-    owner "root"
-    group "root"
-  end
-
-  # Add repository (using standard apt_repository pattern)
-  apt_repository "mise" do
-    # Full repository line including components
-    url "https://mise.jdx.dev/deb stable main"
-    # Use arch= in URL instead of separate attribute
-    # The following block is a more robust way to ensure the arch is added if not present
-    # and handles the case where the URL might change slightly.
-    # However, the plugin does not support a content block directly on apt_repository.
-    # We will assume the plugin handles the 'deb [arch=amd64] ...' format directly in the url.
-    # For now, we will set the url directly as per the user's simplified request.
-    # A more complex solution would involve modifying the plugin or using a file resource.
-    # url "https://mise.jdx.dev/deb stable main" do |content|
-    #   content.gsub!(/^deb /, 'deb [arch=amd64] ')
-    # end
-    # For the direct application as requested:
-    gpg_key "https://mise.jdx.dev/gpg-key.pub"
-    notifies :update, "apt_update", :immediately
-  end
-
-  # Install system package
-  package "mise" do
-    action :install
-    version nil  # Install latest available
-  end
-
-when "fedora", "redhat", "amazon"
-
-when "osx", "darwin"
-  package "mise"
-end
-
-# Remove previous user install leftovers
-file "#{home_}/.local/bin/mise" do
-  action :delete
-  only_if "test -f #{home_}/.local/bin/mise"
+# Install mise using github_binary plugin
+github_binary "mise" do
+  repo "jdx/mise"
+  version "latest"
+  # Use pattern similar to mise_install.sh
+  asset_pattern "mise-v:version-:os-:arch.tar.gz"
+  binary_name "mise"
+  install_path "#{home_}/.local/bin/mise"
+  user user_
+  mode "0755"
+  strip_components 1  # mise archives have a mise/ directory
 end
 
 # Keep user config directories but fix ownership
 mydir "#{home_}/.config/mise"
 
-# Update shell integration to use system-installed mise
+# Update shell integration to use mise
 execute "Add mise to #{zshrc_config}" do
   user user_
   command %(
       if ! grep -q 'mise activate zsh' #{zshrc_config}; then
-        echo 'eval "$(mise activate zsh)"' >> #{zshrc_config}
+        echo 'eval "$(#{home_}/.local/bin/mise activate zsh)"' >> #{zshrc_config}
       fi
     )
 end
@@ -86,8 +52,6 @@ end
 mise "sops"
 mise "age"
 mise "slsa-verifier"
-puts node
-MItamae.logger.info("zshrc_config: #{zshrc_config}")
 execute "Add AGE key to #{zshrc_config}" do
   user user_
   command %(
@@ -95,6 +59,15 @@ execute "Add AGE key to #{zshrc_config}" do
       echo 'export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt"' >> #{zshrc_config}
     fi
   )
+end
+
+execute "Add mise to #{home_}/.bashrc" do
+  user user_
+  command %(
+      if ! grep -q 'mise activate bash' #{home_}/.bashrc; then
+        echo 'eval "$(#{home_}/.local/bin/mise activate bash)"' >> #{home_}/.bashrc
+      fi
+    )
 end
 
 execute "Add AGE key to #{home_}/.bashrc" do
