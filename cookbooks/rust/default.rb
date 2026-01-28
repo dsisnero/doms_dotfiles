@@ -49,17 +49,29 @@ unless ENV["RUSTC_WRAPPER"]
   MItamae.logger.info("adding RUSTC_WRAPPER to ENV during this execution")
   ENV["RUSTC_WRAPPER"] = "#{cargo_bin_dir}/sccache"
 end
-
-cargo_init = <<~EOS
-  ENV['RUSTC_WRAPPER'] = "#{cargo_bin_dir}/sccache"
-EOS
+ENV["RUSTC_WRAPPER"] = "#{cargo_bin_dir}/sccache"
 
 # define cargo_install command
 define :cargo, version: nil, locked: true, path: nil, git: nil,
-  features: nil, binname: nil, sscache: true do
+  features: nil, binname: nil, sscache: true, env: {}, cwd: nil, user: nil do
     cargo_name = params[:name]
     params[:binname] || params[:name]
-    cmd = "#{cargo_init} ;" if params[:sscache]
+    target_user = params[:user] || node[:user]
+
+    # Build environment exports
+    env_exports = []
+    # Add BEADS_DIR if beads is installed
+    if system("which bd > /dev/null 2>&1")
+      beads_dir = "#{node[:doms_dotfiles]}/.beads"
+      FileUtils.mkdir_p(beads_dir) unless File.exist?(beads_dir)
+      env_exports << "BEADS_DIR=#{beads_dir}"
+    end
+    # Add user-provided environment variables
+    params[:env].each do |key, value|
+      env_exports << "#{key}=#{value}"
+    end
+
+    # Build cargo command
     cmd = "#{cargo_cmd} install --verbose"
     cmd << " --version #{params[:version]}" if params[:version]
     cmd << " --path #{params[:path]}" if params[:path]
@@ -67,8 +79,19 @@ define :cargo, version: nil, locked: true, path: nil, git: nil,
     cmd << " --features #{params[:features]}" if params[:features]
     cmd << " --locked" if params[:locked]
     cmd << " #{cargo_name}" unless params[:path] || params[:git]
+
+    # Prepend environment exports if any
+    if !env_exports.empty?
+      cmd = env_exports.map { |e| "export #{e}" }.join(" && ") + " && " + cmd
+    end
+
+    # Change directory if cwd specified
+    if params[:cwd]
+      cmd = "cd #{params[:cwd]} && " + cmd
+    end
+
     execute "installing #{cargo_name}" do
-      user node[:user]
+      user target_user
       command cmd
       not_if %(#{cargo_cmd} install --list | grep "^#{cargo_name} ")
     end

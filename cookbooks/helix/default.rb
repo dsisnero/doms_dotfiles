@@ -8,9 +8,9 @@ doms_dotfiles = node[:doms_dotfiles]
 config_dir = node[:config_home]
 node[:zshrc_config]
 
-mise "helix" do
-  exe "hx"
-end
+# mise "helix" do
+#   exe "hx"
+# end
 
 dest = "#{config_dir}/helix/snippets"
 src = "#{doms_dotfiles}/config/helix/snippets"
@@ -35,7 +35,6 @@ dir = File.join(ghq_root, "github.com/helix-editor/helix")
 cargo "helix-locked" do
   path "#{dir}/helix-term"
   cwd dir
-  only_if "false"
 end
 
 src = File.expand_path(File.join(dir, "runtime"))
