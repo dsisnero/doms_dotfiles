@@ -48,6 +48,7 @@ include_cookbook "zig"
 include_cookbook "vscode"
 
 include_cookbook "treesitter"
+package "pdftk-java"
 
 cargo "broot"
 cargo "cargo-edit"
