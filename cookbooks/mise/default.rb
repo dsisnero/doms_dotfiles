@@ -30,7 +30,10 @@ when "ubuntu", "debian", "mint", "pop"
   end
 
 when "darwin"
-  execute("sh #{c}")
+  execute "install mise" do
+    user "root"
+    command "sh -c '#{c.gsub("'", "'\"'\"'")}'"
+  end
 end
 
 # Keep user config directories but fix ownership
@@ -66,7 +69,6 @@ end
 mise "sops"
 mise "age"
 mise "slsa-verifier"
-puts node
 MItamae.logger.info("zshrc_config: #{zshrc_config}")
 execute "Add AGE key to #{zshrc_config}" do
   user user_
