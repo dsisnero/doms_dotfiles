@@ -1,3 +1,4 @@
+include_recipe "dependency.rb"
 module RpiImagerHelper
   def rpi_imager_installed_version
     begin
@@ -333,18 +334,17 @@ when "debian", "ubuntu", "mint", "pop"
     case pkg_type
     when "deb"
       download_path = "#{cache_dir}/rpi-imager-#{latest_version}.deb"
-      MItamae.logger.info "Downloading RPi Imager .deb to #{download_path}"
+      MItamae.logger.info "Downloading and installing RPi Imager .deb"
 
-      http_request download_path do
-        url download_url
-        path download_path
-        owner user
-        notifies :run, "execute[install rpi-imager deb]"
-      end
-
-      execute "install rpi-imager deb" do
-        action :nothing
-        command "apt install -y #{download_path}"
+      # Use a single execute block to handle download and installation
+      execute "download and install rpi-imager deb" do
+        command <<-EOS
+          set -e
+          # Download the .deb package
+          curl -s -L -o "#{download_path}" "#{download_url}"
+          # Install it
+          apt install -y "#{download_path}"
+        EOS
         user "root"
       end
 
@@ -357,25 +357,20 @@ when "debian", "ubuntu", "mint", "pop"
 
     when "AppImage"
       download_path = "#{cache_dir}/rpi-imager-#{latest_version}.AppImage"
-      MItamae.logger.info "Downloading RPi Imager AppImage to #{download_path}"
+      MItamae.logger.info "Downloading and installing RPi Imager AppImage to #{appimage_path}"
 
-      http_request download_path do
-        url download_url
-        path download_path
-        owner user
-        notifies :run, "execute[make rpi-imager executable]"
-      end
-
-      execute "make rpi-imager executable" do
-        action :nothing
-        command "chmod +x #{download_path}"
-        user user
-        notifies :run, "execute[install rpi-imager appimage]"
-      end
-
-      execute "install rpi-imager appimage" do
-        action :nothing
-        command "mv -f #{download_path} #{appimage_path}"
+      # Use a single execute block to handle download and installation
+      # This avoids notification chain issues
+      execute "download and install rpi-imager appimage" do
+        command <<-EOS
+          set -e
+          # Download the AppImage
+          curl -s -L -o "#{download_path}" "#{download_url}"
+          # Make it executable
+          chmod +x "#{download_path}"
+          # Move to user bin directory
+          mv -f "#{download_path}" "#{appimage_path}"
+        EOS
         user user
       end
 
