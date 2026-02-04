@@ -87,12 +87,10 @@ module NodeInitializer
       end
     end
 
+    # Unified XDG_CONFIG_HOME handling across all platforms
     xdg_home = home
     user_bin = File.join(home, ".local", "bin")
-
     repos = "#{home}/repos"
-
-    # Unified XDG_CONFIG_HOME handling across all platforms
     config_home = ENV.fetch("XDG_CONFIG_HOME", File.join(xdg_home, ".config"))
     data_home = ENV.fetch("XDG_DATA_HOME", File.join(xdg_home, ".local", "share"))
     cache_home = ENV.fetch("XDG_CACHE_HOME", File.join(xdg_home, ".cache"))
