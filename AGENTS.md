@@ -117,41 +117,151 @@ This is a Ruby project using Rubocop for code formatting and style enforcement.
 
 This guide helps AI assistants understand the project structure, coding standards, and development workflow for this Ruby project.
 
-## Issue Tracking
+## MItamae Cookbook Patterns
 
-This project uses **bd (beads)** for issue tracking.
-Run `bd prime` for workflow context, or install hooks (`bd hooks install`) for auto-injection.
+This project uses MItamae for configuration management. Cookbooks are located in `cookbooks/` directory.
 
-**Quick reference:**
-- `bd ready` - Find unblocked work
-- `bd create "Title" --type task --priority 2` - Create issue
-- `bd close <id>` - Complete work
-- `bd sync` - Sync with git (run at session end)
+### Basic Cookbook Structure
 
-For full workflow details: `bd prime`
+```ruby
+# cookbooks/example/default.rb
 
-## Landing the Plane (Session Completion)
+# Helper methods can be defined in a module
+module ExampleHelper
+  def example_installed_version
+    # Check installed version logic
+    # Return version string or nil if not installed
+  end
 
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+  def example_latest_version
+    # Fetch latest version from external source
+    # Return version string or nil if unavailable
+  end
+end
 
-**MANDATORY WORKFLOW:**
+::MItamae::RecipeContext.include ExampleHelper
+::MItamae::ResourceContext.include ExampleHelper
 
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   bd sync
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
+# Main recipe logic
+case node[:platform]
+when "debian", "ubuntu", "mint", "pop"
+  # Linux-specific installation
+  home = node[:home]
+  user = node[:user]
 
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
+  # Install using platform-specific package manager or direct download
+when "darwin"
+  # macOS-specific installation (Homebrew)
+  package "example-tool"
+when "windows"
+  # Windows-specific installation
+  log "Not implemented"
+end
+```
+
+### Version Management Pattern (like rpi-imager)
+
+For tools that need version checking and automatic updates:
+
+1. **Define helper methods** to check installed and latest versions
+2. **Use `version_less_than?`** from PlatformHelpers for semantic version comparison
+3. **Download only when needed** to avoid unnecessary network calls
+4. **Use cache directory** (`~/.cache/`) instead of `/tmp` for user-specific downloads
+5. **Add error handling** with rescue blocks for network/execution failures
+
+Example from `cookbooks/rpi_imager/default.rb`:
+
+```ruby
+def rpi_imager_installed_version
+  begin
+    case node[:platform]
+    when "debian", "ubuntu", "mint", "pop"
+      appimage_path = "#{node[:home]}/.local/bin/rpi-imager"
+      if File.exist?(appimage_path)
+        result = run_command("#{appimage_path} --version 2>/dev/null", error: false)
+        if result.success?
+          match = result.stdout.match(/v(\d+\.\d+\.\d+)/)
+          return match[1] if match
+        end
+      end
+    # ... other platforms
+    end
+  rescue => e
+    MItamae.logger.warn "Failed to get installed version: #{e.message}"
+  end
+  nil
+end
+
+def rpi_imager_latest_appimage_info
+  begin
+    max_retries = 3
+    retry_count = 0
+
+    while retry_count < max_retries
+      cmd = "curl -s https://downloads.raspberrypi.com/imager/"
+      result = run_command(cmd, error: false)
+
+      if result.success?
+        html = result.stdout
+        appimages = []
+
+        # Parse HTML for download links
+        html.scan(/href="(imager_\d+\.\d+\.\d+_amd64\.AppImage)"/) do |match|
+          filename = match[0]
+          version_match = filename.match(/imager_(\d+\.\d+\.\d+)_amd64\.AppImage/)
+          if version_match
+            appimages << {version: version_match[1], filename: filename}
+          end
+        end
+
+        # Find highest version
+        unless appimages.empty?
+          highest = appimages.first
+          appimages.each do |appimage|
+            if version_less_than?(highest[:version], appimage[:version])
+              highest = appimage
+            end
+          end
+          return highest
+        end
+      end
+
+      retry_count += 1
+      sleep 2 if retry_count < max_retries
+    end
+  rescue => e
+    MItamae.logger.warn "Failed to get latest version: #{e.message}"
+  end
+  nil
+end
+```
+
+### Resource Patterns
+
+- **Use `directory`** for creating directories with proper permissions
+- **Use `http_request`** for downloading files (not `curl`/`wget` in execute blocks)
+- **Use `execute` with `not_if`/`only_if`** to make operations idempotent
+- **Chain notifications** (`notifies`) for sequential operations
+- **Set user ownership** for user-specific files/directories
+
+### Platform Support
+
+- **Linux (deb-based)**: `"debian", "ubuntu", "mint", "pop"`
+- **macOS**: `"darwin"` or `"osx"`
+- **Windows**: `"windows"`
+
+### Best Practices
+
+1. **Idempotency**: Ensure cookbooks can run multiple times without side effects
+2. **Error handling**: Wrap external commands and network calls in rescue blocks
+3. **Logging**: Use `MItamae.logger.info/warn` for debugging
+4. **User-specific paths**: Use `node[:home]` and `node[:user]` variables
+5. **Cache management**: Store downloads in user's cache directory
+6. **Cleanup**: Remove old installations when switching methods (e.g., snap → AppImage)
+
+### Available Helpers
+
+- `version_less_than?(v1, v2)`: Compare semantic versions
+- `github_latest_version(repo)`: Get latest GitHub release tag
+- `run_command(cmd, error: false)`: Execute shell command safely
+- `sudo(user)`: Generate sudo command prefix

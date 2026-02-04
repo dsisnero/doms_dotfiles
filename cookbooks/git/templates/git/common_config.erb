@@ -139,26 +139,28 @@ root = <%= @ghq_root %>
 [diff]
 	colorMoved = default
 	algorithm = histogram
+	tool = nvimdiff
 
 
 [interactive]
-	diffFilter = delta --color-only --features=interactive
+	diffFilter = delta --color-only
 
 ; Ensure all delta settings are in one block for clarity and features
 [delta]
-    features = decorations line-numbers interactive
-    syntax-theme = Dracula
-    side-by-side = true
-    navigate = true
-    plus-style = syntax "#003800"
-    minus-style = syntax "#3f0001"
+  navigate = true
+	dark = true
 
 [merge]
- tool = nvimdiff3
- conflictstyle = diff3
+	conflictstyle = zdiff3
+	tool = nvimdiff3
 
+[mergetool]
+	keepBackup = false
+	prompt = false
 [mergetool "nvimdiff3"]
     cmd = nvim -d -c "wincmd J" "$LOCAL" "$BASE" "$REMOTE" "$MERGED"
 
+[difftool]
+	prompt = false
 [difftool "nvimdiff"]
     cmd = nvim -d "$LOCAL" "$REMOTE"
