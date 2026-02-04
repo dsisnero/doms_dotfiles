@@ -65,6 +65,18 @@ unless os == "windows" && !wsl?
     mode "0755"
   end
 
+  # Map platform to template name
+  platform_template = case node[:platform]
+  when "debian", "ubuntu", "mint", "pop", "fedora", "redhat", "amazon", "arch", "linux"
+    "linux"
+  when "darwin", "osx", "macos"
+    "darwin"
+  when "windows"
+    "windows"
+  else
+    "linux" # default
+  end
+
   # Main .gitconfig with platform-specific includes
   template "#{git_config_dir}/config" do
     source "templates/git/gitconfig.erb"
@@ -72,7 +84,7 @@ unless os == "windows" && !wsl?
     group node[:group]
     mode "644"
     variables(
-      platform: node[:platform],
+      platform: platform_template,
       os: os || "linux", # Add explicit default
       is_wsl: node[:is_wsl],
       config_dir: git_config_dir,
@@ -174,4 +186,4 @@ if os == "windows" && !wsl?
   end
 end
 
-include_cookbook 'git-credential-manager'
+include_cookbook "git-credential-manager"

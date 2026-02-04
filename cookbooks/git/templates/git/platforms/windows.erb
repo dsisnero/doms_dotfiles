@@ -1,10 +1,9 @@
 [credential]
-  helper = manager
-  credentialStore = gpg
+  helper = manager-core
 
-<!-- [core] -->
-  <!-- symlinks = false -->
-  <!-- protectNTFS = true -->
+# Windows-specific core options
+# symlinks = false
+# protectNTFS = true
 
 [difftool "vscode"]
   cmd = code --wait --diff $LOCAL $REMOTE # VS Code diff command
