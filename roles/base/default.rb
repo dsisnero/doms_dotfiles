@@ -34,6 +34,13 @@ mise "mermaid" do
   backend "npm"
 end
 mise "pandoc"
+mise "hyperfine"
+mise "broot" do
+  backend "cargo"
+end
+mise "exa" do
+  backend "cargo"
+end
 
 include_cookbook "dprint"
 include_cookbook "starship"
@@ -50,11 +57,9 @@ include_cookbook "vscode"
 include_cookbook "treesitter"
 package "pdftk-java"
 
-cargo "broot"
 cargo "cargo-edit"
 cargo "cargo-update"
 cargo "cargo-watch"
-cargo "exa"
 cargo "ouch"
 
 # include_cookbook "ollama"
