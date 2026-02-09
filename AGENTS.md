@@ -123,6 +123,13 @@ This project uses MItamae for configuration management. Cookbooks are located in
 
 ### Basic Cookbook Structure
 
+**Quick reference:**
+
+- `bd ready` - Find unblocked work
+- `bd create "Title" --type task --priority 2` - Create issue
+- `bd close <id>` - Complete work
+- `bd sync` - Sync with git (run at session end)
+
 ```ruby
 # cookbooks/example/default.rb
 
@@ -148,6 +155,7 @@ when "debian", "ubuntu", "mint", "pop"
   # Linux-specific installation
   home = node[:home]
   user = node[:user]
+
 
   # Install using platform-specific package manager or direct download
 when "darwin"
@@ -265,3 +273,9 @@ end
 - `github_latest_version(repo)`: Get latest GitHub release tag
 - `run_command(cmd, error: false)`: Execute shell command safely
 - `sudo(user)`: Generate sudo command prefix
+**CRITICAL RULES:**
+
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds
