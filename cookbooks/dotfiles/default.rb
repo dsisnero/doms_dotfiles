@@ -4,6 +4,7 @@ group_ = node[:group]
 config_home = node[:config_home]
 repos = node[:repos]
 node[:platform]
+state_home = node[:state_home]
 
 group group_ do
   user "root"
@@ -207,6 +208,10 @@ execute "remove dangling helix languages.toml symlink" do
   user user
 end
 
+helix_log_dir = File.join(state_home, "helix")
+helix_log_file = File.join(helix_log_dir, "helix.log")
+mydir helix_log_dir
+
 template helix_language_file do
   MItamae.logger.info "in language.toml template creation"
   source "templates/helix/languages.toml.erb"
@@ -215,6 +220,7 @@ template helix_language_file do
   mode "644"
   variables(
     rust_import_file: rust_lldb_file,
-    crystal_import_file: crystal_lldb_file
+    crystal_import_file: crystal_lldb_file,
+    helix_log_file: helix_log_file
   )
 end

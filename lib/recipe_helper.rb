@@ -94,6 +94,7 @@ module NodeInitializer
     config_home = ENV.fetch("XDG_CONFIG_HOME", File.join(xdg_home, ".config"))
     data_home = ENV.fetch("XDG_DATA_HOME", File.join(xdg_home, ".local", "share"))
     cache_home = ENV.fetch("XDG_CACHE_HOME", File.join(xdg_home, ".cache"))
+    state_home = ENV.fetch("XDG_STATE_HOME", File.join(xdg_home, ".local", "state"))
     my_repos = "#{repos}/github.com/dsisnero"
     doms_dotfiles = "#{my_repos}/doms_dotfiles"
 
@@ -104,6 +105,7 @@ module NodeInitializer
       config_home: config_home,
       data_home: data_home,
       cache_home: cache_home,
+      state_home: state_home,
       user_bin: user_bin,
       repos: repos,
       my_repos: my_repos,
