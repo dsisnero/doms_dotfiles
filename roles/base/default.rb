@@ -1,104 +1,135 @@
-node.reverse_merge!({
-  mysql: {
-    root_password: "D12uM3m4y+"
-  }
-})
-package "pass" do
-  action :remove
+# Base role - essential packages for every system
+# Cross-platform essentials: curl, git, core utilities
+
+case node[:platform]
+when "debian", "ubuntu", "mint", "pop"
+  # Debian-based systems
+  package "curl"
+  package "wget"
+  package "sudo"
+  package "openssh-server"
+  package "htop"
+  package "vim"
+  package "ca-certificates"
+  package "less"
+  package "rsync"
+  package "net-tools"
+  package "dnsutils"
+  package "iputils-ping"
+  package "traceroute"
+  package "unzip"
+  package "zip"
+  package "tar"
+  package "gzip"
+  package "bzip2"
+  package "xz-utils"
+  package "file"
+  package "locales"
+  execute "locale-gen en_US.UTF-8"
+
+when "redhat", "fedora", "amazon"
+  # RPM-based systems
+  package "curl"
+  package "wget"
+  package "sudo"
+  package "openssh-server"
+  package "htop"
+  package "vim-enhanced"
+  package "ca-certificates"
+  package "less"
+  package "rsync"
+  package "net-tools"
+  package "bind-utils"
+  package "iputils"
+  package "traceroute"
+  package "unzip"
+  package "zip"
+  package "tar"
+  package "gzip"
+  package "bzip2"
+  package "xz"
+  package "file"
+  package "langpacks-en"
+  execute "localectl set-locale LANG=en_US.UTF-8"
+
+when "arch"
+  # Arch Linux
+  package "curl"
+  package "wget"
+  package "sudo"
+  package "openssh"
+  package "htop"
+  package "vim"
+  package "ca-certificates"
+  package "less"
+  package "rsync"
+  package "net-tools"
+  package "bind-tools"
+  package "iputils"
+  package "traceroute"
+  package "unzip"
+  package "zip"
+  package "tar"
+  package "gzip"
+  package "bzip2"
+  package "xz"
+  package "file"
+  package "glibc"
+  execute "locale-gen en_US.UTF-8"
+
+when "darwin", "osx"
+  # macOS via Homebrew
+  package "curl"
+  package "wget"
+  # sudo is built-in
+  # openssh-server is built-in (enable via system preferences)
+  package "htop"
+  package "vim"
+  package "ca-certificates"
+  package "less"
+  package "rsync"
+  # net-tools not available, use iproute2mac?
+  package "bind"  # provides dig, nslookup
+  # iputils not available
+  package "traceroute"
+  package "unzip"
+  package "zip"
+  package "tar"
+  package "gzip"
+  package "bzip2"
+  package "xz"
+  package "file"
+  # locales handled by system
+
+when "windows"
+  # Windows - minimal support
+  MItamae.logger.info "Windows base packages not yet implemented"
+  # Could use Chocolatey: choco install curl wget git sudo openssh htop vim etc.
+  # For now, skip
 end
 
-include_cookbook "keepassxc"
-home = node[:home]
-include_cookbook "sudo_nopassword"
-include_cookbook "mise"
-include_cookbook "keychain"
-mise "node"
-mise "lua-language-server"
-mise "stylua"
-mise "fd"
-mise "rg"
-mise "cargo-binstall"
-mise "bat"
-mise "git-cliff"
-mise "grex"
-mise "hyperfine"
-mise "ripgrep-all"
-mise "bottom"
-mise "dust"
-mise "tree-sitter"
-mise "watchexec"
-mise "zoxide"
-mise "rclone"
-mise "atuin"
-mise "mermaid" do
-  backend "npm"
-end
-mise "pandoc"
-mise "hyperfine"
-mise "broot" do
-  backend "cargo"
-end
-mise "exa" do
-  backend "cargo"
-end
+# Platform-agnostic essentials (if any)
+# These will use the appropriate package manager for each platform
+# No platform-agnostic packages here since package names differ
 
-include_cookbook "dprint"
-include_cookbook "starship"
-include_cookbook "ghq"
-include_cookbook "dotfiles"
+# Git configuration (installs git and sets up config)
 include_cookbook "git"
-include_cookbook "git-secrets"
-include_cookbook "rust"
-include_cookbook "helix"
-include_cookbook "golang"
-include_cookbook "zig"
-include_cookbook "vscode"
 
-include_cookbook "treesitter"
-package "pdftk-java"
+# Ensure basic directories exist
+directory node[:user_bin] do
+  owner node[:user]
+  group node[:group]
+  mode "755"
+  recursive true
+end
 
-cargo "cargo-edit"
-cargo "cargo-update"
-cargo "cargo-watch"
-cargo "ouch"
-
-# include_cookbook "ollama"
-
-file "#{home}/.bashrc" do
+# Ensure ~/.local/bin is in PATH
+file "#{node[:home]}/.bashrc" do
   action :edit
-  content %[eval "$(fnm env --use-on-cd --shell bash)"]
-  not_if %(grep 'fnm env' #{home}/.bashrc)
+  block do |content|
+    unless /export PATH.*\.local\/bin/.match?(content)
+      content << "\nexport PATH=\"$HOME/.local/bin:$PATH\"\n"
+    end
+  end
+  only_if { node[:platform] != "windows" }
 end
-cargo "git-delta"
-cargo "oxipng"
-cargo "sqlx-cli"
-
-cargo "trippy"
-cargo "simple-completion-language-server" do
-  git "https://github.com/estin/simple-completion-language-server.git"
-  features "citation"
-end
-
-# include_cookbook "perl"
-# include_cookbook 'perl' if not %w(ubuntu debian).include?(node[:platform])
-include_cookbook "ruby" # git hookスクリプトで必要なので先にインストールする'
-include_cookbook "python"
-include_cookbook "yarn"
-# include_cookbook "alacritty"
-include_cookbook "crystal"
-
-include_cookbook "wezterm"
-include_cookbook "lazygit"
-include_cookbook "tmux"
-include_cookbook "neovim"
-include_cookbook "zsh"
-include_cookbook "mysql"
-include_cookbook "zeroconf"
-include_cookbook "chrome"
-include_cookbook "direnv"
-
-include_cookbook "myrepos"
-include_cookbook "fonts"
-include_cookbook "favorite_repos"
-include_cookbook "calibre"
-include_cookbook "podman"

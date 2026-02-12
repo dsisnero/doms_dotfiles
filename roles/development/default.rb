@@ -1,6 +1,7 @@
 # Development role - include development-specific cookbooks
-# Base role already includes git, rust, golang, python, ruby, crystal, zig, etc.
+# Desktop role includes git, rust, golang, python, ruby, crystal, zig, etc.
 # Add additional development tools and services
+include_role "desktop"
 
 include_cookbook "docker"
 include_cookbook "postgresql"

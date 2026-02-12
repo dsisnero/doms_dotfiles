@@ -51,10 +51,6 @@ package "cmake"
 package "libboost-all-dev"
 package "libicu-dev"
 
-# Locale
-package "locales"
-execute "locale-gen en_US.UTF-8"
-
 # X11 utilities (optional, useful for graphical environments)
 package "x11-apps"
 package "x11-utils"
@@ -73,11 +69,3 @@ package "libdvd-pkg"
 execute "sudo dpkg-reconfigure libdvd-pkg" do
   only_if "dpkg -l | grep -q libdvd-pkg"
 end
-
-# Additional packages that might be useful
-package "htop"
-package "curl"
-package "wget"
-package "git"
-package "sudo"
-package "openssh-server"
