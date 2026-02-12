@@ -19,7 +19,6 @@ when "windows"
   # Create config directory if it doesn't exist
   directory git_config_dir do
     user node[:user]
-    recursive true
   end
 
 when "linux"

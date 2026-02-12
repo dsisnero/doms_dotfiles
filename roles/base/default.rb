@@ -120,7 +120,6 @@ directory node[:user_bin] do
   owner node[:user]
   group node[:group]
   mode "755"
-  recursive true
 end
 
 # Ensure ~/.local/bin is in PATH
