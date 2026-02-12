@@ -55,6 +55,32 @@ fi
 # Initialize git submodules if this is a git repository
 if [ -d .git ]; then
   echo "Initializing git submodules..."
+  # Check for SSH URLs in submodules and sync to HTTPS if needed
+  has_ssh_urls() {
+    # Check .gitmodules
+    if [ -f .gitmodules ] && grep -q -E '^[[:space:]]*url[[:space:]]*=[[:space:]]*.*(git@|ssh://)' .gitmodules; then
+      return 0
+    fi
+    # Check configured submodule URLs
+    if git config --get-regexp '^submodule\..*\.url' 2>/dev/null | grep -q -E 'git@|ssh://'; then
+      return 0
+    fi
+    return 1
+  }
+
+  if has_ssh_urls; then
+    echo "Found SSH URLs in submodules, syncing to HTTPS..."
+    # Warn if .gitmodules contains SSH URLs (needs update)
+    if [ -f .gitmodules ] && grep -q -E '^[[:space:]]*url[[:space:]]*=[[:space:]]*.*(git@|ssh://)' .gitmodules; then
+      echo "Warning: .gitmodules contains SSH URLs. Pull latest changes or update .gitmodules manually."
+    fi
+    git submodule sync
+    # Verify after sync
+    if has_ssh_urls; then
+      echo "Warning: Some submodules still use SSH URLs after sync."
+      echo "Ensure .gitmodules uses HTTPS URLs for public cloning."
+    fi
+  fi
   git submodule update --init --recursive
 fi
 
