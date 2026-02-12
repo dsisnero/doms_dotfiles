@@ -65,6 +65,29 @@ end
 # ─── NODE INITIALIZER ───────────────────────────────────────────────
 #
 module NodeInitializer
+  def detect_role
+    # Environment variable takes precedence
+    if ENV["ROLE"] && !ENV["ROLE"].empty?
+      return ENV["ROLE"].downcase
+    end
+
+    # Hostname-based detection
+    hostname = run_command("hostname -s", error: false)
+    if hostname.success?
+      name = hostname.stdout.strip.downcase
+      # Mapping prefixes
+      if name.start_with?("pi-dev")
+        "development"
+      elsif name.start_with?("pi-media")
+        "media"
+      elsif name.start_with?("pi-minimal")
+        "minimal"
+      elsif name.start_with?("pi-ha")
+        "home-assistant"
+      end
+    end
+  end
+
   def init_node
     user = ENV["SUDO_USER"] || ENV["USER"]
     home = if windows?
@@ -98,6 +121,7 @@ module NodeInitializer
     my_repos = "#{repos}/github.com/dsisnero"
     doms_dotfiles = "#{my_repos}/doms_dotfiles"
 
+    role = detect_role
     node.reverse_merge!(
       user: user,
       home: home,
@@ -110,7 +134,8 @@ module NodeInitializer
       repos: repos,
       my_repos: my_repos,
       doms_dotfiles: doms_dotfiles,
-      zshrc_config: File.join(doms_dotfiles, "config", ".zshrc")
+      zshrc_config: File.join(doms_dotfiles, "config", ".zshrc"),
+      role: role
     )
     if windows?
       include_recipe "windows_node"

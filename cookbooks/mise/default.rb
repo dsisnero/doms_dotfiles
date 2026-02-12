@@ -30,10 +30,7 @@ when "ubuntu", "debian", "mint", "pop"
   end
 
 when "darwin"
-  execute "install mise" do
-    user "root"
-    command "sh -c '#{c.gsub("'", "'\"'\"'")}'"
-  end
+  package "mise"
 end
 
 # Keep user config directories but fix ownership

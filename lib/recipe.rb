@@ -8,3 +8,6 @@ if node[:platform] == "pop"
   )
 end
 include_role node[:platform]
+if node[:role]
+  include_role node[:role]
+end

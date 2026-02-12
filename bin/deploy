@@ -2,8 +2,9 @@
 set -eu
 
 usage() {
-  echo "Usage: $0 [--debug] [cookbook1 cookbook2...]"
+  echo "Usage: $0 [--debug] [--role ROLE] [cookbook1 cookbook2...]"
   echo "  --debug   Enable debug logging"
+  echo "  --role    Set deployment role (development, media, minimal, home-assistant)"
   echo "  cookbooks Space-separated list of cookbooks to deploy"
   echo ""
   echo "Examples:"
@@ -11,11 +12,13 @@ usage() {
   echo "  Deploy git cookbook     : ./bin/deploy git"
   echo "  Debug mode deployment   : ./bin/deploy --debug"
   echo "  Debug specific cookbook : ./bin/deploy --debug dotfiles"
+  echo "  Deploy with role        : ./bin/deploy --role development"
   exit 1
 }
 
 # Parse arguments
 DEBUG=false
+ROLE=""
 COOKBOOKS=()
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -23,12 +26,21 @@ while [[ $# -gt 0 ]]; do
       DEBUG=true
       shift
       ;;
+    --role)
+      if [[ -z $2 ]]; then
+        echo "Error: --role requires a value"
+        usage
+      fi
+      ROLE="$2"
+      shift 2
+      ;;
     *)
       COOKBOOKS+=("$1")
       shift
       ;;
   esac
 done
+export ROLE
 
 ./bin/setup
 

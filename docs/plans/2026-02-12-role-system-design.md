@@ -62,27 +62,56 @@ Add role-based deployment to MItamae cookbooks for Raspberry Pi management. Role
 
 ### `roles/development/default.rb`
 ```ruby
-include_cookbook "git"
-include_cookbook "dotfiles"
-include_cookbook "gcm"
-# Add development-specific cookbooks
+# Development role - include development-specific cookbooks
+# Base role already includes git, rust, golang, python, ruby, crystal, zig, etc.
+# Add additional development tools and services
+
+include_cookbook "docker"
+include_cookbook "postgresql"
+include_cookbook "nodejs"
+include_cookbook "java"
+include_cookbook "terraform"
+include_cookbook "aws-cli"
+include_cookbook "github-cli"
+include_cookbook "ollama"
+include_cookbook "ngrok"
+include_cookbook "shellcheck"
+include_cookbook "hadolint"
+include_cookbook "openssh"
+include_cookbook "clang"
+include_cookbook "llvm"
 ```
 
 ### `roles/media/default.rb`
 ```ruby
-include_cookbook "media-packages"
-# Add media-specific cookbooks
+# Media role - include media-related cookbooks
+package "vlc"
+package "handbrake"
+package "ffmpeg"
+
+# Additional media packages for Debian-based systems
+if platform_family == "debian"
+  package "ubuntu-restricted-extras"
+end
 ```
 
 ### `roles/home-assistant/default.rb`
 ```ruby
-include_cookbook "home-assistant"
-# Add home automation cookbooks
+# Home Assistant automation role
+package "mosquitto"
+
+# Node-RED for flow-based programming
+if platform_family == "debian"
+  package "node-red"
+end
+
+# Additional home automation packages can be added here
+# Consider adding cookbooks for home-assistant, zigbee2mqtt, etc.
 ```
 
 ### `roles/minimal/default.rb`
 ```ruby
-# Empty - only platform defaults apply
+# Minimal role - no additional cookbooks beyond platform defaults
 ```
 
 ## Usage Examples

@@ -26,6 +26,18 @@ indent = 4
 [MD009]
 strict = true
 
+[MD013]
+# Set your desired line length
+line-length = 80 # Maximum characters per line (default: 80)
+# Enable automatic text reflow/wrapping for paragraphs
+reflow = true # (default: false)
+# Optionally configure what elements to check (defaults shown)
+code-blocks = true
+tables = false
+headings = true
+paragraphs = true
+
+
 # Lists: Google uses lazy numbering (all 1.) for long lists
 # Use "one_or_ordered" to allow both lazy and explicit numbering
 [MD029]

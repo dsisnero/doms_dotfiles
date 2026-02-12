@@ -23,7 +23,7 @@ feature_paths = true  # enable path completion
 # write logs to /tmp/completion.log
 [language-server.scls.environment]
 RUST_LOG = "info,simple-completion-langauge-server=info"
-LOG_FILE = <%= @helix_log_file %>
+LOG_FILE = "<%= @helix_log_file %>"
 
 [language-server.rust-analyzer.config]
 check = { command = "clippy", features = "all" }
