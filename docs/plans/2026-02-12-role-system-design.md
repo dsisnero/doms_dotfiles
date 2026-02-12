@@ -35,6 +35,12 @@ Add role-based deployment to MItamae cookbooks for Raspberry Pi management. Role
 - This ensures platform-specific defaults (package manager setup, base packages) apply to all roles
 - Role cookbooks can override platform defaults if needed
 
+### Platform Detection for Raspberry Pi
+- Raspberry Pi OS is detected as `debian` platform by mitamae/Specinfra
+- Created `roles/debian/default.rb` with base packages and Raspberry Pi specific utilities
+- ARM architecture detection adds raspi-config, pi-bluetooth, and enables SPI/I2C
+- Platform role combined with role-specific cookbooks (development, media, etc.)
+
 ### Implementation Changes
 
 #### `bin/deploy`
