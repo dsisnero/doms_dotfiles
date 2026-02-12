@@ -88,6 +88,49 @@ module NodeInitializer
     end
   end
 
+  def set_hostname
+    if ENV["HOSTNAME"] && !ENV["HOSTNAME"].empty?
+      hostname = ENV["HOSTNAME"].strip
+      MItamae.logger.info "Setting hostname to #{hostname}"
+
+      case node[:platform]
+      when "debian", "ubuntu", "mint", "pop", "redhat", "fedora", "arch", "opensuse", "amazon"
+        # Check current hostname
+        current = run_command("hostname -s", error: false)
+        if current.success? && current.stdout.strip == hostname
+          MItamae.logger.info "Hostname already set to #{hostname}"
+          return
+        end
+
+        execute "hostnamectl set-hostname #{hostname}"
+        file "/etc/hostname" do
+          content "#{hostname}\n"
+          owner "root"
+          group "root"
+          mode "644"
+        end
+        execute "sed -i 's/^127\\.0\\.1\\.1.*/127.0.1.1\\t#{hostname}/' /etc/hosts" do
+          only_if "grep -q '^127\\.0\\.1\\.1' /etc/hosts"
+        end
+      when "darwin"
+        # Check current hostname
+        current = run_command("scutil --get HostName", error: false)
+        if current.success? && current.stdout.strip == hostname
+          MItamae.logger.info "Hostname already set to #{hostname}"
+          return
+        end
+
+        execute "scutil --set HostName #{hostname}"
+        execute "scutil --set ComputerName #{hostname}"
+        execute "scutil --set LocalHostName #{hostname}"
+      when "windows"
+        MItamae.logger.warn "Hostname setting not implemented for Windows"
+      else
+        MItamae.logger.warn "Hostname setting not implemented for platform #{node[:platform]}"
+      end
+    end
+  end
+
   def init_node
     user = ENV["SUDO_USER"] || ENV["USER"]
     home = if windows?
@@ -328,5 +371,6 @@ include_definition "launch_env"
 
 # go_get definition moved to cookbooks/go/default.rb
 init_node
+set_hostname
 MItamae.logger.info "Node Info:\n#{node.inspect}"
 MItamae.logger.info %(Mitamae Versions{ github_versions("itamae-kitchen/mitamae") })

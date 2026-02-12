@@ -2,9 +2,10 @@
 set -eu
 
 usage() {
-  echo "Usage: $0 [--debug] [--role ROLE] [cookbook1 cookbook2...]"
+  echo "Usage: $0 [--debug] [--role ROLE] [--host HOSTNAME] [cookbook1 cookbook2...]"
   echo "  --debug   Enable debug logging"
   echo "  --role    Set deployment role (development, media, minimal, home-assistant)"
+  echo "  --host    Set system hostname (e.g., pi-dev, pi-media)"
   echo "  cookbooks Space-separated list of cookbooks to deploy"
   echo ""
   echo "Examples:"
@@ -13,12 +14,14 @@ usage() {
   echo "  Debug mode deployment   : ./bin/deploy --debug"
   echo "  Debug specific cookbook : ./bin/deploy --debug dotfiles"
   echo "  Deploy with role        : ./bin/deploy --role development"
+  echo "  Set hostname and role   : ./bin/deploy --role development --host pi-dev"
   exit 1
 }
 
 # Parse arguments
 DEBUG=false
 ROLE=""
+HOSTNAME=""
 COOKBOOKS=()
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -34,6 +37,14 @@ while [[ $# -gt 0 ]]; do
       ROLE="$2"
       shift 2
       ;;
+    --host)
+      if [[ -z $2 ]]; then
+        echo "Error: --host requires a value"
+        usage
+      fi
+      HOSTNAME="$2"
+      shift 2
+      ;;
     *)
       COOKBOOKS+=("$1")
       shift
@@ -41,6 +52,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 export ROLE
+export HOSTNAME
 
 ./bin/setup
 

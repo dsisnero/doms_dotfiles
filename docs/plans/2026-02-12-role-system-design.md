@@ -39,7 +39,9 @@ Add role-based deployment to MItamae cookbooks for Raspberry Pi management. Role
 
 #### `bin/deploy`
 - Add `--role` flag parsing
+- Add `--host` flag for setting system hostname
 - Pass role via `ROLE` environment variable in `run_mitamae` function
+- Pass hostname via `HOSTNAME` environment variable
 - Maintain backward compatibility (no role → platform-only deployment)
 
 #### `recipe_helper.rb`
@@ -47,7 +49,11 @@ Add role-based deployment to MItamae cookbooks for Raspberry Pi management. Role
   - Checks `ENV['ROLE']`
   - Falls back to hostname prefix mapping
   - Stores result in `node[:role]`
+- Add `set_hostname` method that sets system hostname when `ENV['HOSTNAME']` is provided
+  - Platform-specific implementation (hostnamectl for Linux, scutil for macOS)
+  - Idempotent check to avoid unnecessary changes
 - Call `detect_role` from `init_node`
+- Call `set_hostname` after node initialization
 - Modify `include_role` to support combined inclusion (platform + specific role)
 
 #### `lib/recipe.rb`
@@ -125,6 +131,12 @@ end
 
 # Deploy specific cookbooks (existing behavior preserved)
 ./bin/deploy git dotfiles
+
+# Set system hostname and deploy with role
+./bin/deploy --role development --host pi-dev
+
+# Set hostname only (role inferred from hostname)
+./bin/deploy --host pi-media
 ```
 
 ## Future Considerations
