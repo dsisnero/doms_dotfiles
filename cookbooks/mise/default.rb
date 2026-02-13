@@ -47,15 +47,13 @@ execute "Add mise to #{zshrc_config}" do
       fi
     )
 end
-home = node[:home]
-bash_config = File.join(home, ".bashrc")
-execute "Add mise to #{bash_config}" do
+execute "Add mise to #{home_}/.bashrc" do
   user user_
   command %(
-      if ! grep -q 'mise activate zsh' #{bash_config}; then
-        echo 'eval "$(mise activate zsh)"' >> #{bash_config}
-      fi
-    )
+    if ! grep -q 'mise activate bash' #{home_}/.bashrc; then
+      echo 'eval "$(mise activate bash)"' >> #{home_}/.bashrc
+    fi
+  )
 end
 
 define :mise, version: nil, backend: nil, exe: nil, rename: nil do

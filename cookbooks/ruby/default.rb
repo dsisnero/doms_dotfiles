@@ -10,6 +10,9 @@ node.reverse_merge!(
     version: "latest"
   }
 )
+execute("set ruby to use prebuilt binaries for mise") do
+  user user
+end
 
 version = node[:ruby][:version] || "latest"
 
