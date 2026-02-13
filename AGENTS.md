@@ -274,12 +274,75 @@ end
 6. **Cleanup**: Remove old installations when switching methods (e.g., snap →
    AppImage)
 
+### File Ownership and sudo Patterns
+
+When writing system files (`/etc`, `/usr/local`, etc.):
+
+1. **Linux systems** (Debian, Ubuntu, RedHat, Arch):
+   - Use `owner "root"` and `group "root"` for system files
+   - Example: `template "/etc/ssh/sshd_config"` with `owner "root"`, `group "root"`
+
+2. **macOS systems** (Darwin):
+   - Use `owner "root"` and `group "wheel"` for system files
+   - However, when running mitamae without root privileges (default on macOS), omit `owner` and `group` to avoid chown permission errors
+   - Example: `template "/etc/ssh/sshd_config"` with only `mode "644"` (no owner/group)
+
+3. **Windows systems**:
+   - No ownership specification needed (Windows ACLs different)
+   - Use forward slashes in paths: `"C:/ProgramData/ssh/sshd_config"`
+
+4. **sudo usage in execute commands**:
+   - Use `sudo` in command strings for operations requiring root
+   - Use `user "root"` attribute for execute resources when possible
+   - Example: `execute "enable macOS ssh server"` with `command "sudo launchctl load -w ..."`
+
+5. **Platform detection**:
+   - Use `node[:platform]` for platform-specific logic
+   - Helper `windows?`, `wsl?` available from PlatformHelpers
+
+### MRuby Limitations and Cross-Platform Code
+
+**MRuby Restrictions:**
+- MItamae uses mruby (minimal Ruby) which doesn't support `require` or `require_relative`
+- All helper modules must be defined inline in `lib/recipe_helper.rb`
+- Cannot load external Ruby files; use `include_recipe` or embed modules directly
+
+**Cross-Platform Considerations:**
+1. **Unix/Linux/macOS**: Use bash shell scripts (`incremental_backup_script` helper)
+2. **Windows**: Use PowerShell scripts (no generic helper, implement per-cookbook)
+3. **Platform Detection**: Always check `node[:platform]` or `windows?` before using platform-specific code
+4. **Path Separators**: Use forward slashes (`/`) even on Windows for Ruby paths
+5. **Shell Compatibility**: Bash scripts won't work on Windows; PowerShell won't work on Unix
+
+**Example Pattern:**
+```ruby
+case node[:platform]
+when "debian", "ubuntu", "mint", "pop", "redhat", "fedora", "arch", "darwin"
+  # Unix-like systems: use bash
+  execute "backup config" do
+    command incremental_backup_script("/etc/config/file.conf", ".backup")
+    user "root"
+  end
+when "windows"
+  # Windows: use PowerShell
+  execute "backup config on Windows" do
+    command <<~EOH
+      powershell -Command "
+        # Windows-specific backup logic
+      "
+    EOH
+  end
+end
+```
+
 ### Available Helpers
 
 - `version_less_than?(v1, v2)`: Compare semantic versions
 - `github_latest_version(repo)`: Get latest GitHub release tag
 - `run_command(cmd, error: false)`: Execute shell command safely
 - `sudo(user)`: Generate sudo command prefix
+- `incremental_backup_script(file_path, backup_suffix)`: Generate bash script for incremental backups (`.backup`, `.backup.2`, etc.)
+
 **CRITICAL RULES:**
 
 - Work is NOT complete until `git push` succeeds

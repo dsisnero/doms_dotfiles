@@ -159,6 +159,16 @@ end
 - Limited support via `windows_node.rb`
 - PowerShell-based installation
 
+### File Ownership and Permissions
+
+When writing system configuration files:
+
+- **Linux**: Use `owner "root"` and `group "root"` for `/etc/` files
+- **macOS**: Use `owner "root"` and `group "wheel"` for system files, but omit when running without root privileges
+- **Windows**: Use forward slashes in paths, no ownership specification needed
+- **Backup Strategy**: Use incremental backups (`.backup`, `.backup.2`, etc.) before modifying critical config files
+- **Platform Detection**: Use `node[:platform]` and helpers like `windows?`, `wsl?`
+
 ## Role System
 
 ### Available Roles
