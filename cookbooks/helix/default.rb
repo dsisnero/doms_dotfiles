@@ -29,20 +29,26 @@ end
 #   not_if "test -L #{config_dir}/helix/snippets"
 # end
 
-get_repo("helix-editor/helix")
+# Raspberry Pi specific packages (if running on ARM architecture)
+if node[:kernel] && node[:kernel][:machine] =~ /arm|aarch64/
+  mise "helix"
+else
+  get_repo("helix-editor/helix")
 
-dir = File.join(ghq_root, "github.com/helix-editor/helix")
-cargo "helix-locked" do
-  path "#{dir}/helix-term"
-  cwd dir
-end
+  dir = File.join(ghq_root, "github.com/helix-editor/helix")
+  cargo "helix-locked" do
+    path "#{dir}/helix-term"
+    cwd dir
+  end
 
-src = File.expand_path(File.join(dir, "runtime"))
-dest = "#{config_home}/helix/runtime"
-link dest do
-  to src
-  user node[:user]
-  not_if { File.directory? dest }
+  src = File.expand_path(File.join(dir, "runtime"))
+  dest = "#{config_home}/helix/runtime"
+  link dest do
+    to src
+    user node[:user]
+    not_if { File.directory? dest }
+  end
+
 end
 
 # share_dir = "#{home}/.local/share"
