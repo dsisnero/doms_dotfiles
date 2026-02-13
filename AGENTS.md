@@ -88,7 +88,8 @@ This is a Ruby project using Rubocop for code formatting and style enforcement.
 
 - Model files: `app/models/user.rb`
 - Controller files: `app/controllers/users_controller.rb`
-- Test files: `spec/models/user_spec.rb`, `spec/controllers/users_controller_spec.rb`
+- Test files: `spec/models/user_spec.rb`,
+  `spec/controllers/users_controller_spec.rb`
 - Helper files: `app/helpers/users_helper.rb`
 
 ## Security
@@ -115,11 +116,13 @@ This is a Ruby project using Rubocop for code formatting and style enforcement.
 - Use validations in models
 - Follow ActiveRecord conventions
 
-This guide helps AI assistants understand the project structure, coding standards, and development workflow for this Ruby project.
+This guide helps AI assistants understand the project structure, coding
+standards, and development workflow for this Ruby project.
 
 ## MItamae Cookbook Patterns
 
-This project uses MItamae for configuration management. Cookbooks are located in `cookbooks/` directory.
+This project uses MItamae for configuration management. Cookbooks are located in
+`cookbooks/` directory.
 
 ### Basic Cookbook Structure
 
@@ -172,9 +175,11 @@ end
 For tools that need version checking and automatic updates:
 
 1. **Define helper methods** to check installed and latest versions
-2. **Use `version_less_than?`** from PlatformHelpers for semantic version comparison
+2. **Use `version_less_than?`** from PlatformHelpers for semantic version
+   comparison
 3. **Download only when needed** to avoid unnecessary network calls
-4. **Use cache directory** (`~/.cache/`) instead of `/tmp` for user-specific downloads
+4. **Use cache directory** (`~/.cache/`) instead of `/tmp` for user-specific
+   downloads
 5. **Add error handling** with rescue blocks for network/execution failures
 
 Example from `cookbooks/rpi_imager/default.rb`:
@@ -247,7 +252,8 @@ end
 ### Resource Patterns
 
 - **Use `directory`** for creating directories with proper permissions
-- **Use `http_request`** for downloading files (not `curl`/`wget` in execute blocks)
+- **Use `http_request`** for downloading files (not `curl`/`wget` in execute
+  blocks)
 - **Use `execute` with `not_if`/`only_if`** to make operations idempotent
 - **Chain notifications** (`notifies`) for sequential operations
 - **Set user ownership** for user-specific files/directories
@@ -265,7 +271,8 @@ end
 3. **Logging**: Use `MItamae.logger.info/warn` for debugging
 4. **User-specific paths**: Use `node[:home]` and `node[:user]` variables
 5. **Cache management**: Store downloads in user's cache directory
-6. **Cleanup**: Remove old installations when switching methods (e.g., snap → AppImage)
+6. **Cleanup**: Remove old installations when switching methods (e.g., snap →
+   AppImage)
 
 ### Available Helpers
 

@@ -22,7 +22,9 @@ exclude = [
     ".github",
     "node_modules",
     "vendor",
-    "dist",
+    "x",
+    "lib",
+    "temp",
     "build",
 
     # Specific files or patterns
@@ -33,6 +35,17 @@ exclude = [
 # Respect .gitignore files when scanning directories (default: true)
 respect-gitignore = true
 
+
+[MD013]
+# Set your desired line length
+line-length = 80 # Maximum characters per line (default: 80)
+# Enable automatic text reflow/wrapping for paragraphs
+reflow = true # (default: false)
+# Optionally configure what elements to check (defaults shown)
+code-blocks = true
+tables = false
+headings = true
+paragraphs = true
 # Markdown flavor/dialect (uncomment to enable)
 # Options: standard (default), gfm, commonmark, mkdocs, mdx, quarto
 # flavor = "mkdocs"

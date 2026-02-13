@@ -2,48 +2,65 @@
 
 ## Overview
 
-Add role-based deployment to MItamae cookbooks for Raspberry Pi management. Roles allow different Pi setups (development, media, minimal, home-assistant) to share platform defaults while adding role-specific cookbooks.
+Add role-based deployment to MItamae cookbooks for Raspberry Pi management.
+Roles allow different Pi setups (development, media, minimal, home-assistant) to
+share platform defaults while adding role-specific cookbooks.
 
 ## Current System
 
-- `bin/deploy` runs mitamae with either full deployment (`lib/recipe.rb`) or specific cookbooks via `lib/recipe_helper.rb`
+- `bin/deploy` runs mitamae with either full deployment (`lib/recipe.rb`) or
+  specific cookbooks via `lib/recipe_helper.rb`
 - `normalize_cookbooks` already supports `roles/` directory lookup
-- `recipe_helper.rb` has `include_role` method that includes `roles/<name>/default.rb`
+- `recipe_helper.rb` has `include_role` method that includes
+  `roles/<name>/default.rb`
 - `lib/recipe.rb` includes role based on platform (`node[:platform]`)
 - No roles directory exists yet
 
 ## Design Decisions
 
 ### Role Detection
+
 1. **Command-line argument**: `--role` flag for `bin/deploy`
 2. **Hostname fallback**: If no role provided, infer from hostname prefix:
    - `pi-dev` → `development`
    - `pi-media` → `media`
    - `pi-minimal` → `minimal`
    - `pi-ha` → `home-assistant`
-3. **Environment variable**: Role passed via `ROLE` environment variable to mitamae
+3. **Environment variable**: Role passed via `ROLE` environment variable to
+   mitamae
 4. **Node attribute**: Role stored in `node[:role]` for use in recipes
 
 ### Role Structure
+
 - `roles/` directory with subdirectories for each role
-- Each role contains `default.rb` that includes relevant cookbooks via `include_cookbook`
-- Platform roles remain as `roles/<platform>/default.rb` (to be created as needed)
-- **Minimal role**: Empty `default.rb` (no additional cookbooks beyond platform defaults)
+- Each role contains `default.rb` that includes relevant cookbooks via
+  `include_cookbook`
+- Platform roles remain as `roles/<platform>/default.rb` (to be created as
+  needed)
+- **Minimal role**: Empty `default.rb` (no additional cookbooks beyond platform
+  defaults)
 
 ### Role Integration
-- **Combine with platform role**: Platform role included first, then role-specific additions
-- This ensures platform-specific defaults (package manager setup, base packages) apply to all roles
+
+- **Combine with platform role**: Platform role included first, then
+  role-specific additions
+- This ensures platform-specific defaults (package manager setup, base packages)
+  apply to all roles
 - Role cookbooks can override platform defaults if needed
 
 ### Platform Detection for Raspberry Pi
+
 - Raspberry Pi OS is detected as `debian` platform by mitamae/Specinfra
-- Created `roles/debian/default.rb` with base packages and Raspberry Pi specific utilities
-- ARM architecture detection adds raspi-config, pi-bluetooth, and enables SPI/I2C
+- Created `roles/debian/default.rb` with base packages and Raspberry Pi specific
+  utilities
+- ARM architecture detection adds raspi-config, pi-bluetooth, and enables
+  SPI/I2C
 - Platform role combined with role-specific cookbooks (development, media, etc.)
 
 ### Implementation Changes
 
 #### `bin/deploy`
+
 - Add `--role` flag parsing
 - Add `--host` flag for setting system hostname
 - Pass role via `ROLE` environment variable in `run_mitamae` function
@@ -51,11 +68,13 @@ Add role-based deployment to MItamae cookbooks for Raspberry Pi management. Role
 - Maintain backward compatibility (no role → platform-only deployment)
 
 #### `recipe_helper.rb`
+
 - Add `detect_role` method that:
   - Checks `ENV['ROLE']`
   - Falls back to hostname prefix mapping
   - Stores result in `node[:role]`
-- Add `set_hostname` method that sets system hostname when `ENV['HOSTNAME']` is provided
+- Add `set_hostname` method that sets system hostname when `ENV['HOSTNAME']` is
+  provided
   - Platform-specific implementation (hostnamectl for Linux, scutil for macOS)
   - Idempotent check to avoid unnecessary changes
 - Call `detect_role` from `init_node`
@@ -63,16 +82,20 @@ Add role-based deployment to MItamae cookbooks for Raspberry Pi management. Role
 - Modify `include_role` to support combined inclusion (platform + specific role)
 
 #### `lib/recipe.rb`
+
 - Include platform role via `include_role node[:platform]`
 - Include detected role if present: `include_role node[:role] if node[:role]`
 
 #### Hostname Mapping
+
 - Hardcoded mapping in `detect_role` method
-- Simple prefix matching: hostname starting with `pi-` followed by role identifier
+- Simple prefix matching: hostname starting with `pi-` followed by role
+  identifier
 
 ## Roles Definition
 
 ### `roles/development/default.rb`
+
 ```ruby
 # Development role - include development-specific cookbooks
 # Base role already includes git, rust, golang, python, ruby, crystal, zig, etc.
@@ -95,6 +118,7 @@ include_cookbook "llvm"
 ```
 
 ### `roles/media/default.rb`
+
 ```ruby
 # Media role - include media-related cookbooks
 package "vlc"
@@ -108,6 +132,7 @@ end
 ```
 
 ### `roles/home-assistant/default.rb`
+
 ```ruby
 # Home Assistant automation role
 package "mosquitto"
@@ -122,6 +147,7 @@ end
 ```
 
 ### `roles/minimal/default.rb`
+
 ```ruby
 # Minimal role - no additional cookbooks beyond platform defaults
 ```

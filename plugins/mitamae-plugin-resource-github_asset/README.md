@@ -57,4 +57,5 @@ end
    git submodule add https://github.com/yourusername/mitamae-plugin-resource-github_asset plugins/mitamae-plugin-resource-github_asset
    ```
 
-2. The plugin will be automatically loaded by MItamae when placed in the `plugins` directory
+2. The plugin will be automatically loaded by MItamae when placed in the
+   `plugins` directory
