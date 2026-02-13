@@ -5,19 +5,34 @@ end
 # ----- RECIPE HELPERS --------------------------------
 MItamae::RecipeContext.class_eval do
   def include_cookbook(name)
-    include_recipe File.join(root_dir, "cookbooks", name, "default")
+    include_recipe join_path(root_dir, "cookbooks", name, "default")
   end
 
   def root_dir
-    File.expand_path("../..", __FILE__)
+    # Use node[:doms_dotfiles] if available, otherwise fall back to File.expand_path
+    if respond_to?(:node) && node && node[:doms_dotfiles]
+      node[:doms_dotfiles]
+    else
+      # Fallback for when node is not yet initialized
+      # Go up two levels from this file's location
+      path = __FILE__
+      # Remove "/lib/recipe_helper.rb"
+      path.sub(%r{/lib/recipe_helper\.rb$}, "")
+    end
+  end
+
+  # Join path components with platform-appropriate separator
+  # Uses forward slash for all platforms (works on Windows in Ruby)
+  def join_path(*components)
+    components.compact.reject { |c| c.is_a?(String) && c.empty? }.join("/")
   end
 
   def include_role(name)
-    include_recipe File.join(root_dir, "roles", name, "default")
+    include_recipe join_path(root_dir, "roles", name, "default")
   end
 
   def include_definition(name)
-    include_recipe File.join(root_dir, "definitions", "#{name}.rb")
+    include_recipe join_path(root_dir, "definitions", "#{name}.rb")
   end
 end
 
@@ -58,6 +73,39 @@ module PlatformHelpers
 
     # All parts equal
     false
+  end
+
+  # Check if file exists using run_command
+  def file_exists?(path)
+    if windows?
+      result = run_command("powershell -Command \"Test-Path -Path '#{path}'\"", error: false)
+      result.success? && result.stdout.strip == "True"
+    else
+      result = run_command("test -e '#{path}'", error: false)
+      result.success?
+    end
+  end
+
+  # Check if regular file exists
+  def file_file_exists?(path)
+    if windows?
+      result = run_command("powershell -Command \"Test-Path -Path '#{path}' -PathType Leaf\"", error: false)
+      result.success? && result.stdout.strip == "True"
+    else
+      result = run_command("test -f '#{path}'", error: false)
+      result.success?
+    end
+  end
+
+  # Check if directory exists
+  def dir_exists?(path)
+    if windows?
+      result = run_command("powershell -Command \"Test-Path -Path '#{path}' -PathType Container\"", error: false)
+      result.success? && result.stdout.strip == "True"
+    else
+      result = run_command("test -d '#{path}'", error: false)
+      result.success?
+    end
   end
 end
 
@@ -155,12 +203,12 @@ module NodeInitializer
 
     # Unified XDG_CONFIG_HOME handling across all platforms
     xdg_home = home
-    user_bin = File.join(home, ".local", "bin")
+    user_bin = join_path(home, ".local", "bin")
     repos = "#{home}/repos"
-    config_home = ENV.fetch("XDG_CONFIG_HOME", File.join(xdg_home, ".config"))
-    data_home = ENV.fetch("XDG_DATA_HOME", File.join(xdg_home, ".local", "share"))
-    cache_home = ENV.fetch("XDG_CACHE_HOME", File.join(xdg_home, ".cache"))
-    state_home = ENV.fetch("XDG_STATE_HOME", File.join(xdg_home, ".local", "state"))
+    config_home = ENV.fetch("XDG_CONFIG_HOME", join_path(xdg_home, ".config"))
+    data_home = ENV.fetch("XDG_DATA_HOME", join_path(xdg_home, ".local", "share"))
+    cache_home = ENV.fetch("XDG_CACHE_HOME", join_path(xdg_home, ".cache"))
+    state_home = ENV.fetch("XDG_STATE_HOME", join_path(xdg_home, ".local", "state"))
     my_repos = "#{repos}/github.com/dsisnero"
     doms_dotfiles = "#{my_repos}/doms_dotfiles"
 
@@ -177,7 +225,7 @@ module NodeInitializer
       repos: repos,
       my_repos: my_repos,
       doms_dotfiles: doms_dotfiles,
-      zshrc_config: File.join(doms_dotfiles, "config", ".zshrc"),
+      zshrc_config: join_path(doms_dotfiles, "config", ".zshrc"),
       role: role
     )
     if windows?
@@ -286,8 +334,8 @@ module GitHubHelpers
     # Check for musl (Linux only)
     is_musl = false
     if os == "linux"
-      # Check /etc/alpine-release
-      if File.exist?("/etc/alpine-release")
+      # Check /etc/alpine-release using file_exists?
+      if file_exists?("/etc/alpine-release")
         is_musl = true
       end
 
@@ -391,6 +439,196 @@ module BackupHelpers
 end
 
 #
+# ─── UTIL HELPERS ───────────────────────────────────────────────────────
+#
+module UtilHelpers
+  # Append contents to config file only if not already present
+  # Uses atomic update similar to file.rb resource executor
+  #
+  # @param config_path [String] Path to the config file
+  # @param contents [String] Contents to append (should include newline if needed)
+  # @param atomic_update [Boolean] Use atomic update (default: true)
+  # @param owner [String] File owner (default: node[:user])
+  # @param group [String] File group (default: node[:group])
+  # @param mode [Integer] File mode (default: 0644 for new files, existing mode for existing files)
+  def update_config(config_path, contents, atomic_update: true, owner: nil, group: nil, mode: nil)
+    # Check if file exists using run_command instead of File.exist?
+    file_exists = false
+    if windows?
+      result = run_command("powershell -Command \"Test-Path -Path '#{config_path}' -PathType Leaf\"", error: false)
+      file_exists = result.success? && result.stdout.strip == "True"
+    else
+      result = run_command("test -f '#{config_path}'", error: false)
+      file_exists = result.success?
+    end
+
+    temppath = nil
+
+    if file_exists
+      # Read current content using run_command instead of File.read
+      result = if windows?
+        run_command("powershell -Command \"Get-Content -Path '#{config_path}' -Raw\"", error: false)
+      else
+        run_command("cat '#{config_path}'", error: false)
+      end
+
+      unless result.success?
+        MItamae.logger.error "Failed to read config file: #{config_path}"
+        return false
+      end
+
+      current_content = result.stdout
+
+      # Check if contents already present
+      if current_content.include?(contents)
+        MItamae.logger.debug "Config already contains specified contents: #{config_path}"
+        return false
+      end
+
+      # Get current file attributes using run_command instead of File.stat
+      current_mode = nil
+      current_uid = nil
+      current_gid = nil
+
+      if windows?
+        # Windows doesn't have traditional Unix permissions in same way
+        # Use PowerShell to get file info
+        result = run_command("powershell -Command \"(Get-Item '#{config_path}').Mode\"", error: false)
+        if result.success?
+          result.stdout.strip
+          # Convert Windows mode string if needed (e.g., "-a----" to octal)
+          # For now, just use default
+          current_mode = 0o644
+        end
+      else
+        # Get mode using stat command
+        result = run_command("stat -c '%a' '#{config_path}'", error: false)
+        if result.success?
+          current_mode = result.stdout.strip.to_i(8)
+        end
+
+        # Get owner UID
+        result = run_command("stat -c '%u' '#{config_path}'", error: false)
+        if result.success?
+          current_uid = result.stdout.strip.to_i
+        end
+
+        # Get group GID
+        result = run_command("stat -c '%g' '#{config_path}'", error: false)
+        if result.success?
+          current_gid = result.stdout.strip.to_i
+        end
+      end
+    end
+
+    # Create new content (append with proper newline)
+    new_content = if file_exists
+      # Ensure current content ends with newline before appending
+      current_content.end_with?("\n") ? current_content + contents : current_content + "\n" + contents
+    else
+      contents
+    end
+
+    # Determine target mode and ownership
+    target_mode = if file_exists && current_mode
+      mode || current_mode
+    else
+      mode || 0o644
+    end
+
+    target_owner = owner || (file_exists ? nil : node[:user])
+    target_group = group || (file_exists ? nil : node[:group])
+
+    if atomic_update
+      # Create temp file (like file.rb does)
+      # Use platform-specific temp directory
+      temp_dir = windows? ? ENV["TEMP"] : "/tmp"
+      timestamp = Time.now.to_f.to_s.delete(".")
+      temppath = "#{temp_dir}/mitamae-update-config-#{timestamp}"
+
+      # Write new content to temp file using run_command
+      if windows?
+        # Escape for PowerShell
+        escaped_content = new_content.gsub("'", "''").gsub("`", "``").gsub("$", "`$")
+        run_command("powershell -Command \"Set-Content -Path '#{temppath}' -Value '#{escaped_content}' -Encoding UTF8\"", error: false)
+      else
+        # Use printf to preserve newlines
+        escaped_content = new_content.gsub("'", "'\"'\"'")
+        run_command("printf '%s' '#{escaped_content}' > '#{temppath}'", error: false)
+      end
+
+      # Set permissions on temp file (Unix only)
+      unless windows?
+        run_command("chmod #{target_mode.to_s(8)} '#{temppath}'", error: false)
+      end
+
+      # Set ownership if specified or new file
+      if target_owner || target_group
+        target_owner ||= node[:user]
+        target_group ||= node[:group]
+
+        if windows?
+          # Windows ownership handled differently
+          MItamae.logger.debug "Windows file ownership change not implemented for #{temppath}"
+        else
+          run_command("chown #{target_owner}:#{target_group} '#{temppath}'", error: false)
+        end
+      elsif file_exists && current_uid && current_gid && !windows?
+        # Preserve existing ownership on Unix
+        run_command("chown #{current_uid}:#{current_gid} '#{temppath}'", error: false)
+      end
+
+      # Atomic move using run_command
+      if windows?
+        run_command("powershell -Command \"Move-Item -Path '#{temppath}' -Destination '#{config_path}' -Force\"", error: false)
+      else
+        run_command("mv '#{temppath}' '#{config_path}'", error: false)
+      end
+    else
+      # Non-atomic: write directly using run_command
+      if windows?
+        escaped_content = new_content.gsub("'", "''").gsub("`", "``").gsub("$", "`$")
+        run_command("powershell -Command \"Set-Content -Path '#{config_path}' -Value '#{escaped_content}' -Encoding UTF8\"", error: false)
+      else
+        escaped_content = new_content.gsub("'", "'\"'\"'")
+        run_command("printf '%s' '#{escaped_content}' > '#{config_path}'", error: false)
+      end
+
+      # Set permissions (Unix only)
+      unless windows?
+        run_command("chmod #{target_mode.to_s(8)} '#{config_path}'", error: false)
+      end
+
+      # Set ownership if specified or new file
+      if target_owner || target_group
+        target_owner ||= node[:user]
+        target_group ||= node[:group]
+
+        if windows?
+          MItamae.logger.debug "Windows file ownership change not implemented for #{config_path}"
+        else
+          run_command("chown #{target_owner}:#{target_group} '#{config_path}'", error: false)
+        end
+      end
+    end
+
+    MItamae.logger.info "Updated config: #{config_path}"
+    true
+  rescue => e
+    MItamae.logger.error "Failed to update config #{config_path}: #{e.message}"
+    # Cleanup temp file if it exists
+    if temppath
+      if windows?
+        run_command("powershell -Command \"Remove-Item -Path '#{temppath}' -Force -ErrorAction SilentlyContinue\"", error: false)
+      else
+        run_command("rm -f '#{temppath}'", error: false)
+      end
+    end
+    false
+  end
+end
+
+#
 # ─── DEFINES ───────────────────────────────────────────────────────
 
 include_definition "dotfile"
@@ -407,11 +645,13 @@ include_definition "launch_env"
 ::MItamae::RecipeContext.include GitHubHelpers
 ::MItamae::RecipeContext.include CalibreHelpers
 ::MItamae::RecipeContext.include BackupHelpers
+::MItamae::RecipeContext.include UtilHelpers
 
 ::MItamae::ResourceContext.include PlatformHelpers
 ::MItamae::ResourceContext.include UserContextHelpers
 ::MItamae::ResourceContext.include CalibreHelpers
 ::MItamae::ResourceContext.include BackupHelpers
+::MItamae::ResourceContext.include UtilHelpers
 ::MItamae::RecipeContext.include GitHubHelpers
 
 # go_get definition moved to cookbooks/go/default.rb

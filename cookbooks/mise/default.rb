@@ -28,10 +28,13 @@ when "ubuntu", "debian", "mint", "pop"
   execute("install mise") do
     user "root"
     command "sh #{c}"
+    not_if "command -v mise"
   end
 
 when "darwin"
-  package "mise"
+  package "mise" do
+    not_if "command -v mise"
+  end
 end
 
 # Keep user config directories but fix ownership
@@ -39,22 +42,8 @@ mydir "#{home_}/.config/mise"
 mydir node[:user_bin]
 
 # Update shell integration to use system-installed mise
-execute "Add mise to #{zshrc_config}" do
-  user user_
-  command %(
-      if ! grep -q 'mise activate zsh' #{zshrc_config}; then
-        echo 'eval "$(mise activate zsh)"' >> #{zshrc_config}
-      fi
-    )
-end
-execute "Add mise to #{home_}/.bashrc" do
-  user user_
-  command %(
-    if ! grep -q 'mise activate bash' #{home_}/.bashrc; then
-      echo 'eval "$(mise activate bash)"' >> #{home_}/.bashrc
-    fi
-  )
-end
+update_config(zshrc_config, 'eval "$(mise activate zsh)"', owner: user_, group: node[:group])
+update_config("#{home_}/.bashrc", 'eval "$(mise activate bash)"', owner: user_, group: node[:group])
 
 define :mise, version: nil, backend: nil, exe: nil, rename: nil do
   tool_name = params[:name]
@@ -77,25 +66,10 @@ mise "sops"
 mise "age"
 mise "slsa-verifier"
 MItamae.logger.info("zshrc_config: #{zshrc_config}")
-execute "Add AGE key to #{zshrc_config}" do
-  user user_
-  command %(
-    if ! grep -q 'MISE_SOPS_AGE_KEY_FILE' #{zshrc_config}; then
-      echo 'export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt"' >> #{zshrc_config}
-    fi
-  )
-end
-
-execute "Add AGE key to #{home_}/.bashrc" do
-  user user_
-  command %(
-    if ! grep -q 'MISE_SOPS_AGE_KEY_FILE' #{home_}/.bashrc; then
-      echo 'export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt"' >> #{home_}/.bashrc
-    fi
-  )
-end
+update_config(zshrc_config, %(export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt"), owner: user_, group: node[:group])
+update_config("#{home_}/.bashrc", %(export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt"), owner: user_, group: node[:group])
 
 directory "/tmp/mitamae-#{user_}" do
   action :delete
-  only_if { File.exist?("/tmp/mitamae-#{user_}") }
+  only_if { file_exists?("/tmp/mitamae-#{user_}") }
 end
