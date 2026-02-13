@@ -5,10 +5,22 @@ module RpiImagerHelper
       case node[:platform]
       when "debian", "ubuntu", "mint", "pop"
         # Check dpkg for .deb installation first
-        result = run_command("dpkg -l | grep -i rpi-imager", error: false)
+        result = run_command("dpkg -l | grep -i '^ii.*rpi-imager'", error: false)
         if result.success?
-          match = result.stdout.match(/rpi-imager\s+\S+\s+\S+\s+(\d+\.\d+\.\d+)/)
-          return match[1] if match
+          MItamae.logger.debug "dpkg output: #{result.stdout}"
+          # Extract version column (third column) from dpkg output
+          match = result.stdout.match(/rpi-imager\s+(\S+)/i)
+          if match
+            version_str = match[1]
+            MItamae.logger.debug "dpkg version column: #{version_str}"
+            # Strip epoch if present (e.g., "1:1.9.6" -> "1.9.6")
+            version_str = version_str.sub(/^\d+:/, "")
+            version_match = version_str.match(/(\d+(?:\.\d+)+)/)
+            if version_match
+              MItamae.logger.debug "dpkg extracted version: #{version_match[1]}"
+              return version_match[1]
+            end
+          end
         end
         # Check if AppImage exists and get its version
         appimage_path = File.join(node[:user_bin], "rpi-imager")
@@ -16,16 +28,32 @@ module RpiImagerHelper
           # Try to get version from AppImage
           result = run_command("#{appimage_path} --version 2>/dev/null", error: false)
           if result.success?
+            MItamae.logger.debug "AppImage version output: #{result.stdout}"
             # Extract version from output, e.g., "Raspberry Pi Imager v1.9.6"
             match = result.stdout.match(/v(\d+\.\d+\.\d+)/)
-            return match[1] if match
+            if match
+              MItamae.logger.debug "AppImage extracted version: #{match[1]}"
+              return match[1]
+            end
           end
         end
         # Also check snap version
         result = run_command("snap list rpi-imager 2>/dev/null | grep rpi-imager", error: false)
         if result.success?
-          match = result.stdout.match(/rpi-imager\s+\S+\s+(\d+\.\d+\.\d+)/)
-          return match[1] if match
+          MItamae.logger.debug "snap output: #{result.stdout}"
+          # Extract second column (version) from snap output
+          match = result.stdout.match(/rpi-imager\s+(\S+)/i)
+          if match
+            version_str = match[1]
+            MItamae.logger.debug "snap version column: #{version_str}"
+            # Strip epoch if present
+            version_str = version_str.sub(/^\d+:/, "")
+            version_match = version_str.match(/(\d+(?:\.\d+)+)/)
+            if version_match
+              MItamae.logger.debug "snap extracted version: #{version_match[1]}"
+              return version_match[1]
+            end
+          end
         end
       when "darwin"
         # Check Homebrew version
@@ -303,7 +331,7 @@ when "debian", "ubuntu", "mint", "pop"
   MItamae.logger.info "RPi Imager latest version: #{latest_version} (type: #{pkg_type})"
 
   # Check if .deb is currently installed
-  deb_installed = run_command("dpkg -l | grep -i rpi-imager", error: false).success?
+  deb_installed = run_command("dpkg -l | grep -i '^ii.*rpi-imager'", error: false).success?
   # Check if AppImage is currently installed
   appimage_path = File.join(local_bin, "rpi-imager")
   appimage_installed = File.exist?(appimage_path)
@@ -345,6 +373,7 @@ when "debian", "ubuntu", "mint", "pop"
           # Install it
           apt install -y "#{download_path}"
         EOS
+        not_if "dpkg -l | grep -i '^ii.*rpi-imager' | grep -q #{latest_version}"
         user "root"
       end
 
@@ -371,13 +400,14 @@ when "debian", "ubuntu", "mint", "pop"
           # Move to user bin directory
           mv -f "#{download_path}" "#{appimage_path}"
         EOS
+        not_if "test -f #{appimage_path} && #{appimage_path} --version 2>/dev/null | grep -q v#{latest_version}"
         user user
       end
 
       # Remove .deb package if present (since we're installing AppImage)
       package "rpi-imager" do
         action :remove
-        only_if "dpkg -l | grep -i rpi-imager"
+        only_if "dpkg -l | grep -i '^ii.*rpi-imager'"
       end
     end
   else
