@@ -15,10 +15,7 @@ when "debian", "ubuntu", "mint", "pop"
   package "net-tools"
   package "dnsutils"
   package "iputils-ping"
-  package "traceroute"
-  package "unzip"
   package "zip"
-  package "tar"
   package "gzip"
   package "bzip2"
   package "xz-utils"
@@ -39,10 +36,8 @@ when "redhat", "fedora", "amazon"
   package "net-tools"
   package "bind-utils"
   package "iputils"
-  package "traceroute"
   package "unzip"
   package "zip"
-  package "tar"
   package "gzip"
   package "bzip2"
   package "xz"
@@ -63,10 +58,8 @@ when "arch"
   package "net-tools"
   package "bind-tools"
   package "iputils"
-  package "traceroute"
   package "unzip"
   package "zip"
-  package "tar"
   package "gzip"
   package "bzip2"
   package "xz"
@@ -88,10 +81,8 @@ when "darwin", "osx"
   # net-tools not available, use iproute2mac?
   package "bind"  # provides dig, nslookup
   # iputils not available
-  package "traceroute"
   package "unzip"
   package "zip"
-  package "tar"
   package "gzip"
   package "bzip2"
   package "xz"
@@ -108,6 +99,9 @@ end
 # Platform-agnostic essentials (if any)
 # These will use the appropriate package manager for each platform
 # No platform-agnostic packages here since package names differ
+
+# SSH Server configuration (installs and configures SSH server)
+include_cookbook "ssh_server"
 
 # Git configuration (installs git and sets up config)
 include_cookbook "git"
