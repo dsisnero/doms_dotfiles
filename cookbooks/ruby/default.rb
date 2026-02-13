@@ -12,9 +12,10 @@ node.reverse_merge!(
 )
 execute("set ruby to use prebuilt binaries for mise") do
   user user
+  command "mise settings ruby.compile=false"
 end
 
-version = node[:ruby][:version] || "latest"
+node[:ruby][:version] || "latest"
 
 remote_file "#{home}/.default-gems" do
   source "files/.default-gems"
@@ -22,10 +23,7 @@ remote_file "#{home}/.default-gems" do
   mode "644"
 end
 
-execute "install latest ruby" do
-  user user
-  command %(#{home}/.local/bin/mise use -g ruby@#{version})
-end
+mise "ruby"
 
 home = node[:home]
 dotfiles = node[:doms_dotfiles]
