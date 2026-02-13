@@ -20,6 +20,7 @@ c = <<~HEREDOC
 HEREDOC
 
 MItamae.logger.info "command for install #{c}"
+# Raspberry Pi specific packages (if running on ARM architecture)
 case node[:platform]
 when "ubuntu", "debian", "mint", "pop"
   MItamae.logger.info "installing mise for ubuntu variants"
@@ -35,6 +36,7 @@ end
 
 # Keep user config directories but fix ownership
 mydir "#{home_}/.config/mise"
+mydir node[:user_bin]
 
 # Update shell integration to use system-installed mise
 execute "Add mise to #{zshrc_config}" do
