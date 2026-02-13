@@ -14,3 +14,6 @@
 [submodule "plugins/mitamae-plugin-resource-github_binary"]
 	path = plugins/mitamae-plugin-resource-github_binary
 	url = https://github.com/dsisnero/mitamae-plugin-resource-github_binary.git
+[submodule "vendor/mitamae"]
+	path = vendor/mitamae
+	url = https://github.com/itamae-kitchen/mitamae.git
