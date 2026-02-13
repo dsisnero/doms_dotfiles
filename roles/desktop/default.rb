@@ -7,10 +7,10 @@ package "pass" do
   action :remove
 end
 
+include_cookbook "mise"
 include_cookbook "keepassxc"
 home = node[:home]
 include_cookbook "sudo_nopassword"
-include_cookbook "mise"
 include_cookbook "keychain"
 mise "node"
 mise "lua-language-server"
@@ -25,7 +25,6 @@ mise "hyperfine"
 mise "ripgrep-all"
 mise "bottom"
 mise "dust"
-mise "tree-sitter"
 mise "watchexec"
 mise "zoxide"
 mise "rclone"
@@ -50,9 +49,6 @@ include_cookbook "git"
 include_cookbook "git-secrets"
 include_cookbook "rust"
 include_cookbook "helix"
-include_cookbook "golang"
-include_cookbook "zig"
-include_cookbook "vscode"
 
 include_cookbook "treesitter"
 package "pdftk-java"
@@ -97,7 +93,6 @@ include_cookbook "zeroconf"
 include_cookbook "chrome"
 include_cookbook "direnv"
 
-include_cookbook "myrepos"
 include_cookbook "fonts"
 include_cookbook "favorite_repos"
 include_cookbook "calibre"
