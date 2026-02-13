@@ -38,6 +38,8 @@ if node[:kernel] && node[:kernel][:machine] =~ /arm|aarch64/
     user "root"
     not_if "groups #{node[:user]} | grep -q video"
   end
+
+  include_role "minimal"
 end
 
 # Development tools and libraries
