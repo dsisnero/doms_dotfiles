@@ -13,7 +13,6 @@ update_package
 
 package "base-devel"
 yay "downgrader"
-package "openssh"
 package "libxml2"
 package "libxslt"
 

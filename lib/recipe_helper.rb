@@ -348,6 +348,49 @@ module CalibreHelpers
 end
 
 #
+# ─── BACKUP HELPERS ───────────────────────────────────────────────────
+#
+module BackupHelpers
+  # Generate a bash script for incremental backup of a file
+  # Creates backups with pattern: file.backup, file.backup.2, file.backup.3, etc.
+  # IMPORTANT: This only works on Unix-like systems (Linux, macOS)
+  # For Windows, implement PowerShell-based backup logic in the cookbook
+  #
+  # @param file_path [String] Path to the file to backup
+  # @param backup_suffix [String] Suffix for backup files (default: ".backup")
+  # @return [String] Bash script that performs incremental backup
+  def incremental_backup_script(file_path, backup_suffix = ".backup")
+    # Escape regex special characters in file path and suffix for bash regex
+    # Bash uses extended regex (ERE) syntax
+    escaped_path = file_path.gsub(/[.*+?^${}()|\[\]\\]/, '\\\\\\0')
+    escaped_suffix = backup_suffix.gsub(/[.*+?^${}()|\[\]\\]/, '\\\\\\0')
+
+    <<~EOH
+      if [ -f "#{file_path}" ]; then
+        # Find highest backup number
+        max_num=0
+        for bak in "#{file_path}#{backup_suffix}"*; do
+          if [[ $bak =~ #{escaped_path}#{escaped_suffix}\\.([0-9]+)$ ]]; then
+            num=${BASH_REMATCH[1]}
+            [ $num -gt $max_num ] && max_num=$num
+          elif [[ $bak == "#{file_path}#{backup_suffix}" ]]; then
+            max_num=1  # .backup exists, start from .backup.2
+          fi
+        done
+
+        # Create next backup
+        if [ $max_num -eq 0 ]; then
+          cp -f "#{file_path}" "#{file_path}#{backup_suffix}"
+        else
+          next_num=$((max_num + 1))
+          cp -f "#{file_path}" "#{file_path}#{backup_suffix}.${next_num}"
+        fi
+      fi
+    EOH
+  end
+end
+
+#
 # ─── DEFINES ───────────────────────────────────────────────────────
 
 include_definition "dotfile"
@@ -363,10 +406,12 @@ include_definition "launch_env"
 ::MItamae::RecipeContext.include UserContextHelpers
 ::MItamae::RecipeContext.include GitHubHelpers
 ::MItamae::RecipeContext.include CalibreHelpers
+::MItamae::RecipeContext.include BackupHelpers
 
 ::MItamae::ResourceContext.include PlatformHelpers
 ::MItamae::ResourceContext.include UserContextHelpers
 ::MItamae::ResourceContext.include CalibreHelpers
+::MItamae::ResourceContext.include BackupHelpers
 ::MItamae::RecipeContext.include GitHubHelpers
 
 # go_get definition moved to cookbooks/go/default.rb
