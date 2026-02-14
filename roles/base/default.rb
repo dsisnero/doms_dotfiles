@@ -134,8 +134,10 @@ mise "fd"
 mise "yazi"
 mise "fzf"
 mise "lazygit"
+mise "delta"
 
 include_cookbook "ruby" # git hookスクリプトで必要なので先にインストールする'
 include_cookbook "python"
 include_cookbook "yarn"
 include_cookbook "nodejs"
+include_cookbook "github-cli"
