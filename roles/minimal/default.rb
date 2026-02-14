@@ -7,6 +7,7 @@ mise "rclone"
 mise "bottom"
 mise "fd"
 mise "yazi"
+mise "fzf"
 
 include_cookbook "ruby" # git hookスクリプトで必要なので先にインストールする'
 include_cookbook "python"
