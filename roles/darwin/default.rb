@@ -69,3 +69,4 @@ end
 # package "caskroom/cask/iterm2"
 # package "caskroom/cask/dash"
 # package "caskroom/cask/android-studio"
+include_role "desktop"
