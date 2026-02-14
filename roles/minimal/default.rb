@@ -5,9 +5,8 @@ include_cookbook "mise"
 mise "rg"
 mise "rclone"
 mise "bottom"
-mise "broot" do
-  backend "cargo"
-end
+mise "fd"
+mise "yazi"
 
 include_cookbook "ruby" # git hookスクリプトで必要なので先にインストールする'
 include_cookbook "python"
