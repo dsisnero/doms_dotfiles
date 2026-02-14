@@ -6,18 +6,7 @@ node.reverse_merge!(
   }
 )
 if rasppi?
-  # Install GitHub CLI via system package manager for Raspberry Pi
-  # Ensure wget is installed for key download (apt_repository may need it)
-  package "wget"
 
-  begin
-    apt_repository "github-cli" do
-      url "deb https://cli.github.com/packages stable main"
-      gpg_key "https://cli.github.com/packages/githubcli-archive-keyring.gpg"
-    end
-
-    package "gh"
-  rescue NoMethodError
     # Fallback to manual installation if apt_repository resource not available
     execute "install github-cli via official script" do
       command <<-EOH
@@ -34,7 +23,6 @@ if rasppi?
       user "root"
       not_if { run_command("gh version", error: false).exit_status == 0 }
     end
-  end
 end
 
 # Install GitHub CLI via mise
