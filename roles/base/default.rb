@@ -123,3 +123,19 @@ file "#{node[:home]}/.bashrc" do
   end
   only_if { node[:platform] != "windows" }
 end
+
+include_cookbook "dotfiles"
+include_cookbook "mise"
+
+mise "rg"
+mise "rclone"
+mise "bottom"
+mise "fd"
+mise "yazi"
+mise "fzf"
+mise "lazygit"
+
+include_cookbook "ruby" # git hookスクリプトで必要なので先にインストールする'
+include_cookbook "python"
+include_cookbook "yarn"
+include_cookbook "nodejs"
