@@ -8,6 +8,11 @@ MItamae::RecipeContext.class_eval do
     include_recipe join_path(root_dir, "cookbooks", name, "default")
   end
 
+  def rasppi?
+    # Raspberry Pi specific packages (if running on ARM architecture)
+    node[:kernel] && node[:kernel][:machine] =~ /arm|aarch64/
+  end
+
   def root_dir
     # Use node[:doms_dotfiles] if available, otherwise fall back to File.expand_path
     if respond_to?(:node) && node && node[:doms_dotfiles]
