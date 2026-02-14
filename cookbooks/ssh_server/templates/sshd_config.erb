@@ -61,7 +61,9 @@ ChallengeResponseAuthentication <%= @challenge_response_authentication %>
 # GSSAPIAuthentication no
 # GSSAPICleanupCredentials yes
 
+<% if node[:platform] != 'darwin' && node[:platform] != 'osx' && node[:platform] != 'windows' %>
 UsePAM <%= @use_pam %>
+<% end %>
 
 # Allow agent forwarding
 AllowAgentForwarding yes
@@ -93,8 +95,10 @@ UseDNS no
 # ChrootDirectory none
 # VersionAddendum none
 
+<% if node[:platform] != 'darwin' && node[:platform] != 'osx' && node[:platform] != 'windows' %>
 # Allow client to pass locale environment variables
 AcceptEnv LANG LC_*
+<% end %>
 
 # override default of no subsystems
 Subsystem	sftp	/usr/lib/openssh/sftp-server

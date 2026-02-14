@@ -185,6 +185,13 @@ when "darwin", "osx"
     not_if "sudo launchctl list | grep -q '^[0-9].*com.openssh.sshd'"
   end
 
+  # Remove problematic macOS config file that may contain unsupported options
+  execute "remove problematic macOS sshd config file" do
+    command "sudo rm -f /etc/ssh/sshd_config.d/100-macos.conf"
+    only_if "test -f /etc/ssh/sshd_config.d/100-macos.conf"
+    user user
+  end
+
   # Backup original config with incremental backups
   execute "backup original sshd_config with incrementing backups" do
     command incremental_backup_script("/etc/ssh/sshd_config", ".backup")
