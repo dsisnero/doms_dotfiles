@@ -27,6 +27,7 @@
 export MISE_SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
 export SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
 eval "$(mise activate zsh)"
+export PATH=/usr/local/smlnj/bin:$PATH
 
 # Set filter command for interactive selection
 if [ -z "$FILTER_CMD" ]; then
