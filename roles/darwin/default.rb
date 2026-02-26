@@ -16,6 +16,7 @@ package "netnewswire"
 package "open-sp"
 package "basictex"
 package "texlive"
+package "gemini-cli"
 # package "z"  replaced by zoxide
 # cask
 # package "dropbox"

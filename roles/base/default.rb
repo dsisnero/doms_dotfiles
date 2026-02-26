@@ -135,6 +135,9 @@ mise "yazi"
 mise "fzf"
 mise "lazygit"
 mise "delta"
+mise "fastmod" do
+  backend "cargo"
+end
 
 include_cookbook "ruby" # git hookスクリプトで必要なので先にインストールする'
 include_cookbook "python"
