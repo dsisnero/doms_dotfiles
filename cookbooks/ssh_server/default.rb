@@ -48,7 +48,8 @@ when "debian", "ubuntu", "mint", "pop"
   # Backup original config with incremental backups
   execute "backup original sshd_config with incrementing backups" do
     command incremental_backup_script("/etc/ssh/sshd_config", ".backup")
-    only_if "test -f /etc/ssh/sshd_config"
+    only_if { File.exist?("/etc/ssh/sshd_config") }
+    not_if { !Dir.glob("/etc/ssh/sshd_config.backup*").empty? }
     user "root"
   end
 
@@ -94,7 +95,8 @@ when "redhat", "fedora", "centos", "amazon"
   # Backup original config with incremental backups
   execute "backup original sshd_config with incrementing backups" do
     command incremental_backup_script("/etc/ssh/sshd_config", ".backup")
-    only_if "test -f /etc/ssh/sshd_config"
+    only_if { File.exist?("/etc/ssh/sshd_config") }
+    not_if { !Dir.glob("/etc/ssh/sshd_config.backup*").empty? }
     user "root"
   end
 
@@ -136,7 +138,8 @@ when "arch"
   # Backup original config with incremental backups
   execute "backup original sshd_config with incrementing backups" do
     command incremental_backup_script("/etc/ssh/sshd_config", ".backup")
-    only_if "test -f /etc/ssh/sshd_config"
+    only_if { File.exist?("/etc/ssh/sshd_config") }
+    not_if { !Dir.glob("/etc/ssh/sshd_config.backup*").empty? }
     user "root"
   end
 
@@ -176,13 +179,15 @@ when "darwin", "osx"
   # Use launchctl to load SSH daemon plist (avoids systemsetup Full Disk Access requirement)
   execute "enable macOS ssh server via launchctl" do
     command "sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist"
-    not_if "sudo launchctl list | grep -q com.openssh.sshd"
+    # Check service bootstrap state without sudo to avoid password prompts on every run
+    not_if "launchctl print system/com.openssh.sshd >/dev/null 2>&1"
+    notifies :run, "execute[start macOS ssh server]", :immediately
   end
 
   # Ensure SSH service is running
   execute "start macOS ssh server" do
     command "sudo launchctl start com.openssh.sshd"
-    not_if "sudo launchctl list | grep -q '^[0-9].*com.openssh.sshd'"
+    action :nothing
   end
 
   # Remove problematic macOS config file that may contain unsupported options
@@ -195,7 +200,8 @@ when "darwin", "osx"
   # Backup original config with incremental backups
   execute "backup original sshd_config with incrementing backups" do
     command incremental_backup_script("/etc/ssh/sshd_config", ".backup")
-    only_if "test -f /etc/ssh/sshd_config"
+    only_if { File.exist?("/etc/ssh/sshd_config") }
+    not_if { !Dir.glob("/etc/ssh/sshd_config.backup*").empty? }
     user "root"
   end
 
@@ -280,6 +286,19 @@ when "windows"
       EOH
     end
 
+    execute "allow inbound ssh on Windows firewall" do
+      command <<-EOH
+        powershell -Command "
+          New-NetFirewallRule -Name OpenSSH-Server-In-TCP -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+        "
+      EOH
+      not_if <<-EOH
+        powershell -Command "
+          Get-NetFirewallRule -Name OpenSSH-Server-In-TCP -ErrorAction SilentlyContinue
+        "
+      EOH
+    end
+
     # Backup original config on Windows with incremental backups
     execute "backup sshd_config on Windows" do
       command <<-EOH
@@ -298,7 +317,7 @@ when "windows"
       EOH
       not_if <<-EOH
         powershell -Command "
-          !(Test-Path 'C:\\ProgramData\\ssh\\sshd_config')
+          (Test-Path 'C:\\ProgramData\\ssh\\sshd_config.backup') -or !(Test-Path 'C:\\ProgramData\\ssh\\sshd_config')
         "
       EOH
     end
