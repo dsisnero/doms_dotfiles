@@ -258,6 +258,64 @@ end
 - **Chain notifications** (`notifies`) for sequential operations
 - **Set user ownership** for user-specific files/directories
 
+### Making Recipes Independent with Guards
+
+**Always use guards (`not_if`/`only_if`)** to ensure recipes are independent and
+idempotent. Recipes should be able to run multiple times without errors, even if
+resources already exist.
+
+#### Guard Patterns
+
+1. **Check if file/directory exists**:
+   ```ruby
+   execute "install something" do
+     command "./install.sh"
+     not_if { File.exist?("/path/to/installed/file") }
+   end
+   ```
+
+2. **Check if command is available**:
+   ```ruby
+   execute "add repository" do
+     command "apt-add-repository ppa:foo/bar"
+     not_if "which apt-add-repository && apt-add-repository --list | grep foo/bar"
+   end
+   ```
+
+3. **Check if package is installed**:
+   ```ruby
+   execute "install package from source" do
+     command "make install"
+     not_if "dpkg -l | grep package-name"
+   end
+   ```
+
+4. **Use only_if for conditional execution**:
+   ```ruby
+   execute "configure macOS settings" do
+     command "defaults write com.apple.finder ShowPathbar -bool true"
+     only_if { node[:platform] == "darwin" }
+   end
+   ```
+
+#### Why Independence Matters
+
+- **No hard failures**: If a file already exists, the recipe shouldn't crash
+- **Order doesn't matter**: Recipes can be run in any sequence
+- **Safe re-runs**: Users can safely re-run mitamae without breaking things
+- **Easier debugging**: Each recipe is self-contained
+
+#### Common Guard Patterns
+
+| Scenario | Guard Pattern |
+|----------|---------------|
+| Create directory | `not_if { File.directory?(path) }` |
+| Create file from template | `not_if { File.exist?(path) }` |
+| Install binary | `not_if "which binary_name"` |
+| Clone git repo | `not_if { File.directory?("#{path}/.git") }` |
+| Run install script | `not_if { File.exist?(marker_file) }` |
+| Platform-specific | `only_if { node[:platform] == "platform" }` |
+
 ### Platform Support
 
 - **Linux (deb-based)**: `"debian", "ubuntu", "mint", "pop"`
