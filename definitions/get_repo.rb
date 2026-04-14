@@ -11,7 +11,7 @@ define :get_repo, build: nil do
   end
 
   # Extract proper ghq path from URL
-  cloned_dir = "#{home}/repos/#{repo_url.split(%r{[:/]})[1..-1].join("/").gsub(/\.git$/, "")}"
+  cloned_dir = "#{node[:repos]}/#{repo_url.split(%r{[:/]})[1..-1].join("/").gsub(/\.git$/, "")}"
 
   execute "get_repo #{reponame}" do
     command "SSH_AUTH_SOCK=#{home}/.ssh/agent.sock mise exec -- ghq get -p '#{repo_url}'"

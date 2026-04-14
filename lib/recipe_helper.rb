@@ -16,16 +16,11 @@ MItamae::RecipeContext.class_eval do
   end
 
   def root_dir
-    # Use node[:doms_dotfiles] if available, otherwise fall back to File.expand_path
-    if respond_to?(:node) && node && node[:doms_dotfiles]
-      node[:doms_dotfiles]
-    else
-      # Fallback for when node is not yet initialized
-      # Go up two levels from this file's location
-      path = __FILE__
-      # Remove "/lib/recipe_helper.rb"
-      path.sub(%r{/lib/recipe_helper\.rb$}, "")
-    end
+    # Always return the actual location of the project files
+    # Go up two levels from this file's location
+    path = __FILE__
+    # Remove "/lib/recipe_helper.rb"
+    path.sub(%r{/lib/recipe_helper\.rb$}, "")
   end
 
   # Join path components with platform-appropriate separator
@@ -211,13 +206,44 @@ module NodeInitializer
     # Unified XDG_CONFIG_HOME handling across all platforms
     xdg_home = home
     user_bin = join_path(home, ".local", "bin")
-    repos = "#{home}/repos"
+
+    # Use REPOS_DIR environment variable if set, otherwise check for removable drive
+    repos_dir = ENV["REPOS_DIR"]
+    if repos_dir && !repos_dir.empty?
+      repos = repos_dir
+    else
+      # Check if removable drive exists
+      removable_drive = join_path("/Volumes", "extreme_ssd")
+      repos = if dir_exists?(removable_drive)
+        "#{removable_drive}/repos"
+      else
+        # Fall back to home directory
+        "#{home}/repos"
+      end
+    end
+
     config_home = ENV.fetch("XDG_CONFIG_HOME", join_path(xdg_home, ".config"))
     data_home = ENV.fetch("XDG_DATA_HOME", join_path(xdg_home, ".local", "share"))
     cache_home = ENV.fetch("XDG_CACHE_HOME", join_path(xdg_home, ".cache"))
     state_home = ENV.fetch("XDG_STATE_HOME", join_path(xdg_home, ".local", "state"))
     my_repos = "#{repos}/github.com/dsisnero"
-    doms_dotfiles = "#{my_repos}/doms_dotfiles"
+
+    # Determine actual location of doms_dotfiles project
+    # First check if we're running from the target location
+    current_dir = __FILE__.sub(%r{/lib/recipe_helper\.rb$}, "")
+    target_doms_dotfiles = "#{my_repos}/doms_dotfiles"
+
+    # If we're already running from the target location, use it
+    doms_dotfiles = if current_dir == target_doms_dotfiles
+      current_dir
+    elsif dir_exists?(target_doms_dotfiles)
+      # Check if target location exists (even if not a full git repo)
+      # Target exists, use it
+      target_doms_dotfiles
+    else
+      # Target doesn't exist, use current location
+      current_dir
+    end
 
     role = detect_role
     node.reverse_merge!(
