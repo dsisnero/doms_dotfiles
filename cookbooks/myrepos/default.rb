@@ -32,7 +32,7 @@ end
 # install_font "#{node[:home]}/repos/gitlab.com/dsisnero/RictyDiminished-for-Powerline/Ricty_Diminished_Bold_for_Powerline.ttf"
 # install_font "#{node[:home]}/repos/gitlab.com/dsisnero/RictyDiminished-for-Powerline/Ricty_Diminished_Bold_Oblique_for_Powerline.ttf"
 # install_font "#{node[:home]}/repos/gitlab.com/dsisnero/RictyDiminished-for-Powerline/Ricty_Diminished_Oblique_for_Powerline.ttf"
-"~/repos/github.com/dsisnero/private-memo/obsidian/work"
+"#{node[:repos]}/github.com/dsisnero/private-memo/obsidian/work"
 # execute "ln -s #{blog_repo_path} #{obsidian_vault_path}/blog" do
 #   not_if "test -e #{obsidian_vault_path}/blog"
 #   user user
