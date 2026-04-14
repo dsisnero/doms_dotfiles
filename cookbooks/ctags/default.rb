@@ -8,7 +8,7 @@ when "debian", "ubuntu", "mint", "fedora", "redhat", "amazon"
   execute "install ctags" do
     command <<-EOL
       set -eu
-      WORKDIR=#{node[:home]}/repos/github.com/universal-ctags/ctags
+      WORKDIR=#{node[:repos]}/github.com/universal-ctags/ctags
 
       cur=$(pwd)
       cd ${WORKDIR}

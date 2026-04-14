@@ -32,7 +32,7 @@ mydir "#{home}/.local/icons"
 
 mydir repos
 my_repos = "#{repos}/github.com/dsisnero"
-doms_dotfiles = "#{my_repos}/doms_dotfiles"
+doms_dotfiles = node[:doms_dotfiles]
 
 mydir my_repos
 
@@ -185,7 +185,7 @@ mydir lldb_config_home
 
 rust_lldb_file = "#{lldb_config_home}/lldb_rust.py"
 
-rust_lldb_source = File.join(doms_dotfiles, "config", "lldb", "lldb_rust.py")
+rust_lldb_source = File.join(node[:doms_dotfiles], "config", "lldb", "lldb_rust.py")
 
 # Install lldb_rust.py script
 link rust_lldb_file do
@@ -197,7 +197,7 @@ node.reverse_merge!(
   rust_lldb_file: rust_lldb_file
 )
 
-crystal_lldb_file = File.join(doms_dotfiles, "config", "lldb", "crystal_formatters.py")
+crystal_lldb_file = File.join(node[:doms_dotfiles], "config", "lldb", "crystal_formatters.py")
 
 helix_language_file = File.join(config_home, "helix", "languages.toml")
 
