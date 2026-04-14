@@ -30,7 +30,7 @@ end
 # end
 
 # Raspberry Pi specific packages (if running on ARM architecture)
-if node[:kernel] && node[:kernel][:machine] =~ /arm|aarch64/
+if rasppi?
   mise "helix"
 else
   get_repo("helix-editor/helix")

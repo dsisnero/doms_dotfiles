@@ -10,7 +10,9 @@ MItamae::RecipeContext.class_eval do
 
   def rasppi?
     # Raspberry Pi specific packages (if running on ARM architecture)
-    node[:kernel] && node[:kernel][:machine] =~ /arm|aarch64/
+    # Exclude macOS (Apple Silicon) which is also ARM
+    node[:kernel] && node[:kernel][:machine] =~ /arm|aarch64/ &&
+      node[:platform] != "darwin" && node[:platform] != "osx"
   end
 
   def root_dir

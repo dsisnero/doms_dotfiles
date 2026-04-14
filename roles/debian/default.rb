@@ -15,7 +15,7 @@ execute "sudo apt upgrade -y"
 include_role("base")
 
 # Raspberry Pi specific packages (if running on ARM architecture)
-if node[:kernel] && node[:kernel][:machine] =~ /arm|aarch64/
+if rasppi?
   MItamae.logger.info "Detected ARM architecture (#{node[:kernel][:machine]}), installing Raspberry Pi specific packages"
 
   # Raspberry Pi utilities
