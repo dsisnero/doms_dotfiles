@@ -4,13 +4,13 @@ if [ "$ZSHRC_PROFILE" != "" ]; then
   zmodload zsh/zprof && zprof > /dev/null
 fi
 
-source ~/repos/github.com/dsisnero/doms_dotfiles/config/.zshenv
+source <%= node[:doms_dotfiles] %>/config/.zshenv
 <% if node[:platform] == 'osx' or node[:platform] == 'darwin' -%>
-source ~/repos/github.com/dsisnero/doms_dotfiles/config/zsh/.zshenv_osx
+source <%= node[:doms_dotfiles] %>/config/zsh/.zshenv_osx
 <% else -%>
-source ~/repos/github.com/dsisnero/doms_dotfiles/config/zsh/.zshenv_unix
+source <%= node[:doms_dotfiles] %>/config/zsh/.zshenv_unix
   <%- if node[:is_wsl] -%>
-source ~/repos/github.com/dsisnero/doms_dotfiles/config/zsh/.zshenv_wsl
+source <%= node[:doms_dotfiles] %>/config/zsh/.zshenv_wsl
   <%- end -%>
 <% end -%>
 

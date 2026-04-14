@@ -11,6 +11,6 @@ keychain -q --nogui ~/.ssh/id_github
 #source ~/.keychain/${HOST}-sh
 #########################################
 
-if [[ -f ~/repos/github.com/dylanaraps/neofetch/neofetch ]]; then
-  ~/repos/github.com/dylanaraps/neofetch/neofetch
+if [[ -f <%= node[:repos] %>/github.com/dylanaraps/neofetch/neofetch ]]; then
+  <%= node[:repos] %>/github.com/dylanaraps/neofetch/neofetch
 fi
