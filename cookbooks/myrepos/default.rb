@@ -16,7 +16,7 @@ myrepos = [
   "cml",
   "crig",
   "crig-sqlite",
-  "crossterm_cr",
+  # "crossterm_cr",
   "crystal_search",
   "codespan",
   "gmaps",

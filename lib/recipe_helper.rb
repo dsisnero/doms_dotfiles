@@ -333,6 +333,41 @@ module GitHubHelpers
     tag ? normalize_version(tag) : nil
   end
 
+  # Get download URL for a specific asset in the latest release
+  # @param repo [String] GitHub repository in "owner/repo" format
+  # @param asset_pattern [String, Regexp] Pattern to match asset name (string for exact match, regex for pattern)
+  # @return [String, nil] Download URL for the asset or nil if not found
+  def github_latest_asset_url(repo, asset_pattern)
+    max_retries = 3
+    retry_count = 0
+
+    while retry_count < max_retries
+      # Use jq to parse JSON directly from curl to avoid shell escaping issues
+      cmd = "curl -s https://api.github.com/repos/#{repo}/releases/latest | jq -r '.assets[] | .browser_download_url + \"\\t\" + .name'"
+      result = run_command(cmd, error: false)
+
+      if result.exit_status == 0 && !result.stdout.strip.empty?
+        assets = result.stdout.strip.split("\n")
+
+        # Find matching asset
+        assets.each do |asset_line|
+          url, name = asset_line.split("\t", 2)
+
+          if asset_pattern.is_a?(Regexp)
+            return url if name&.match?(asset_pattern)
+          elsif name == asset_pattern
+            return url
+          end
+        end
+      end
+
+      retry_count += 1
+      sleep 2 if retry_count < max_retries
+    end
+
+    nil
+  end
+
   # Helper to compute target string like install_opencode.1.sh
   def compute_target_info(node)
     # Determine OS

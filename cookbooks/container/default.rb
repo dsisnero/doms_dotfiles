@@ -35,27 +35,33 @@ when "darwin"
   if latest_version.nil?
     MItamae.logger.error "Cannot determine latest version of container. Skipping installation."
   else
-    pkg_url = "https://github.com/apple/container/releases/download/#{latest_version}/container-installer-signed.pkg"
-    download_path = "/tmp/container-installer-signed.pkg"
+    # Get the actual signed package URL (filename pattern varies by version)
+    pkg_url = github_latest_asset_url("apple/container", /container.*installer-signed\.pkg$/i)
 
-    package "aria2"
+    if pkg_url.nil?
+      MItamae.logger.error "Cannot find signed installer package for container #{latest_version}"
+    else
+      download_path = "/tmp/container-installer-signed.pkg"
 
-    execute "download container pkg" do
-      command "aria2c #{pkg_url} -d /tmp/ -o container-installer-signed.pkg"
-      only_if { needs_update }
-      notifies :run, "execute[install container pkg]", :immediately
-    end
+      package "aria2"
 
-    execute "install container pkg" do
-      command "installer -pkg #{download_path} -target /"
-      user "root"
-      action :nothing
-      notifies :run, "execute[cleanup container pkg]", :immediately
-    end
+      execute "download container pkg" do
+        command "aria2c #{pkg_url} -d /tmp/ -o container-installer-signed.pkg"
+        only_if { needs_update }
+        notifies :run, "execute[install container pkg]", :immediately
+      end
 
-    execute "cleanup container pkg" do
-      command "rm -f #{download_path}"
-      action :nothing
+      execute "install container pkg" do
+        command "installer -pkg #{download_path} -target /"
+        user "root"
+        action :nothing
+        notifies :run, "execute[cleanup container pkg]", :immediately
+      end
+
+      execute "cleanup container pkg" do
+        command "rm -f #{download_path}"
+        action :nothing
+      end
     end
   end
 
