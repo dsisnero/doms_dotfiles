@@ -1,0 +1,68 @@
+# Zsh Plugin Manager Configuration
+# This file manages zsh plugins using zinit (formerly zplugin)
+# Plugins enhance zsh with autocompletion, syntax highlighting, history search, and more
+
+# Set up zinit plugin manager
+plugin_manager_name=zdharma-continuum/zinit
+ZINIT_HOME=<%= node[:repos] %>/github.com/zdharma-continuum/zinit
+
+# Automatically clone zinit if not already present
+if [ ! -d "$ZINIT_HOME" ]; then
+  if command -v ghq >/dev/null 2>&1; then
+    ghq list | grep ${plugin_manager_name} >/dev/null 2>&1 || ghq get $plugin_manager_name
+  else
+    echo "Warning: ghq not installed, cannot clone zinit automatically"
+    echo "Please install zinit manually to: $ZINIT_HOME"
+  fi
+fi
+
+# Load zinit core functionality if it exists
+if [ -f "$ZINIT_HOME/zinit.zsh" ]; then
+  source $ZINIT_HOME/zinit.zsh
+else
+  echo "Warning: zinit not found at $ZINIT_HOME/zinit.zsh"
+  echo "Please install zinit: ghq get zdharma-continuum/zinit"
+fi
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
+
+# Essential zsh plugins for improved user experience:
+# - zsh-autosuggestions: Suggests commands as you type based on history
+# - zsh-completions: Additional completion definitions
+# - zsh-syntax-highlighting: Colors commands to indicate validity
+# - zsh-history-substring-search: Search history with up/down arrows
+zinit light "zsh-users/zsh-autosuggestions"
+zinit light "zsh-users/zsh-completions"
+zinit light "zsh-users/zsh-syntax-highlighting"
+zinit light "zsh-users/zsh-history-substring-search"
+
+# ZAW (Zsh anything.el-like widget) - provides interactive selection interface
+# ZAW sources provide different types of selectable items
+zinit light "zsh-users/zaw"
+zinit light "GeneralD/zaw-src-directory" # Directory source for ZAW
+zinit light "GeneralD/zaw-src-github"    # GitHub source for ZAW
+zinit light "GeneralD/zaw-src-package-managers" # Package manager source for ZAW
+
+# Git-flow completion setup
+# Provides tab completion for git-flow commands if git-flow is installed
+if command -v git-flow &> /dev/null; then
+    source <(git-flow completion zsh)
+    autoload -Uz compinit && compinit
+    compdef _git-flow git-flow
+fi
+
+# ZAW key bindings for quick access to different sources:
+# ^x^x - Main ZAW interface
+# ^x^@ - Change to recent directories (cdr)
+# ^x^R - Command history selection
+# ^x^F - Git files selection
+# ^x^P - Process selection
+bindkey '^x^x' zaw
+bindkey '^x^@' zaw-cdr
+bindkey '^x^R' zaw-history
+bindkey '^x^F' zaw-git-files
+bindkey '^x^P' zaw-process
+
+# Configure zsh-autosuggestions to clear suggestions when custom Enter key handler runs
+# This prevents autosuggestions from interfering with the custom ls_and_git_status behavior
+ZSH_AUTOSUGGEST_CLEAR_WIDGETS=(do_enter $ZSH_AUTOSUGGEST_CLEAR_WIDGETS)

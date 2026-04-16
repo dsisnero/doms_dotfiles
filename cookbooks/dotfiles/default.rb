@@ -42,6 +42,14 @@ git doms_dotfiles do
   only_if { !FileTest.directory? doms_dotfiles }
 end
 
+# Create .zshrc.plugin in the config directory
+template "#{doms_dotfiles}/config/zsh/.zshrc.plugin" do
+  source "templates/.zshrc.plugin.erb"
+  owner user
+  group group
+  mode "644"
+end
+
 # include_cookbook "ghq"
 # get_repo("dsisnero/doms_dotfiles")
 
@@ -80,7 +88,6 @@ template "#{home}/.zshenv" do
   source "templates/.zshenv.erb"
   owner user
   group group
-  not_if "test -e #{home}/.zshenv"
 end
 
 template "#{home}/.xinitrc" do
