@@ -45,21 +45,11 @@ EOCMD
   end
 end
 
-apps = [
-  {id: "1091189122", name: "Bear"},
-  {id: "682658836", name: "GarageBand"},
-  {id: "408981434", name: "iMovie"},
-  {id: "6444602274", name: "Ivory"},
-  {id: "409183694", name: "Keynote"},
-  {id: "409203825", name: "Numbers"},
-  {id: "409201541", name: "Pages"}
-]
-
-apps.each do |app|
-  mas app[:name] do
-    id app[:id]
-  end
-end
+# apps.each do |app|
+#   mas app[:name] do
+#     id app[:id]
+#   end
+# end
 
 # package "caskroom/cask/android-file-transfer"
 # package "caskroom/cask/1password"
