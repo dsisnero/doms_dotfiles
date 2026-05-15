@@ -69,7 +69,44 @@ unless os == "windows" && !wsl?
   when "debian", "ubuntu", "mint", "pop", "fedora", "redhat", "amazon", "arch", "linux"
     "linux"
   when "darwin", "osx", "macos"
-    "darwin"
+    # Check if we're on ExFAT filesystem (common with external drives on macOS)
+    begin
+      # Try to detect ExFAT filesystem for current working directory
+      current_dir = Dir.pwd
+      fs_info = run_command("diskutil info '#{current_dir}' 2>/dev/null | grep 'File System Personality' | awk -F': ' '{print $2}'", error: false)
+
+      if fs_info.success? && !fs_info.stdout.strip.empty?
+        fs_type = fs_info.stdout.strip.downcase
+        MItamae.logger.info "Detected filesystem: #{fs_type} for #{current_dir}"
+
+        if fs_type.include?("exfat")
+          MItamae.logger.info "Using ExFAT-specific git configuration for macOS"
+          "darwin_exfat"
+        else
+          "darwin"
+        end
+      else
+        # Fallback: check home directory filesystem
+        home_fs_info = run_command("diskutil info '#{node[:home]}' 2>/dev/null | grep 'File System Personality' | awk -F': ' '{print $2}'", error: false)
+
+        if home_fs_info.success? && !home_fs_info.stdout.strip.empty?
+          home_fs_type = home_fs_info.stdout.strip.downcase
+          MItamae.logger.info "Detected home filesystem: #{home_fs_type}"
+
+          if home_fs_type.include?("exfat")
+            MItamae.logger.info "Using ExFAT-specific git configuration for macOS (home directory)"
+            "darwin_exfat"
+          else
+            "darwin"
+          end
+        else
+          "darwin" # default macOS configuration
+        end
+      end
+    rescue => e
+      MItamae.logger.warn "Could not detect filesystem type: #{e.message}. Using default macOS configuration."
+      "darwin"
+    end
   when "windows"
     "windows"
   else
@@ -121,7 +158,7 @@ unless os == "windows" && !wsl?
   end
 
   # Platform-specific templates
-  %w[darwin linux windows wsl].each do |platform|
+  %w[darwin darwin_exfat linux windows wsl].each do |platform|
     template "#{git_config_dir}/platforms/#{platform}" do
       source "templates/git/platforms/#{platform}.erb"
       owner node[:user]
@@ -152,10 +189,48 @@ unless os == "windows" && !wsl?
     )
   end
 
+  # Install ExFAT cleanup script (runs on post-checkout and post-merge)
+  template "#{git_hooks_dir}/cleanup-appledouble" do
+    source "templates/git/hooks/cleanup-appledouble.erb"
+    mode "755"
+    owner node[:user]
+    group node[:group]
+  end
+
+  # Create symlinks for post-checkout and post-merge hooks
+  link "#{git_hooks_dir}/post-checkout" do
+    to "#{git_hooks_dir}/cleanup-appledouble"
+    not_if { File.exist?("#{git_hooks_dir}/post-checkout") }
+  end
+
+  link "#{git_hooks_dir}/post-merge" do
+    to "#{git_hooks_dir}/cleanup-appledouble"
+    not_if { File.exist?("#{git_hooks_dir}/post-merge") }
+  end
+
   # Configure global hooks path
   execute "git config --global core.hooksPath '#{git_hooks_dir}'" do
     user node[:user]
     not_if "git config --global core.hooksPath | grep -q '#{git_hooks_dir}'"
+  end
+
+  # Install standalone cleanup script for ExFAT
+  file "#{git_config_dir}/cleanup-git-exfat.sh" do
+    content File.read("#{node[:doms_dotfiles]}/cookbooks/git/files/cleanup-git-exfat.sh")
+    mode "755"
+    owner node[:user]
+    group node[:group]
+  end
+
+  # Create alias for easy cleanup
+  execute "git config --global alias.cleanup-exfat '!bash #{git_config_dir}/cleanup-git-exfat.sh'" do
+    user node[:user]
+    not_if "git config --global alias.cleanup-exfat"
+  end
+
+  execute "git config --global alias.fsck-exfat '!bash #{git_config_dir}/cleanup-git-exfat.sh --repair'" do
+    user node[:user]
+    not_if "git config --global alias.fsck-exfat"
   end
 end
 
