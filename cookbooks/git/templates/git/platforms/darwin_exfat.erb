@@ -1,0 +1,53 @@
+[credential]
+  helper = osxkeychain
+  credentialStore = gpg
+
+[difftool]
+  prompt = false
+
+[merge]
+  tool = opendiff
+
+[core]
+  ; ExFAT-specific settings for macOS
+  ; ExFAT doesn't support HFS+ unicode precomposition
+  precomposeunicode = false
+  ; ExFAT is case-insensitive (like Windows)
+  ignorecase = true
+  ; ExFAT doesn't support Unix permissions
+  filemode = false
+  ; Increase buffer size for ExFAT performance
+  packedGitLimit = 512m
+  packedGitWindowSize = 512m
+  ; Disable symlinks if not needed (ExFAT has limited symlink support)
+  symlinks = false
+
+[merge]
+  ; Conservative rename detection for ExFAT
+  renameLimit = 999999
+
+[diff]
+  ; Conservative rename detection for ExFAT
+  renameLimit = 999999
+  ; Use patience algorithm for better diffs on case-insensitive FS
+  algorithm = patience
+
+[status]
+  ; Show untracked files
+  showUntrackedFiles = all
+
+[fetch]
+  ; Prune stale remote-tracking branches
+  prune = true
+
+[receive]
+  ; Auto-update server info
+  autogc = true
+
+[gc]
+  ; Aggressive garbage collection for ExFAT
+  auto = 6700
+  autoDetach = false
+  ; Pack everything to reduce file count
+  aggressiveDepth = 250
+  aggressiveWindow = 250

@@ -1,0 +1,110 @@
+#!/bin/bash
+#
+# Git hook to clean up AppleDouble files on ExFAT filesystems
+# These files are created by macOS and can corrupt git repositories
+#
+
+set -e
+
+# Simple logging functions
+log_info() {
+    echo "[INFO] $1"
+}
+
+log_warn() {
+    echo "[WARN] $1"
+}
+
+log_error() {
+    echo "[ERROR] $1" >&2
+}
+
+# Check if we're on macOS
+if [[ "$(uname)" != "Darwin" ]]; then
+    exit 0
+fi
+
+# Check if we're on an ExFAT filesystem
+check_exfat() {
+    local dir="$1"
+    if [[ -z "$dir" ]]; then
+        dir="."
+    fi
+
+    # Use diskutil to check filesystem type
+    if command -v diskutil >/dev/null 2>&1; then
+        fs_info=$(diskutil info "$dir" 2>/dev/null | grep -i "File System Personality" || true)
+        if echo "$fs_info" | grep -qi "exfat"; then
+            return 0  # ExFAT detected
+        fi
+    fi
+
+    return 1  # Not ExFAT
+}
+
+# Clean AppleDouble files from git repository
+clean_appledouble_files() {
+    local repo_dir="$1"
+    local count=0
+
+    log_info "Checking for AppleDouble files in git repository..."
+
+    # Find and remove ._* files in .git directory
+    if find "$repo_dir/.git" -name "._*" -type f 2>/dev/null | grep -q .; then
+        log_warn "Found AppleDouble files in .git directory. Cleaning up..."
+        find "$repo_dir/.git" -name "._*" -type f -delete 2>/dev/null
+        count=$((count + $(find "$repo_dir/.git" -name "._*" -type f 2>/dev/null | wc -l)))
+    fi
+
+    # Find and remove .DS_Store files in .git directory
+    if find "$repo_dir/.git" -name ".DS_Store" -type f 2>/dev/null | grep -q .; then
+        log_warn "Found .DS_Store files in .git directory. Cleaning up..."
+        find "$repo_dir/.git" -name ".DS_Store" -type f -delete 2>/dev/null
+        count=$((count + $(find "$repo_dir/.git" -name ".DS_Store" -type f 2>/dev/null | wc -l)))
+    fi
+
+    # Clean up corrupted refs
+    for ref_type in heads remotes tags; do
+        if find "$repo_dir/.git/refs/$ref_type" -name "._*" -type f 2>/dev/null | grep -q .; then
+            log_warn "Cleaning AppleDouble files from refs/$ref_type..."
+            find "$repo_dir/.git/refs/$ref_type" -name "._*" -type f -delete 2>/dev/null
+        fi
+    done
+
+    if [[ $count -gt 0 ]]; then
+        log_warn "Removed $count AppleDouble/metadata files from git repository"
+        log_warn "Consider moving this repository to APFS/HFS+ for better compatibility"
+        return 1  # Indicate cleanup was performed
+    fi
+
+    return 0
+}
+
+# Main execution
+main() {
+    local repo_dir="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+
+    if [[ -z "$repo_dir" ]]; then
+        log_error "Could not determine git repository root"
+        exit 1
+    fi
+
+    # Check if we're on ExFAT
+    if check_exfat "$repo_dir"; then
+        log_warn "Repository is on ExFAT filesystem. AppleDouble files may cause issues."
+
+        # Clean up any existing AppleDouble files
+        if clean_appledouble_files "$repo_dir"; then
+            log_info "Git repository is clean"
+        else
+            log_warn "Repository was cleaned. You may need to run 'git fsck' to verify integrity."
+        fi
+
+        # Warn about long-term issues
+        log_warn "For long-term use, consider moving git repositories to APFS/HFS+ filesystem"
+        log_warn "ExFAT doesn't properly support macOS metadata and can corrupt git repositories"
+    fi
+}
+
+# Run main function
+main "$@"

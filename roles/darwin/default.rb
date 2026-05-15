@@ -22,6 +22,7 @@ package "gemini-cli"
 # package "dropbox"
 include_cookbook "container"
 include_cookbook "rpi_imager"
+include_cookbook "llama.cpp"
 
 package "vlc"
 package "virtualbox"

@@ -4,13 +4,25 @@
 
 # Set up zinit plugin manager
 plugin_manager_name=zdharma-continuum/zinit
+ZINIT_HOME=/Volumes/extreme_ssd/repos/github.com/zdharma-continuum/zinit
+
 # Automatically clone zinit if not already present
-ghq list | grep ${plugin_manager_name} >/dev/null 2>&1 || ghq get $plugin_manager_name
+if [ ! -d "$ZINIT_HOME" ]; then
+  if command -v ghq >/dev/null 2>&1; then
+    ghq list | grep ${plugin_manager_name} >/dev/null 2>&1 || ghq get $plugin_manager_name
+  else
+    echo "Warning: ghq not installed, cannot clone zinit automatically"
+    echo "Please install zinit manually to: $ZINIT_HOME"
+  fi
+fi
 
-ZINIT_HOME=${REPOS_ROOT}/github.com/zdharma-continuum/zinit
-
-# Load zinit core functionality
-source $ZINIT_HOME/zinit.zsh
+# Load zinit core functionality if it exists
+if [ -f "$ZINIT_HOME/zinit.zsh" ]; then
+  source $ZINIT_HOME/zinit.zsh
+else
+  echo "Warning: zinit not found at $ZINIT_HOME/zinit.zsh"
+  echo "Please install zinit: ghq get zdharma-continuum/zinit"
+fi
 autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
 

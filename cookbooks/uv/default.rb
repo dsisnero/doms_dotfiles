@@ -11,7 +11,7 @@ end
 
 execute "install docling" do
   command <<~EOCMD
-    mise exec -- uv tool install docling
+    mise exec -- uv tool install --with docling  docling-slim
   EOCMD
   not_if %(which docling)
 end
