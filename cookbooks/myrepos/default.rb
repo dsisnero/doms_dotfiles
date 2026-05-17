@@ -47,6 +47,12 @@ myrepos = [
 ]
 myrepos.each { |name| get_repo "dsisnero/#{name}" }
 
+execute "clone crystal_forge to skills dir" do
+  command "git clone https://github.com/dsisnero/crystal_forge.git #{node[:home]}/.agents/skills/crystal_forge"
+  user node[:user]
+  not_if { File.directory?("#{node[:home]}/.agents/skills/crystal_forge") }
+end
+
 directory "~/.local/share/fonts" do
   owner node[:user]
   group node[:group]
