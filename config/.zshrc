@@ -506,14 +506,14 @@ alias t='tmux_start'    # Start or attach to tmux session
 alias tm='tmux_multissh'  # Multi-ssh with tmux
 #}}}
 
-# hook into atuin first for history system
-eval "$(atuin init zsh)"
-
 # Plugin system - load local plugin configurations
 # this include autosuggest
 if [ -f ${PERSONAL_ZSH_DIR}/.zshrc.plugin ]; then
   source ${PERSONAL_ZSH_DIR}/.zshrc.plugin  # Load personal plugin settings
 fi
+
+# hook into atuin after plugins so keybindings take precedence
+eval "$(atuin init zsh)"
 
 # Load utility scripts (commented out) {{{
  utils_dir=~/repos/github.com/dsisnero/doms_dotfiles/config/zsh/zsh-utils
