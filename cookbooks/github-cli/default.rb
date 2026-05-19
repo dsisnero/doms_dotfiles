@@ -34,12 +34,9 @@ unless rasppi?
   end
 end
 
-# Authenticate with GitHub CLI
-execute "gh_auth_login" do
-  user node[:user]
-  command "mise exec -- gh auth login --git-protocol ssh --hostname github.com"
-  not_if { run_command("mise exec -- gh auth status").stdout =~ /Logged in to github.com/ }
-end
+# Authentication must be done interactively by the user:
+#   gh auth login --git-protocol ssh --hostname github.com
+MItamae.logger.info "Skipping gh auth login — authenticate manually with: gh auth login --git-protocol ssh --hostname github.com"
 
 execute "gh_request_ssh_authoritation" do
   user node[:user]
