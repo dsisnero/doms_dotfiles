@@ -21,7 +21,7 @@ if rasppi?
         && apt install gh -y
     EOH
     user "root"
-    not_if { run_command("gh version", error: false).exit_status == 0 }
+    not_if "which gh"
   end
 end
 
@@ -30,16 +30,15 @@ unless rasppi?
   execute "install github-cli" do
     user node[:user]
     command "mise use -g gh@#{node[:github_cli][:version]}"
-    not_if { run_command("mise exec -- gh version", error: false).exit_status == 0 }
+    not_if "mise exec -- which gh"
   end
 end
 
-# Authenticate with GitHub CLI (must be done manually - it's interactive)
-unless node[:platform] == "windows"
-  result = run_command("mise exec -- gh auth status", error: false)
-  if result.exit_status != 0 || result.stdout !~ /Logged in to github.com/
-    MItamae.logger.info "Run 'gh auth login --git-protocol ssh --hostname github.com' to authenticate with GitHub"
-  end
+# Authenticate with GitHub CLI
+execute "gh_auth_login" do
+  user node[:user]
+  command "mise exec -- gh auth login --git-protocol ssh --hostname github.com"
+  not_if { run_command("mise exec -- gh auth status").stdout =~ /Logged in to github.com/ }
 end
 
 execute "gh_request_ssh_authoritation" do
