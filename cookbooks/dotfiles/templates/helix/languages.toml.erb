@@ -5,6 +5,9 @@ deno = { command = "deno", args = ["lsp"] }
 emmet-ls = { command = "emmet-ls", args = ["--stdio"] }
 larimar = { command = "larimar" }
 
+[language-server.lattice]
+command = "lattice"
+
 [language-server.scls]
 command = "simple-completion-language-server"
 
@@ -191,7 +194,7 @@ file-types = ["cr"]
 roots = ["shard.yml", "shard.lock"]
 comment-token = "#"
 indent = { tab-width = 2, unit = "  " }
-language-servers = [ "larimar", "ameba-ls", "scls" ]
+language-servers = [ "lattice", "ameba-ls", "scls" ]
 formatter = { command = "crystal", args = ["tool", "format", "-"] }
 # formatter = { command = "ameba", args = ["--fix ${INPUT}"] }
 
