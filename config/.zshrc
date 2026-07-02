@@ -435,10 +435,6 @@ function va() {
 }
 alias v_restart="vagrant halt; vagrant up"  # Restart vagrant machine
 
-# Use local neofetch if available
-if [[ -f ~/repos/github.com/dylanaraps/neofetch/neofetch ]]; then
-  alias neofetch='~/repos/github.com/dylanaraps/neofetch/neofetch'
-fi
 ## Zsh Manual Utilities {{{
 ## ref) http://qiita.com/yuyuchu3333/items/67630d597c7700a51b95
 ## Search zshall manual pages for specific terms
@@ -514,12 +510,6 @@ fi
 
 # hook into atuin after plugins so keybindings take precedence
 eval "$(atuin init zsh)"
-
-# Load utility scripts (commented out) {{{
- utils_dir=~/repos/github.com/dsisnero/doms_dotfiles/config/zsh/zsh-utils
- source ~/repos/github.com/dsisnero/doms_dotfiles/config/zsh/zsh-utils/scripts/functions.zsh
- source_scripts_in_tree $utils_dir
-# }}}
 
 # Prompt configuration {{{
 # Enable color support for prompts
@@ -606,6 +596,4 @@ export PATH=~/.local/bin:$PATH  # Add local bin to PATH
 export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
 export EDITOR=hx                # Set Helix as default editor
 export OLLAMA_MODELS=/Volumes/extreme_ssd/ollama_models  # Ollama model storage location
-alias ollama_start='launchctl load ~/Library/LaunchAgents/com.ollama.serve.plist'
-alias ollama_stop='launchctl unload ~/Library/LaunchAgents/com.ollama.serve.plist'
 export MISE_SOPS_AGE_KEY_FILE="/Users/dominic/.config/mise/age.txt"
