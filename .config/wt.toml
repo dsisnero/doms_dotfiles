@@ -1,0 +1,5 @@
+# wktrees project hooks (team-wide, checked into git)
+
+# Trust the new worktree's mise.toml so `mise` doesn't error on first cd.
+[post-start]
+mise-trust = "mise trust"

@@ -1,0 +1,18 @@
+#compdef wktrees
+local -a step_subs
+step_subs=(commit diff squash rebase push for-each eval prune copy-ignored promote relocate tether statusline)
+_wktrees() {
+    _arguments \
+        '1:command:(list switch remove step merge hook config shell help)' \
+        '*::arg:->args'
+    case $state in
+        args)
+            case $words[1] in
+                step)
+                    _values 'step subcommand' $step_subs
+                    ;;
+            esac
+            ;;
+    esac
+}
+_wktrees
