@@ -28,7 +28,7 @@ mise "dust"
 mise "watchexec"
 mise "zoxide"
 mise "rclone"
-mise "atuin"
+include_cookbook "atuin"
 mise "mermaid" do
   backend "npm"
 end
