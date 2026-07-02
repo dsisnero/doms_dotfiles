@@ -139,6 +139,10 @@ mise "fastmod" do
   backend "cargo"
 end
 
+mise "hyperfine" do
+  backend "cargo"
+end
+
 include_cookbook "ruby" # git hookスクリプトで必要なので先にインストールする'
 include_cookbook "python"
 include_cookbook "yarn"
