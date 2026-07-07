@@ -1,6 +1,5 @@
 include_recipe "dependency.rb"
 
-dotfile_repos = node[:dotfile_repos]
 # docker_compose_version = '2.6.0'
 
 # home = node[:home]
@@ -58,5 +57,6 @@ service "docker" do
 end
 
 execute "update docker's zsh completions." do
-  command "curl -L https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker > #{dotfile_repos}/config/zsh/functions/completions/_docker"
+  command "mkdir -p #{node[:doms_dotfiles]}/config/zsh/functions/completions && curl -L https://raw.githubusercontent.com/docker/cli/master/contrib/completion/zsh/_docker > #{node[:doms_dotfiles]}/config/zsh/functions/completions/_docker"
+  not_if { File.exist?("#{node[:doms_dotfiles]}/config/zsh/functions/completions/_docker") }
 end
