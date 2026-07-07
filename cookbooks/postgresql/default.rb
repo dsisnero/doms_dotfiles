@@ -2,7 +2,7 @@ include_recipe "./dependency.rb"
 
 node.reverse_merge!({
   postgresql: {
-    version: "16",
+    version: "", # Empty = use metapackages to get latest. Set to "16" to pin.
     port: 5432,
     data_dir: "/var/lib/postgresql/data",
     user: "postgres" # passwords are handled via environment variables:
@@ -12,6 +12,8 @@ node.reverse_merge!({
 })
 
 version = node[:postgresql][:version]
+pg_suffix = version.empty? ? "" : "-#{version}"
+pg_suffix_at = version.empty? ? "" : "@#{version}"
 node[:postgresql][:port]
 data_dir = node[:postgresql][:data_dir]
 postgres_user = node[:postgresql][:user]
@@ -21,8 +23,8 @@ postgres_superuser_password = ENV["PG_PASSWORD"] || ""
 
 case node[:platform]
 when "debian", "ubuntu", "mint"
-  package "postgresql-#{version}"
-  package "postgresql-contrib-#{version}"
+  package "postgresql#{pg_suffix}"
+  package "postgresql-contrib#{pg_suffix}"
   package "libpq-dev"
 
   unless node[:is_wsl]
@@ -59,13 +61,13 @@ when "arch"
     end
   end
 when "osx", "darwin"
-  package "postgresql@#{version}"
+  package "postgresql#{pg_suffix_at}"
 
   # Determine paths for PostgreSQL binaries
-  pg_bin = if File.exist?("/opt/homebrew/opt/postgresql@#{version}/bin/psql")
-    "/opt/homebrew/opt/postgresql@#{version}/bin"
-  elsif File.exist?("/usr/local/opt/postgresql@#{version}/bin/psql")
-    "/usr/local/opt/postgresql@#{version}/bin"
+  pg_bin = if File.exist?("/opt/homebrew/opt/postgresql#{pg_suffix_at}/bin/psql")
+    "/opt/homebrew/opt/postgresql#{pg_suffix_at}/bin"
+  elsif File.exist?("/usr/local/opt/postgresql#{pg_suffix_at}/bin/psql")
+    "/usr/local/opt/postgresql#{pg_suffix_at}/bin"
   else
     "" # Fallback to hoping it's in PATH
   end
@@ -78,9 +80,9 @@ when "osx", "darwin"
     end
 
     execute "start and enable postgresql" do
-      command "#{brew_path} services start postgresql@#{version}"
+      command "#{brew_path} services start postgresql#{pg_suffix_at}"
       user node[:user]
-      not_if "#{brew_path} services list | grep postgresql@#{version} | grep -q started"
+      not_if "#{brew_path} services list | grep postgresql#{pg_suffix_at} | grep -q started"
     end
   end
 when "opensuse"
