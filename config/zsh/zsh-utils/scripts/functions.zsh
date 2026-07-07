@@ -5,13 +5,13 @@
 # Function: source_scripts_in_tree
 # Description: Recursively finds and sources all .zsh files in a directory tree,
 #              filtering out platform-specific files that don't match current OS
-# Parameters: 
+# Parameters:
 #   $1 - Root directory to search for .zsh scripts
 source_scripts_in_tree()
 {
   local script_root=${1}
   # Find all .zsh files recursively in the script root directory
-  local utilities=($(find -L ${script_root} -type f -name "*.zsh"))
+  local utilities=($(find -L ${script_root} -type f -name "*.zsh" ! -name "._*"))
 
   # Platform-specific file suffix definitions
   local osx_suffix=_osx.zsh
@@ -34,10 +34,10 @@ source_scripts_in_tree()
       utilities=($(for ut in ${utilities}; echo ${ut}|grep -v $osx_suffix|grep -v $linux_suffix))
       ;;
   esac
-  
+
   # Export the filtered utilities array (optional - for debugging)
   export utilities
-  
+
   # Source each filtered utility script
   for utility in ${utilities}; do
     source ${utility}

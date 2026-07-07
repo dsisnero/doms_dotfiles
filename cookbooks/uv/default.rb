@@ -2,6 +2,13 @@ include_cookbook "mise"
 
 mise "uv"
 
+completions_dir = "#{node[:doms_dotfiles]}/config/zsh/functions/completions"
+
+execute "generate uv zsh completions" do
+  command "uv generate-shell-completion zsh > #{completions_dir}/_uv"
+  not_if "test -f #{completions_dir}/_uv"
+end
+
 execute "install aider" do
   command <<~EOCMD
     mise exec -- uv tool install --force --python python3.12 aider-chat

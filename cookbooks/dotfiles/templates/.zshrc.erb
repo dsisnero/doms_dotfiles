@@ -8,12 +8,26 @@ fi
 source <%= node[:doms_dotfiles] %>/config/.zshrc
 <% if node[:platform] == 'osx' or node[:platform] == 'darwin' -%>
 source <%= node[:doms_dotfiles] %>/config/zsh/.zshrc_osx
+
+# macOS-only ollama launchctl aliases
+alias ollama_start='launchctl load ~/Library/LaunchAgents/com.ollama.serve.plist'
+alias ollama_stop='launchctl unload ~/Library/LaunchAgents/com.ollama.serve.plist'
 <% else -%>
 source <%= node[:doms_dotfiles] %>/config/zsh/.zshrc_unix
   <%- if node[:is_wsl] -%>
 source <%= node[:doms_dotfiles] %>/config/zsh/.zshrc_wsl
   <%- end -%>
 <% end -%>
+
+# Use local neofetch if available
+if [[ -f <%= node[:repos] %>/github.com/dylanaraps/neofetch/neofetch ]]; then
+  alias neofetch='<%= node[:repos] %>/github.com/dylanaraps/neofetch/neofetch'
+fi
+
+# Load utility scripts
+utils_dir=<%= node[:doms_dotfiles] %>/config/zsh/zsh-utils
+source <%= node[:doms_dotfiles] %>/config/zsh/zsh-utils/scripts/functions.zsh
+source_scripts_in_tree $utils_dir
 
 <%- if node[:is_wsl] -%>
 alias explorer='/mnt/c/Windows/explorer.exe'
@@ -41,4 +55,3 @@ if (which zprof > /dev/null 2>&1) ;then
 fi
 
 alias dprint="dprint --config \"<%= node[:config_home] %>/dprint/config.json\""
-eval "$(atuin init zsh)"

@@ -1,6 +1,7 @@
 # ignore file type
 *~
 .DS_Store
+._*
 bin/mitamae
 TAGS
 .spacemacs.env

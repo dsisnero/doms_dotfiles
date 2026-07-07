@@ -84,6 +84,18 @@ template "#{home}/.zshrc" do
   group group
 end
 
+# Generate wktrees zsh shell integration (cd/exec directives), auto-sourced via zsh-utils
+execute "generate wktrees zsh shell integration" do
+  command "wktrees shell init zsh > #{doms_dotfiles}/config/zsh/zsh-utils/100_tools/145_wktrees.zsh"
+  only_if "command -v wktrees >/dev/null 2>&1"
+end
+
+# Generate wktrees zsh completions into fpath (mitamae-managed, like atuin)
+execute "generate wktrees zsh completions" do
+  command "wktrees shell completions zsh > #{doms_dotfiles}/config/zsh/functions/completions/_wktrees"
+  only_if "command -v wktrees >/dev/null 2>&1"
+end
+
 template "#{home}/.zshenv" do
   source "templates/.zshenv.erb"
   owner user
