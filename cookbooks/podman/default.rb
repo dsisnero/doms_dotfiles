@@ -1,12 +1,15 @@
 # Install podman container runtime
 include_recipe "dependency.rb"
+include_cookbook "mise"
 
 case node[:platform]
 
 when "debian", "ubuntu", "mint", "pop"
   package "podman"
   package "podman-compose"
-  package "podman-tui"
+  mise "podman-tui" do
+    backend "cargo"
+  end
 
 when "osx", "darwin"
   package "podman"
@@ -18,8 +21,9 @@ when "osx", "darwin"
   # Or install podman-desktop cask for GUI management
 
 when "arch"
-  # Arch Linux users can install from community repo
-  log "Podman for Arch Linux not implemented in this cookbook"
+  package "podman"
+  package "podman-compose"
+  package "podman-tui"
 
 when "windows"
   # Windows installation would require WSL2 or native Windows version
