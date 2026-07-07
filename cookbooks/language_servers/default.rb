@@ -41,7 +41,6 @@ mise "marksman"
 mise "dprint"
 mise "taplo"
 
-mydir "#{config_home}/rumdl"
 dotfile "rumdl"
 
 mise "rumdl" do

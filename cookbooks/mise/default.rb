@@ -66,8 +66,8 @@ mise "sops"
 mise "age"
 mise "slsa-verifier"
 MItamae.logger.info("zshrc_config: #{zshrc_config}")
-update_config(zshrc_config, %(export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt"), owner: user_, group: node[:group])
-update_config("#{home_}/.bashrc", %(export MISE_SOPS_AGE_KEY_FILE="#{config_home}/mise/age.txt"), owner: user_, group: node[:group])
+update_config(zshrc_config, %(export MISE_SOPS_AGE_KEY_FILE="$HOME/.config/mise/age.txt"), owner: user_, group: node[:group])
+update_config("#{home_}/.bashrc", %(export MISE_SOPS_AGE_KEY_FILE="$HOME/.config/mise/age.txt"), owner: user_, group: node[:group])
 
 directory "/tmp/mitamae-#{user_}" do
   action :delete
