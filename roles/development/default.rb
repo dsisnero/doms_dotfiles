@@ -23,3 +23,7 @@ include_cookbook "vscode"
 include_cookbook "myrepos"
 include_cookbook "language_servers"
 include_cookbook "swi-prolog"
+
+mise "worktrunk" do
+  backend "cargo"
+end
