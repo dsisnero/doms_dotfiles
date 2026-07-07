@@ -2,7 +2,7 @@ include_recipe "./dependency.rb"
 
 node.reverse_merge!({
   postgresql: {
-    version: "15",
+    version: "16",
     port: 5432,
     data_dir: "/var/lib/postgresql/data",
     user: "postgres" # passwords are handled via environment variables:
