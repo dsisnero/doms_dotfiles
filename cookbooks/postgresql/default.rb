@@ -139,6 +139,11 @@ else
       command %(psql -c "CREATE USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
       not_if %(psql -c "du" | grep -q #{node[:user]})
     end
+
+    execute "update postgres user password" do
+      user postgres_user
+      command %(psql -c "ALTER USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
+    end
   end
 
   execute "create database for user" do
