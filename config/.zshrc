@@ -593,7 +593,11 @@ alias tenki='curl -4 http://wttr.in/kanagawa'
 
 # Environment variables
 export PATH=~/.local/bin:$PATH  # Add local bin to PATH
-export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+if [[ $OSTYPE == darwin* ]]; then
+  export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+fi
 export EDITOR=hx                # Set Helix as default editor
-export OLLAMA_MODELS=/Volumes/extreme_ssd/ollama_models  # Ollama model storage location
-export MISE_SOPS_AGE_KEY_FILE="/Users/dominic/.config/mise/age.txt"
+if [[ $OSTYPE == darwin* ]] && [[ -d /Volumes/extreme_ssd/ollama_models ]]; then
+  export OLLAMA_MODELS=/Volumes/extreme_ssd/ollama_models
+fi
+export MISE_SOPS_AGE_KEY_FILE="$HOME/.config/mise/age.txt"

@@ -4,7 +4,7 @@
 
 # Set up zinit plugin manager
 plugin_manager_name=zdharma-continuum/zinit
-ZINIT_HOME=/Volumes/extreme_ssd/repos/github.com/zdharma-continuum/zinit
+ZINIT_HOME=$HOME/repos/github.com/zdharma-continuum/zinit
 
 # Automatically clone zinit if not already present
 if [ ! -d "$ZINIT_HOME" ]; then
