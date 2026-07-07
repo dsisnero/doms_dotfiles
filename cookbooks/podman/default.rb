@@ -1,14 +1,34 @@
 # Install podman container runtime
 include_recipe "dependency.rb"
-include_cookbook "mise"
+
+user = node[:user]
+home = node[:home]
+local_bin = "#{home}/.local/bin"
 
 case node[:platform]
 
 when "debian", "ubuntu", "mint", "pop"
   package "podman"
   package "podman-compose"
-  mise "podman-tui" do
-    backend "cargo"
+
+  version = github_latest_version("containers/podman-tui")
+  release_url = "https://github.com/containers/podman-tui/releases/download/v#{version}/podman-tui-release-linux_amd64.zip"
+  zip_path = "#{node[:cache_home]}/podman-tui-#{version}.zip"
+  extract_dir = "#{node[:cache_home]}/podman-tui-extract"
+
+  execute "download podman-tui" do
+    user user
+    command <<~EOCMD
+      mkdir -p #{extract_dir}
+      for i in {1..5}; do
+        curl -fL -o #{zip_path} #{release_url} && break || sleep 2
+      done
+      unzip -o #{zip_path} -d #{extract_dir}
+      cp #{extract_dir}/podman-tui #{local_bin}/podman-tui
+      chmod +x #{local_bin}/podman-tui
+      rm -rf #{zip_path} #{extract_dir}
+    EOCMD
+    not_if { File.exist?("#{local_bin}/podman-tui") }
   end
 
 when "osx", "darwin"
