@@ -321,20 +321,12 @@ when "debian", "ubuntu", "mint", "pop"
     mode "755"
   end
 
-  # Get best available package (prefers .deb if available at same version)
-  best_pkg = rpi_imager_best_package_info
-  latest_version = best_pkg ? best_pkg[:version] : nil
-  pkg_type = best_pkg ? best_pkg[:type] : nil
-  installed_version = rpi_imager_installed_version
-
-  MItamae.logger.info "RPi Imager installed version: #{installed_version}"
-  MItamae.logger.info "RPi Imager latest version: #{latest_version} (type: #{pkg_type})"
-
-  # Check if .deb is currently installed
-  deb_installed = run_command("dpkg -l | grep -i '^ii.*rpi-imager'", error: false).success?
-  # Check if AppImage is currently installed
   appimage_path = File.join(local_bin, "rpi-imager")
   appimage_installed = File.exist?(appimage_path)
+  deb_installed = run_command("dpkg -l | grep -i '^ii.*rpi-imager'", error: false).success?
+
+  installed_version = rpi_imager_installed_version
+  MItamae.logger.info "RPi Imager installed version: #{installed_version}"
 
   # Determine installed type
   installed_type = if deb_installed
@@ -343,20 +335,21 @@ when "debian", "ubuntu", "mint", "pop"
     "AppImage"
   end
 
-  needs_update = if latest_version.nil?
-    # If we can't determine latest version, check if any version is installed
-    !deb_installed && !appimage_installed
+  # Skip network check if already installed — avoids hitting raspberrypi.com every run
+  if installed_version.nil?
+    # Not installed: fetch latest and install
+    best_pkg = rpi_imager_best_package_info
+    latest_version = best_pkg ? best_pkg[:version] : nil
+    pkg_type = best_pkg ? best_pkg[:type] : nil
+    needs_download = latest_version && best_pkg
+    MItamae.logger.info "RPi Imager latest version: #{latest_version} (type: #{pkg_type})"
   else
-    # Update if:
-    # 1. No version installed
-    # 2. Installed version is older
-    # 3. Installed type doesn't match preferred type (even if same version)
-    installed_version.nil? ||
-      version_less_than?(installed_version, latest_version) ||
-      (installed_version == latest_version && installed_type != pkg_type)
+    MItamae.logger.info "RPi Imager already installed, skipping latest version check"
+    latest_version = nil
+    needs_download = false
   end
 
-  if needs_update && best_pkg
+  if needs_download && best_pkg
     download_url = "https://downloads.raspberrypi.com/imager/#{best_pkg[:filename]}"
 
     case pkg_type
@@ -364,20 +357,16 @@ when "debian", "ubuntu", "mint", "pop"
       download_path = "#{cache_dir}/rpi-imager-#{latest_version}.deb"
       MItamae.logger.info "Downloading and installing RPi Imager .deb"
 
-      # Use a single execute block to handle download and installation
       execute "download and install rpi-imager deb" do
         command <<-EOS
           set -e
-          # Download the .deb package
           curl -s -L -o "#{download_path}" "#{download_url}"
-          # Install it
           apt install -y "#{download_path}"
         EOS
         not_if "dpkg -l | grep -i '^ii.*rpi-imager' | grep -q #{latest_version}"
         user "root"
       end
 
-      # Remove AppImage if present (since we're installing .deb)
       execute "remove AppImage when installing deb" do
         command "rm -f #{appimage_path}"
         only_if "test -f #{appimage_path}"
@@ -388,54 +377,37 @@ when "debian", "ubuntu", "mint", "pop"
       download_path = "#{cache_dir}/rpi-imager-#{latest_version}.AppImage"
       MItamae.logger.info "Downloading and installing RPi Imager AppImage to #{appimage_path}"
 
-      # Use a single execute block to handle download and installation
-      # This avoids notification chain issues
       execute "download and install rpi-imager appimage" do
         command <<-EOS
           set -e
-          # Download the AppImage
           curl -s -L -o "#{download_path}" "#{download_url}"
-          # Make it executable
           chmod +x "#{download_path}"
-          # Move to user bin directory
           mv -f "#{download_path}" "#{appimage_path}"
         EOS
         not_if "test -f #{appimage_path} && #{appimage_path} --version 2>/dev/null | grep -q v#{latest_version}"
         user user
       end
 
-      # Remove .deb package if present (since we're installing AppImage)
-      package "rpi-imager" do
-        action :remove
+      execute "remove old deb rpi-imager" do
+        command "apt remove -y rpi-imager-amd64 rpi-imager 2>/dev/null || true"
         only_if "dpkg -l | grep -i '^ii.*rpi-imager'"
-      end
-    end
-  else
-    # Ensure existing AppImage is executable if present
-    execute "ensure rpi-imager executable" do
-      command "chmod +x #{appimage_path}"
-      only_if "test -f #{appimage_path}"
-      user user
-    end
-
-    # Clean up conflicting installation types
-    if pkg_type == "deb" && appimage_installed
-      execute "remove AppImage when .deb is preferred" do
-        command "rm -f #{appimage_path}"
-        user user
-      end
-    elsif pkg_type == "AppImage" && deb_installed
-      package "rpi-imager" do
-        action :remove
+        user "root"
       end
     end
   end
 
-  # Remove old snap installation if present
+  # One-time cleanup: remove leftover snap if it exists
   execute "remove old snap rpi-imager" do
-    command "snap remove rpi-imager --purge"
-    only_if "snap list | grep -q rpi-imager"
+    command "snap remove rpi-imager --purge 2>/dev/null || true"
+    only_if "snap list rpi-imager 2>/dev/null"
     user "root"
+  end
+
+  # Ensure AppImage is executable (only when it's not already)
+  execute "ensure rpi-imager executable" do
+    command "chmod +x #{appimage_path}"
+    only_if "test -f #{appimage_path} && ! test -x #{appimage_path}"
+    user user
   end
 
 when "osx", "darwin"
