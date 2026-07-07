@@ -30,17 +30,11 @@ ERROR_LOG = File.join(log_dir, "ollama_error.log")
 
 mydir log_dir
 
-url = case node[:platform]
-when "debian", "ubuntu", "mint", "pop"
-  "https://ollama.com/download/ollama-linux-amd64.tgz"
-when "darwin"
-  "https://ollama.com/download/Ollama.dmg"
-end
 case node[:platform]
 when "debian", "ubuntu", "mint", "pop"
   user_var = node["user"]
-  url = "https://ollama.com/download/ollama-linux-amd64.tgz"
-  download_path = "/tmp/ollama-linux-amd64.tgz"
+  url = "https://github.com/ollama/ollama/releases/latest/download/ollama-linux-amd64.tar.zst"
+  download_path = "/tmp/ollama-linux-amd64.tar.zst"
   home = node["home"]
   local = "#{home}/.local"
   latest_version = github_latest_version("ollama/ollama")
@@ -63,7 +57,7 @@ when "debian", "ubuntu", "mint", "pop"
 
   execute "unzip ollama" do
     command <<~EOCMD
-      tar -C #{local} -xzf #{download_path}
+      tar --zstd -C #{local} -xf #{download_path}
     EOCMD
     user user_var
     action :nothing
@@ -126,7 +120,7 @@ when "darwin"
   # # to run headless with external model storage at login.
   # # Adds lifecycle controls (start/stop/restart) via launchctl.
 
-  OLLAMA_URL = "https://ollama.com/download/Ollama.dmg"
+  OLLAMA_URL = "https://github.com/ollama/ollama/releases/latest/download/Ollama.dmg"
   DMG_PATH = "/tmp/Ollama.dmg"
   VOLUME = "/Volumes/Ollama"
   APP_NAME = "Ollama.app"
