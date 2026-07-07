@@ -63,3 +63,5 @@ execute "locale-gen en_US.UTF-8"
 #     EOL
 #   end
 # end
+
+include_role "desktop"
