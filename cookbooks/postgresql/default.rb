@@ -137,7 +137,7 @@ else
     execute "create postgres user" do
       user postgres_user
       command %(psql -c "CREATE USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
-      not_if %(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='#{node[:user]}'" | grep -q 1)
+      not_if %(psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='#{node[:user]}'" | grep -q 1)
     end
 
     execute "update postgres user password" do
@@ -149,14 +149,14 @@ else
   execute "create database for user" do
     user postgres_user
     command %(createdb #{node[:user]})
-    not_if %(sudo -u postgres psql -l | grep -q #{node[:user]})
+    not_if %(psql -l | grep -q #{node[:user]})
   end
 
   # Grant database creation privileges to user
   execute "grant database creation privileges" do
     user postgres_user
     command %(psql -c "ALTER USER #{node[:user]} CREATEDB;")
-    not_if %(sudo -u postgres psql -tAc "SELECT rolcreatedb FROM pg_roles WHERE rolname='#{node[:user]}'" | grep -q t)
+    not_if %(psql -tAc "SELECT rolcreatedb FROM pg_roles WHERE rolname='#{node[:user]}'" | grep -q t)
   end
 
   # Grant full privileges on user's own database
