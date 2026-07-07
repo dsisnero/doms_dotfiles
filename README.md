@@ -171,12 +171,55 @@ When writing system configuration files:
 
 ## Role System
 
+### Role Chain Architecture
+
+Roles layer onto each other. Platform roles chain into functional roles:
+
+```
+darwin → base → desktop
+ubuntu → base → desktop          ← development, media, etc. stack on top
+debian → base → [minimal]        ← minimal only on Raspberry Pi
+arch   → base
+redhat → base
+```
+
+Functional roles (via `ROLE=...` or hostname):
+
+```
+any-platform-chain → development | media | minimal | home-assistant
+```
+
+### Running with a Role
+
+```bash
+# Run full deployment with development role
+./bin/deploy --role development
+
+# With debug output
+./bin/deploy --role development --debug
+
+# Set hostname and role together
+./bin/deploy --role development --host pi-dev
+
+# Run specific cookbook with role context
+./bin/deploy --role development swi-prolog
+
+# Via environment variable directly
+ROLE=development ./bin/deploy
+```
+
 ### Available Roles
 
-- **development**: Development tools and environments
-- **media**: Media center packages (Plex, Jellyfin, etc.)
-- **minimal**: Minimal system setup
-- **home-assistant**: Home Assistant automation platform
+| Role | Purpose | Key Cookbooks |
+|---|---|---|
+| `development` | Dev tools and services | docker, postgresql, terraform, aws-cli, ollama, ngrok, clang, llvm, zig, swi-prolog |
+| `media` | Media center | plex, jellyfin |
+| `minimal` | Barebones Raspberry Pi | dotfiles, mise, python, ruby, node |
+| `home-assistant` | Home automation | home-assistant server |
+
+> **Note:** The `development` role requires `PGUSER_PASSWORD` and
+> `MYSQL_ROOT_PASSWORD` environment variables for PostgreSQL and MySQL setup.
+> Export them before running: `export PGUSER_PASSWORD='yourpassword'`
 
 ### Role Detection Priority
 
