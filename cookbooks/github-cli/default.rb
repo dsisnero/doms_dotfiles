@@ -34,23 +34,32 @@ unless rasppi?
   end
 end
 
+# Determine gh command prefix (mise-managed or system)
+gh_cmd = rasppi? ? "gh" : "mise exec -- gh"
+
 # Authentication must be done interactively by the user:
 #   gh auth login --git-protocol ssh --hostname github.com
 MItamae.logger.info "Skipping gh auth login — authenticate manually with: gh auth login --git-protocol ssh --hostname github.com"
 
 execute "gh_request_ssh_authoritation" do
   user node[:user]
-  command "mise exec -- gh auth refresh -h github.com -s admin:public_key"
+  command "#{gh_cmd} auth refresh -h github.com -s admin:public_key"
   only_if {
-    result = run_command("mise exec -- gh ssh-key list", error: false)
+    result = run_command("#{gh_cmd} ssh-key list", error: false)
     result.exit_status != 0 && result.stderr =~ /This API operation needs the "admin:public_key" scope/
   }
 end
 execute "gh_request_ssh_public_key" do
   user node[:user]
-  command "mise exec -- gh auth refresh -h github.com -s admin:ssh_signing_key"
+  command "#{gh_cmd} auth refresh -h github.com -s admin:ssh_signing_key"
   only_if {
-    result = run_command("mise exec -- gh ssh-key list", error: false)
+    result = run_command("#{gh_cmd} ssh-key list", error: false)
     result.exit_status != 0 && result.stderr =~ /To request it, run:  gh auth refresh -h github.com -s admin:ssh_signing_key/
   }
+end
+
+execute "setup git credentials with gh" do
+  user node[:user]
+  command "#{gh_cmd} auth setup-git"
+  only_if "#{gh_cmd} auth status 2>/dev/null | grep -q 'Logged in'"
 end
