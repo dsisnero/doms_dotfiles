@@ -41,18 +41,20 @@ when "debian", "ubuntu", "mint", "pop"
   installed_version = ollama_installed_version
   MItamae.logger.info "Ollama installed version: #{installed_version}"
   MItamae.logger.info "Latest version: #{latest_version}"
-  http_request download_path do
-    url url
-    path download_path
+
+  needs_update = if latest_version.nil?
+    !run_command("#{sudo(user_var)} which ollama", error: false).success?
+  else
+    installed_version.nil? || version_less_than?(installed_version, latest_version)
+  end
+
+  package "aria2"
+
+  execute "download ollama" do
+    command "aria2c #{url} -d /tmp/ -o ollama-linux-amd64.tar.zst"
     user user_var
-    notifies :run, "execute[unzip ollama]"
-    not_if do
-      if latest_version.nil?
-        run_command("#{sudo(user_var)} which ollama", error: false).success?
-      else
-        installed_version && !version_less_than?(installed_version, latest_version)
-      end
-    end
+    notifies :run, "execute[unzip ollama]", :immediately
+    only_if { needs_update }
   end
 
   execute "unzip ollama" do
