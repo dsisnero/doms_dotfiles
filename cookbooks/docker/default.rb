@@ -38,7 +38,10 @@ when "fedora", "redhat", "amazon"
   # https://matsuand.github.io/docs.docker.jp.onthefly/engine/security/rootless/
 
 when "osx", "darwin"
-  # not implemented
+  execute "install Docker Desktop" do
+    command "brew install --cask docker"
+    not_if "brew list --cask docker >/dev/null 2>&1 || test -d /Applications/Docker.app"
+  end
 when "arch"
   # yay 'docker'
   # https://matsuand.github.io/docs.docker.jp.onthefly/engine/security/rootless/
@@ -50,10 +53,17 @@ else
   # not implemented
 end
 
-execute "usermod -G #{group},docker #{user}"
+case node[:platform]
+when "debian", "ubuntu", "mint", "fedora", "redhat", "amazon", "arch", "opensuse"
+  execute "usermod -G #{group},docker #{user}" do
+    not_if "id -nG #{user} | tr ' ' '\\n' | grep -qx docker"
+  end
 
-service "docker" do
-  action %i[enable start]
+  service "docker" do
+    action %i[enable start]
+  end
+else
+  MItamae.logger.info "Skipping docker group/service setup on #{node[:platform]} (use Docker Desktop)"
 end
 
 execute "update docker's zsh completions." do
