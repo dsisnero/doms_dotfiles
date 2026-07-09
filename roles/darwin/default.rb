@@ -26,8 +26,7 @@ include_cookbook "llama.cpp"
 
 package "vlc"
 package "virtualbox"
-package "vagrant"
-include_cookbook "java"
+# package "vagrant" # handled by cookbooks/vagrant
 package "google-drive"
 package "logi-options+"
 package "mas"

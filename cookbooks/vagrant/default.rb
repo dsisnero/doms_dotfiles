@@ -23,6 +23,12 @@ when "debian", "mint", "ubuntu"
 when "fedora", "redhat", "amazon"
 
 when "osx", "darwin"
+  execute "trust hashicorp tap" do
+    command "brew trust hashicorp/tap"
+    not_if "brew tap --list | grep -q hashicorp/tap"
+  end
+
+  package "hashicorp/tap/vagrant"
 
 when "arch"
   yay "vagrant"
