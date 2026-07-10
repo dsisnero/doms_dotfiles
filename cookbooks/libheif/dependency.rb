@@ -1,0 +1,18 @@
+case node[:platform]
+when "debian", "ubuntu", "mint", "pop"
+  package "cmake"
+  package "build-essential"
+  package "pkg-config"
+  package "libde265-dev"
+  package "libx265-dev"
+  package "libjpeg-dev"
+  package "libpng-dev"
+  package "libwebp-dev"
+  package "libaom-dev"
+  package "libdav1d-dev"
+  package "libsharpyuv-dev"
+when "fedora", "redhat", "amazon"
+when "arch"
+when "osx", "darwin"
+when "opensuse"
+end
