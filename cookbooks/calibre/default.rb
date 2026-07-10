@@ -78,7 +78,26 @@ when "osx", "darwin"
   end
 
 when "debian", "ubuntu", "mint", "pop"
-  package "calibre"
+  # Remove apt package if present (interferes with binary install)
+  execute "remove apt calibre" do
+    command "apt-get remove -y calibre calibre-bin 2>/dev/null; apt-get autoremove -y 2>/dev/null; true"
+    only_if "dpkg -l calibre 2>/dev/null | grep -q '^ii'"
+  end
+
+  calibre_installed = calibre_installed_version
+  calibre_latest = calibre_latest_version
+
+  if calibre_latest.nil?
+    MItamae.logger.warn "Failed to fetch latest Calibre version, skipping binary install"
+  else
+    MItamae.logger.info "Calibre: installed=#{calibre_installed || 'none'}, latest=#{calibre_latest}"
+  end
+
+  execute "install calibre" do
+    command "wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sh /dev/stdin"
+    user "root"
+    only_if { calibre_latest && (calibre_installed.nil? || version_less_than?(calibre_installed, calibre_latest)) }
+  end
 
   # Download DeDRM plugin
   dedrm_url = "https://github.com/#{dedrm_repo}/releases/download/#{dedrm_tag}/DeDRM_tools_#{dedrm_version}.zip"

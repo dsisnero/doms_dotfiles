@@ -461,6 +461,24 @@ module CalibreHelpers
     return true if installed_version.nil? || latest_version.nil?
     version_less_than?(installed_version, latest_version)
   end
+
+  def calibre_installed_version
+    result = run_command('calibre --version 2>/dev/null', error: false)
+    if result.success?
+      match = result.stdout.match(/calibre \(calibre ([\d.]+)\)/i)
+      return match[1] if match
+    end
+    nil
+  end
+
+  def calibre_latest_version
+    result = run_command('curl -sL https://calibre-ebook.com/download_linux', error: false)
+    if result.success?
+      match = result.stdout.match(/latest release of calibre is ([\d.]+)/)
+      return match[1] if match
+    end
+    nil
+  end
 end
 
 #
