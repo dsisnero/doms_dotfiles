@@ -511,6 +511,9 @@ fi
 # hook into atuin after plugins so keybindings take precedence
 eval "$(atuin init zsh)"
 
+# wktrees shell integration for directory switching on wt switch
+eval "$(wt config shell init zsh 2>/dev/null)"
+
 # Prompt configuration {{{
 # Enable color support for prompts
 autoload -Uz colors && colors

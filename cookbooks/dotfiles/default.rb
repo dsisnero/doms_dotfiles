@@ -84,16 +84,20 @@ template "#{home}/.zshrc" do
   group group
 end
 
-# Generate wktrees zsh shell integration (cd/exec directives), auto-sourced via zsh-utils
-execute "generate wktrees zsh shell integration" do
-  command "wktrees shell init zsh > #{doms_dotfiles}/config/zsh/zsh-utils/100_tools/145_wktrees.zsh"
-  only_if "command -v wktrees >/dev/null 2>&1"
+# Generate wktrees/trunk zsh shell integration file
+shell_int_file = "#{doms_dotfiles}/config/zsh/zsh-utils/100_tools/145_wktrees.zsh"
+execute "generate wt zsh shell integration" do
+  command "wt config shell init zsh > #{shell_int_file}"
+  only_if "command -v wt >/dev/null 2>&1"
+  not_if "test -f #{shell_int_file}"
 end
 
-# Generate wktrees zsh completions into fpath (mitamae-managed, like atuin)
-execute "generate wktrees zsh completions" do
-  command "wktrees shell completions zsh > #{doms_dotfiles}/config/zsh/functions/completions/_wktrees"
-  only_if "command -v wktrees >/dev/null 2>&1"
+# Generate wt zsh completions into fpath (mitamae-managed, like atuin)
+wt_comp_file = "#{doms_dotfiles}/config/zsh/functions/completions/_wt"
+execute "generate wt zsh completions" do
+  command "COMPLETE=zsh wt > #{wt_comp_file}"
+  only_if "command -v wt >/dev/null 2>&1"
+  not_if "test -f #{wt_comp_file}"
 end
 
 template "#{home}/.zshenv" do
