@@ -1,0 +1,24 @@
+# Atuin configuration managed by MItamae.
+# See https://docs.atuin.sh/reference/config/ for full reference.
+
+# Sync frequency
+sync_frequency = "10m"
+
+# UI style: auto, full, or compact
+style = "auto"
+
+# Inline height (0 = full screen)
+inline_height = 0
+
+# Shell up-key binding inline height
+inline_height_shell_up_key_binding = 0
+
+# Network timeout
+network_timeout = 5
+
+# Allow enter to immediately execute selected command
+enter_accept = true
+
+[sync]
+# Enable sync v2 records
+records = true
