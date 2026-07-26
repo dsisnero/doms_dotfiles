@@ -4,10 +4,10 @@ define :dotfile, source: nil, user: nil do
   src = params[:source].nil? ? File.join(node[:doms_dotfiles], "config", params[:name]) : params[:source]
   user = params[:user].nil? ? node[:user] : params[:user]
 
-  execute "remove existing directory before symlink #{dst}" do
+  execute "remove existing file/directory before symlink #{dst}" do
     command "rm -rf #{dst}"
     user user
-    only_if { File.exist?(dst) && !File.symlink?(dst) && File.directory?(dst) }
+    only_if { File.exist?(dst) && !File.symlink?(dst) }
   end
 
   link dst do
