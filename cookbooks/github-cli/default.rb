@@ -41,21 +41,24 @@ gh_cmd = rasppi? ? "gh" : "mise exec -- gh"
 #   gh auth login --git-protocol ssh --hostname github.com
 MItamae.logger.info "Skipping gh auth login — authenticate manually with: gh auth login --git-protocol ssh --hostname github.com"
 
-execute "gh_request_ssh_authoritation" do
-  user node[:user]
-  command "#{gh_cmd} auth refresh -h github.com -s admin:public_key"
+local_ruby_block "gh_request_ssh_authorisation" do
   only_if {
     result = run_command("#{gh_cmd} ssh-key list", error: false)
     result.exit_status != 0 && result.stderr =~ /This API operation needs the "admin:public_key" scope/
   }
+  block do
+    MItamae.logger.warn "gh is missing admin:public_key scope — run manually: #{gh_cmd} auth refresh -h github.com -s admin:public_key"
+  end
 end
-execute "gh_request_ssh_public_key" do
-  user node[:user]
-  command "#{gh_cmd} auth refresh -h github.com -s admin:ssh_signing_key"
+
+local_ruby_block "gh_request_ssh_public_key" do
   only_if {
     result = run_command("#{gh_cmd} ssh-key list", error: false)
     result.exit_status != 0 && result.stderr =~ /To request it, run:  gh auth refresh -h github.com -s admin:ssh_signing_key/
   }
+  block do
+    MItamae.logger.warn "gh is missing admin:ssh_signing_key scope — run manually: #{gh_cmd} auth refresh -h github.com -s admin:ssh_signing_key"
+  end
 end
 
 execute "setup git credentials with gh" do
