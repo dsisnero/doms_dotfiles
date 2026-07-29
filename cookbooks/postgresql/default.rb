@@ -98,25 +98,29 @@ when "opensuse"
 end
 
 # Create user and database if not exists
-# Use PGUSER_PASSWORD for the application user
+# Use PGUSER_PASSWORD for the application user (optional if user already exists)
 pguser_password = ENV["PGUSER_PASSWORD"]
-
-unless pguser_password
-  raise "PGUSER_PASSWORD environment variable is required but not set"
-end
 
 case node[:platform]
 when "osx", "darwin"
   # On macOS with Homebrew, current user is already the superuser
   # Create user if not exists, set password, and ensure database exists
 
+  create_user_cmd = if pguser_password && !pguser_password.empty?
+    %(#{pg_bin}/psql -d postgres -c "CREATE USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
+  else
+    %(#{pg_bin}/psql -d postgres -c "CREATE USER #{node[:user]};")
+  end
+
   execute "create current user if not exists" do
-    command %(#{pg_bin}/psql -d postgres -c "CREATE USER #{node[:user]};")
+    command create_user_cmd
     not_if %(#{pg_bin}/psql -d postgres -c "\\du" | grep -q #{node[:user]})
   end
 
-  execute "set current user password" do
-    command %(#{pg_bin}/psql -d postgres -c "ALTER USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
+  if pguser_password && !pguser_password.empty?
+    execute "set current user password" do
+      command %(#{pg_bin}/psql -d postgres -c "ALTER USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
+    end
   end
 
   execute "create database for user" do
@@ -133,13 +137,19 @@ when "osx", "darwin"
   end
 else
   # Original logic for other platforms
-  if pguser_password && !pguser_password.empty?
-    execute "create postgres user" do
-      user postgres_user
-      command %(psql -c "CREATE USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
-      not_if %(psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='#{node[:user]}'" | grep -q 1)
-    end
+  create_user_cmd = if pguser_password && !pguser_password.empty?
+    %(psql -c "CREATE USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
+  else
+    %(psql -c "CREATE USER #{node[:user]};")
+  end
 
+  execute "create postgres user" do
+    user postgres_user
+    command create_user_cmd
+    not_if %(psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='#{node[:user]}'" | grep -q 1)
+  end
+
+  if pguser_password && !pguser_password.empty?
     execute "update postgres user password" do
       user postgres_user
       command %(psql -c "ALTER USER #{node[:user]} WITH PASSWORD '#{pguser_password}';")
