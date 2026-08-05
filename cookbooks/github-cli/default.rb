@@ -1,10 +1,11 @@
-include_cookbook "mise"
-
 node.reverse_merge!(
   github_cli: {
     version: "latest"
   }
 )
+
+darwin = node[:platform] == "darwin" || node[:platform] == "osx" || node[:platform] == "macos"
+
 if rasppi?
 
   # Fallback to manual installation if apt_repository resource not available
@@ -25,8 +26,12 @@ if rasppi?
   end
 end
 
-# Install GitHub CLI via mise
-unless rasppi?
+# Install GitHub CLI via mise (Linux, non-Raspberry Pi)
+if darwin
+  package "gh"
+elsif !rasppi?
+  include_cookbook "mise"
+
   execute "install github-cli" do
     user node[:user]
     command "mise use -g gh@#{node[:github_cli][:version]}"
@@ -35,7 +40,7 @@ unless rasppi?
 end
 
 # Determine gh command prefix (mise-managed or system)
-gh_cmd = rasppi? ? "gh" : "mise exec -- gh"
+gh_cmd = rasppi? || darwin ? "gh" : "mise exec -- gh"
 
 # Authentication must be done interactively by the user:
 #   gh auth login --git-protocol ssh --hostname github.com
