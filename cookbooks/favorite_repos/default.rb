@@ -1,13 +1,13 @@
 include_cookbook "dotfiles"
 include_cookbook "ghq"
 
-repos = %w[
-  bundai223/dotfiles
-  fujiwara/isucon11-f
-  itamae-kitchen/mitamae
-  AstroNvim/astrocommunity
+repos = [
+  "bundai223/dotfiles",
+  "fujiwara/isucon11-f",
+  "itamae-kitchen/mitamae",
+  "AstroNvim/astrocommunity",
   # llvm/llvm-project
-  crystal-ameba/ameba
+  "crystal-ameba/ameba",
 ]
 repos.each { |name| get_repo name.chomp }
 
