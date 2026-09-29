@@ -1,4 +1,4 @@
-define :llvm_binary, name: nil do
+define :llvm_binary, name: nil, source: nil do
   binary_name = params[:name]
   source_name = params[:source] || binary_name
   user_bin = node[:user_bin] || File.join(node[:home], ".local", "bin")

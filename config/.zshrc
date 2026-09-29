@@ -620,7 +620,11 @@ alias tenki='curl -4 http://wttr.in/kanagawa'
 # Environment variables
 export PATH=~/.local/bin:$PATH  # Add local bin to PATH
 if [[ $OSTYPE == darwin* ]]; then
-  export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+  llvm_bin="$(brew --prefix llvm 2>/dev/null)/bin"
+  if [[ -x "$llvm_bin/llvm-config" ]]; then
+    export PATH="$llvm_bin:$PATH"
+    export LLVM_CONFIG="$llvm_bin/llvm-config"
+  fi
 fi
 export EDITOR=hx                # Set Helix as default editor
 if [[ $OSTYPE == darwin* ]] && [[ -d /Volumes/extreme_ssd/ollama_models ]]; then
