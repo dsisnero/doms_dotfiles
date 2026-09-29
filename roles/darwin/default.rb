@@ -31,6 +31,7 @@ package "google-drive"
 package "logi-options+"
 package "mas"
 include_definition "mas"
+include_cookbook "xcode"
 
 # apps.each do |app|
 #   mas app[:name] do

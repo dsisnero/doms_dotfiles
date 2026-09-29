@@ -20,6 +20,13 @@ mas 'xcode' do
   not_if 'test -d /Applications/Xcode.app'
 end
 
+# 2b. Upgrade Xcode via App Store when a newer version is available
+execute 'upgrade_xcode_app' do
+  command 'mas upgrade 497799835'
+  user node[:user]
+  only_if "mas outdated 2>/dev/null | grep -q '^497799835 '"
+end
+
 # 3. Complete First-Launch Setup and Automatically Accept Licenses
 execute 'accept_xcode_licenses_and_components' do
   command <<~SHELL
