@@ -40,6 +40,9 @@ end
 mise "exa" do
   backend "cargo"
 end
+mise "krokiet" do
+  backend "cargo"
+end
 
 include_cookbook "dprint"
 include_cookbook "starship"
@@ -96,4 +99,6 @@ include_cookbook "direnv"
 include_cookbook "fonts"
 include_cookbook "favorite_repos"
 include_cookbook "calibre"
+include_cookbook "libreoffice"
+include_cookbook "handbrake"
 include_cookbook "podman"
