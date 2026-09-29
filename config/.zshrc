@@ -27,7 +27,16 @@
 export MISE_SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
 export SOPS_AGE_KEY_FILE=$HOME/.config/mise/age.txt
 eval "$(mise activate zsh)"
+
+# When activation state leaks in from a parent shell (e.g. a login shell spawned
+# from an already-activated one), `mise activate` skips adding its shims dir to
+# PATH. Use `mise exec` for tools needed later in this file (e.g. python) so they
+# resolve regardless of whether the shim dir made it onto PATH.
 export PATH=/usr/local/smlnj/bin:$PATH
+
+# site-packages of the active mise-managed python. Recomputed every shell so it
+# tracks whichever python version mise resolves; used to source powerline below.
+export PIP_SITE_LOCATION="$(mise exec -- python -c 'import site; print(site.getsitepackages()[0])' 2>/dev/null)"
 
 # Set filter command for interactive selection
 if [ -z "$FILTER_CMD" ]; then
@@ -508,8 +517,19 @@ if [ -f ${PERSONAL_ZSH_DIR}/.zshrc.plugin ]; then
   source ${PERSONAL_ZSH_DIR}/.zshrc.plugin  # Load personal plugin settings
 fi
 
-# hook into atuin after plugins so keybindings take precedence
-eval "$(atuin init zsh)"
+# hook into atuin after plugins so keybindings take precedence.
+# In login shells `mise activate` defers PATH setup to its own precmd hook, so
+# atuin is not resolvable yet at this point (and `mise exec` can fail on the
+# aqua backend). Initialize on the first prompt instead, once mise has run.
+_atuin_init() {
+  add-zsh-hook -d precmd _atuin_init
+  unset -f _atuin_init
+  if command -v atuin >/dev/null 2>&1; then
+    eval "$(atuin init zsh)"
+  fi
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _atuin_init
 
 # wktrees shell integration for directory switching on wt switch
 eval "$(wt config shell init zsh 2>/dev/null)"
@@ -519,9 +539,12 @@ eval "$(wt config shell init zsh 2>/dev/null)"
 autoload -Uz colors && colors
 
 # Powerline prompt setup
-# Dynamically find powerline installation and source its zsh bindings
-# export PIP_SITE_LOCATION=$(mise exec -- pip show -f powerline-status | grep Location | awk '{print $2}')
-source ${PIP_SITE_LOCATION}/powerline/bindings/zsh/powerline.zsh
+# PIP_SITE_LOCATION is computed above from the active python; source its zsh
+# bindings only if they're actually there.
+powerline_zsh="${PIP_SITE_LOCATION}/powerline/bindings/zsh/powerline.zsh"
+if [[ -n "$PIP_SITE_LOCATION" && -f "$powerline_zsh" ]]; then
+  source "$powerline_zsh"
+fi
 
 #}}}
 
