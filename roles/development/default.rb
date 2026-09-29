@@ -17,6 +17,7 @@ include_cookbook "hadolint"
 include_cookbook "ssh_server"
 include_cookbook "clang"
 include_cookbook "llvm"
+include_cookbook "lldb"
 include_cookbook "golang"
 include_cookbook "zig"
 include_cookbook "vscode"
@@ -26,6 +27,12 @@ include_cookbook "swi-prolog"
 include_cookbook "z3"
 include_cookbook "codex"
 
+package "azure-cli"
+
 mise "worktrunk" do
+  backend "cargo"
+end
+
+mise "gitgrip" do
   backend "cargo"
 end
