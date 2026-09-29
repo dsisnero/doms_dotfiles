@@ -2,6 +2,7 @@
 home = node[:home]
 config_home = node[:config_home]
 os = node[:os] || node[:platform]
+is_macos = %w[macos darwin osx].include?(node[:platform])
 
 # Common XDG paths
 git_config_dir = "#{config_home}/git"
@@ -189,23 +190,27 @@ unless os == "windows" && !wsl?
     )
   end
 
-  # Install ExFAT cleanup script (runs on post-checkout and post-merge)
-  template "#{git_hooks_dir}/cleanup-appledouble" do
-    source "templates/git/hooks/cleanup-appledouble.erb"
-    mode "755"
-    owner node[:user]
-    group node[:group]
-  end
+  # AppleDouble/ExFAT cleanup is macOS-only: the hook relies on diskutil and
+  # only ever fires on /Volumes exFAT mounts.
+  if is_macos
+    # Install ExFAT cleanup script (runs on post-checkout and post-merge)
+    template "#{git_hooks_dir}/cleanup-appledouble" do
+      source "templates/git/hooks/cleanup-appledouble.erb"
+      mode "755"
+      owner node[:user]
+      group node[:group]
+    end
 
-  # Create symlinks for post-checkout and post-merge hooks
-  link "#{git_hooks_dir}/post-checkout" do
-    to "#{git_hooks_dir}/cleanup-appledouble"
-    not_if { File.exist?("#{git_hooks_dir}/post-checkout") }
-  end
+    # Create symlinks for post-checkout and post-merge hooks
+    link "#{git_hooks_dir}/post-checkout" do
+      to "#{git_hooks_dir}/cleanup-appledouble"
+      not_if { File.exist?("#{git_hooks_dir}/post-checkout") }
+    end
 
-  link "#{git_hooks_dir}/post-merge" do
-    to "#{git_hooks_dir}/cleanup-appledouble"
-    not_if { File.exist?("#{git_hooks_dir}/post-merge") }
+    link "#{git_hooks_dir}/post-merge" do
+      to "#{git_hooks_dir}/cleanup-appledouble"
+      not_if { File.exist?("#{git_hooks_dir}/post-merge") }
+    end
   end
 
   # Configure global hooks path
