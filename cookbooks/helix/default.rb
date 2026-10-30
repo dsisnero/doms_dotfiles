@@ -87,36 +87,45 @@ hx_cmd = hx_candidates.find { |candidate| File.exist?(candidate) } || ""
 if hx_cmd.empty?
   MItamae.logger.warn "helix: hx not found in #{hx_candidates.inspect}, skipping grammar install"
 else
-  crystal_source_pinned = if crystal_rev.empty? || !File.directory?(crystal_source)
-    false
-  else
-    run_command("git -C #{crystal_source} rev-parse HEAD", error: false).stdout.strip == crystal_rev
+  # Guard blocks are evaluated at resource-run time, so they must do the checks
+  # themselves (and via lambdas, so `run_command` runs in recipe context). After
+  # `--grammar fetch` sees a rev mismatch it *deletes* and re-clones the grammar
+  # dir, so a stale `.so` is only detectable once fetch has finished.
+  crystal_source_pinned = lambda do
+    if crystal_rev.empty? || !File.directory?(crystal_source)
+      false
+    else
+      run_command("git -C #{crystal_source} rev-parse HEAD", error: false).stdout.strip == crystal_rev
+    end
   end
 
-  # mruby has no File.mtime, but File.stat(path).mtime works
-  crystal_lib_current = if File.exist?(crystal_lib) && File.exist?(crystal_parser)
-    File.stat(crystal_lib).mtime >= File.stat(crystal_parser).mtime
-  else
-    false
+  crystal_lib_current = lambda do
+    if File.exist?(crystal_lib) && File.exist?(crystal_parser)
+      # mruby has no File.mtime, but File.stat(path).mtime works
+      File.stat(crystal_lib).mtime >= File.stat(crystal_parser).mtime
+    else
+      false
+    end
   end
 
-  # fetch is all-or-nothing: it clones every grammar in the merged config, so
-  # it only runs when the pinned crystal rev is not checked out (first install
-  # or after a rev bump in the template).
+  # fetch is all-or-nothing (it re-clones every grammar in the merged config), so
+  # it only runs when the pinned crystal rev is not checked out: first install or
+  # a new rev committed in cookbooks/dotfiles/templates/helix/languages.toml.erb.
   execute "helix fetch grammars" do
     command "#{hx_cmd} --grammar fetch"
     user node[:user]
-    not_if { crystal_source_pinned }
+    not_if { crystal_source_pinned.call }
   end
 
   # build is incremental (helix compares parser.c/scanner.c mtimes) but still
-  # sweeps every grammar, so skip it when crystal's library is already newer
-  # than its sources.
+  # sweeps every grammar, so skip it when crystal's library is already newer than
+  # its sources. This runs after the fetch above, so a refreshed checkout
+  # recompiles.
   execute "helix build grammars" do
     command "#{hx_cmd} --grammar build"
     user node[:user]
     only_if { File.exist?(crystal_parser) }
-    not_if { crystal_lib_current }
+    not_if { crystal_lib_current.call }
   end
 end
 
