@@ -52,13 +52,35 @@ else
 end
 
 # --- grammars ---------------------------------------------------------------
-# `hx --grammar fetch|build` only installs what is declared under [[grammar]]
-# in the *merged* languages.toml (built-in defaults + the user file written by
-# cookbooks/dotfiles). Grammars are written to runtime_dirs().first(), which is
-# always <config>/helix/runtime, i.e. the link above -> the helix checkout.
-# Languages helix does not ship (crystal today) are declared by hand in
-# cookbooks/dotfiles/templates/helix/languages.toml.erb; without the fetch/build
-# below the parser is never installed.
+# Background, worth keeping in mind when touching this file:
+#
+# * https://docs.helix-editor.com/guides/adding_languages.html - supporting a
+#   language takes three separate pieces, not one:
+#     1. a [[language]] entry in languages.toml (file types, servers, formatter)
+#     2. a [[grammar]] entry (where the tree-sitter parser comes from)
+#     3. runtime/queries/<name>/ query files (highlights, indents, textobjects...)
+#   The guide also notes that after switching branches/revisions you must run
+#   `hx --grammar fetch` and `hx --grammar build`, and that queries are only
+#   found if HELIX_RUNTIME points at the runtime dir being developed.
+# * https://github.com/helix-editor/helix/discussions/11379 - answered by helix
+#   maintainer kirawi: fetching a grammar does *not* install its queries. "Yes,
+#   you have to copy over the queries over to
+#   ~/.config/helix/runtime/queries/<lang> and likely do some tinkering. Queries
+#   are supposed to be tailored to each editor so it's not desirable in most
+#   cases to use the queries in the grammar source folder." Whatever .scm files a
+#   fetched grammar repo ships are therefore ignored by helix.
+# * `hx --health <lang>` only reports whether the query files *exist*, it does
+#   not compile them. A broken query shows up as `helix_core::syntax [ERROR]
+#   Failed to compile highlights for '<lang>'` in the helix log
+#   (~/.cache/helix/helix.log here), so that is the way to verify edits.
+#
+# In practice: `--grammar fetch|build` only installs what is declared under
+# [[grammar]] in the *merged* languages.toml (built-in defaults + the user file
+# written by cookbooks/dotfiles), it only produces the parser, and it writes to
+# runtime_dirs().first() - always <config>/helix/runtime, i.e. the link above ->
+# the helix checkout. Queries are installed separately below (see "queries"), and
+# any language helix does not ship must be declared by hand in
+# cookbooks/dotfiles/templates/helix/languages.toml.erb.
 helix_languages = File.join(config_home, "helix", "languages.toml")
 grammar_root = File.join(config_home, "helix", "runtime", "grammars")
 dylib_ext = windows? ? "dll" : "so"
@@ -178,12 +200,10 @@ else
 end
 
 # --- queries ----------------------------------------------------------------
-# A grammar is only half of tree-sitter support: `--grammar fetch/build` produces
-# the parser (<name>.so) and nothing else. Helix resolves highlighting from
-# runtime/queries/<lang>/*.scm across its runtime dirs, and it never copies the
-# queries a grammar repo may ship (they are editor specific - see
-# https://github.com/helix-editor/helix/discussions/11379). So any language helix
-# does not ship itself needs its .scm files installed. Ours live in
+# The third piece from the header: a grammar plus its queries, or nothing
+# highlights. `--grammar fetch/build` produces the parser (<name>.so) and
+# nothing else, and helix ignores the .scm files a grammar repo may ship, so any
+# language helix does not ship needs its queries installed here. Ours live in
 # config/helix/queries/<lang> and are linked next to the parsers.
 queries_src_root = File.join(doms_dotfiles, "config", "helix", "queries")
 queries_dest_root = File.join(config_home, "helix", "runtime", "queries")
