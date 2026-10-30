@@ -56,24 +56,37 @@ end
 # in the *merged* languages.toml (built-in defaults + the user file written by
 # cookbooks/dotfiles). Grammars are written to runtime_dirs().first(), which is
 # always <config>/helix/runtime, i.e. the link above -> the helix checkout.
-# Crystal has no upstream grammar, so it is declared by hand in
+# Languages helix does not ship (crystal today) are declared by hand in
 # cookbooks/dotfiles/templates/helix/languages.toml.erb; without the fetch/build
-# below, `.cr` files silently lose highlighting on a fresh machine.
+# below the parser is never installed.
 helix_languages = File.join(config_home, "helix", "languages.toml")
 grammar_root = File.join(config_home, "helix", "runtime", "grammars")
-crystal_source = File.join(grammar_root, "sources", "crystal")
-crystal_parser = File.join(crystal_source, "src", "parser.c")
-crystal_lib = File.join(grammar_root, "crystal.#{windows? ? "dll" : "so"}")
+dylib_ext = windows? ? "dll" : "so"
 
-# pinned rev of the crystal grammar as rendered into languages.toml
-crystal_rev = ""
+# [[grammar]] entries as rendered into languages.toml, as [name, rev, subpath].
+# The template writes them as inline tables, e.g.
+#   source = { git = "https://...", rev = "abc123", subpath = "tree-sitter-x" }
+declared_grammars = []
 if File.exist?(helix_languages)
+  entry = nil
   File.read(helix_languages).each_line do |line|
-    next unless line.include?("tree-sitter-crystal")
-
-    match = line.match(/rev = "([0-9a-f]+)"/)
-    crystal_rev = match[1] if match
+    stripped = line.strip
+    if stripped.start_with?("[[grammar]]")
+      entry = [nil, nil, nil]
+      declared_grammars << entry
+    elsif stripped.start_with?("[")
+      entry = nil
+    elsif entry && stripped.start_with?("name = ")
+      match = stripped.match(/name = "([^"]+)"/)
+      entry[0] = match[1] if match
+    elsif entry && stripped.start_with?("source = ")
+      match = stripped.match(/rev = "([^"]+)"/)
+      entry[1] = match[1] if match
+      match = stripped.match(/subpath = "([^"]+)"/)
+      entry[2] = match[1] if match
+    end
   end
+  declared_grammars = declared_grammars.select { |grammar| grammar[0] }
 end
 
 rust_cargo_home = (node[:rust] || {})[:cargo_home].to_s
@@ -87,46 +100,134 @@ hx_cmd = hx_candidates.find { |candidate| File.exist?(candidate) } || ""
 if hx_cmd.empty?
   MItamae.logger.warn "helix: hx not found in #{hx_candidates.inspect}, skipping grammar install"
 else
-  # Guard blocks are evaluated at resource-run time, so they must do the checks
-  # themselves (and via lambdas, so `run_command` runs in recipe context). After
-  # `--grammar fetch` sees a rev mismatch it *deletes* and re-clones the grammar
-  # dir, so a stale `.so` is only detectable once fetch has finished.
-  crystal_source_pinned = lambda do
-    if crystal_rev.empty? || !File.directory?(crystal_source)
-      false
-    else
-      run_command("git -C #{crystal_source} rev-parse HEAD", error: false).stdout.strip == crystal_rev
+  # Guards run at resource-run time (and are lambdas so `run_command` runs in
+  # recipe context): after `--grammar fetch` sees a rev mismatch it *deletes* and
+  # re-clones the grammar dir, so a stale `.so` is only visible once fetch ended.
+  grammar_source_dir = lambda do |grammar|
+    File.join(grammar_root, "sources", grammar[0])
+  end
+
+  # A grammar is current when its source is checked out at the pinned rev. A
+  # branch/tag pin (asciidoc uses rev = "master") can't be compared to a HEAD sha
+  # without hitting the network, so it only has to exist.
+  grammars_current = lambda do
+    declared_grammars.all? do |grammar|
+      rev = grammar[1]
+      source_dir = grammar_source_dir.call(grammar)
+      if !File.directory?(source_dir)
+        false
+      elsif rev && rev.match(/\A[0-9a-f]{7,40}\z/)
+        run_command("git -C #{source_dir} rev-parse HEAD", error: false).stdout.strip.start_with?(rev)
+      else
+        true
+      end
     end
   end
 
-  crystal_lib_current = lambda do
-    if File.exist?(crystal_lib) && File.exist?(crystal_parser)
-      # mruby has no File.mtime, but File.stat(path).mtime works
-      File.stat(crystal_lib).mtime >= File.stat(crystal_parser).mtime
-    else
-      false
+  # Built when the parser library exists and is not older than the parser source
+  # (this mirrors helix's own needs_recompile check, and is why a re-cloned
+  # grammar recompiles).
+  grammars_built = lambda do
+    declared_grammars.all? do |grammar|
+      name = grammar[0]
+      source_dir = grammar_source_dir.call(grammar)
+      source_dir = File.join(source_dir, grammar[2]) if grammar[2]
+      lib = File.join(grammar_root, "#{name}.#{dylib_ext}")
+      parser = File.join(source_dir, "src", "parser.c")
+      if File.exist?(lib) && File.exist?(parser)
+        File.stat(lib).mtime >= File.stat(parser).mtime
+      else
+        false
+      end
     end
   end
 
   # fetch is all-or-nothing (it re-clones every grammar in the merged config), so
-  # it only runs when the pinned crystal rev is not checked out: first install or
-  # a new rev committed in cookbooks/dotfiles/templates/helix/languages.toml.erb.
+  # it runs when any declared grammar is missing or not at its pinned rev: first
+  # install, a newly declared language, or a bumped rev in the template. It also
+  # fails wholesale when *any* upstream grammar repo has moved or vanished, which
+  # is common enough that it must not abort the run: our own grammars are
+  # verified below instead.
   execute "helix fetch grammars" do
-    command "#{hx_cmd} --grammar fetch"
+    command "#{hx_cmd} --grammar fetch || echo 'helix: some grammars failed to fetch, continuing'"
     user node[:user]
-    not_if { crystal_source_pinned.call }
+    not_if { grammars_current.call }
   end
 
-  # build is incremental (helix compares parser.c/scanner.c mtimes) but still
-  # sweeps every grammar, so skip it when crystal's library is already newer than
-  # its sources. This runs after the fetch above, so a refreshed checkout
-  # recompiles.
+  # build sweeps every grammar but is incremental, so it is cheap once current.
   execute "helix build grammars" do
-    command "#{hx_cmd} --grammar build"
+    command "#{hx_cmd} --grammar build || echo 'helix: some grammars failed to build, continuing'"
     user node[:user]
-    only_if { File.exist?(crystal_parser) }
-    not_if { crystal_lib_current.call }
+    not_if { grammars_built.call }
   end
+
+  # ... but a declared grammar is not optional: without its parser the language
+  # silently degrades to plain text. This only runs when the parser is missing, so
+  # it is silent on healthy runs and loud when fetch/build could not deliver.
+  declared_grammars.each do |grammar|
+    name = grammar[0]
+    lib = File.join(grammar_root, "#{name}.#{dylib_ext}")
+
+    execute "helix verify #{name} grammar" do
+      command "echo 'helix: #{name} parser is missing (#{lib}); " \
+        "run `hx --grammar fetch` and `hx --grammar build` and check the output' >&2; exit 1"
+      user node[:user]
+      not_if { File.exist?(lib) }
+    end
+  end
+end
+
+# --- queries ----------------------------------------------------------------
+# A grammar is only half of tree-sitter support: `--grammar fetch/build` produces
+# the parser (<name>.so) and nothing else. Helix resolves highlighting from
+# runtime/queries/<lang>/*.scm across its runtime dirs, and it never copies the
+# queries a grammar repo may ship (they are editor specific - see
+# https://github.com/helix-editor/helix/discussions/11379). So any language helix
+# does not ship itself needs its .scm files installed. Ours live in
+# config/helix/queries/<lang> and are linked next to the parsers.
+queries_src_root = File.join(doms_dotfiles, "config", "helix", "queries")
+queries_dest_root = File.join(config_home, "helix", "runtime", "queries")
+
+if File.directory?(queries_src_root)
+  # not mydir: the runtime lives in the helix checkout, which may sit on a
+  # filesystem that ignores chmod, and a directory resource would then report a
+  # change on every run.
+  execute "helix create runtime queries dir" do
+    command "mkdir -p #{queries_dest_root}"
+    user node[:user]
+    not_if { File.directory?(queries_dest_root) }
+  end
+
+  (Dir.entries(queries_src_root).sort - [".", ".."]).each do |lang|
+    query_src = File.join(queries_src_root, lang)
+    next unless File.directory?(query_src)
+
+    query_dest = File.join(queries_dest_root, lang)
+    # ln -sfn: replace our own link if it points elsewhere (moved checkout), but
+    # -n keeps ln from linking *inside* an existing directory symlink.
+    execute "helix link #{lang} queries" do
+      command "ln -sfn #{query_src} #{query_dest}"
+      user node[:user]
+      not_if do
+        if File.symlink?(query_dest)
+          File.readlink(query_dest) == query_src
+        else
+          # a real directory means helix ships its own queries: leave them alone
+          File.exist?(query_dest)
+        end
+      end
+    end
+  end
+end
+
+# every grammar we declare must have queries somewhere, otherwise the parser
+# loads but nothing highlights. This catches languages added to
+# cookbooks/dotfiles/templates/helix/languages.toml.erb without .scm files.
+declared_grammars.map { |grammar| grammar[0] }.uniq.each do |grammar|
+  next if File.directory?(File.join(queries_dest_root, grammar))
+
+  MItamae.logger.warn "helix: grammar '#{grammar}' has no queries in #{queries_dest_root}, " \
+    "so it will parse but not highlight. Add config/helix/queries/#{grammar}/"
 end
 
 # share_dir = "#{home}/.local/share"
