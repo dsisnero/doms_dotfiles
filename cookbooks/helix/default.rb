@@ -51,6 +51,75 @@ else
 
 end
 
+# --- grammars ---------------------------------------------------------------
+# `hx --grammar fetch|build` only installs what is declared under [[grammar]]
+# in the *merged* languages.toml (built-in defaults + the user file written by
+# cookbooks/dotfiles). Grammars are written to runtime_dirs().first(), which is
+# always <config>/helix/runtime, i.e. the link above -> the helix checkout.
+# Crystal has no upstream grammar, so it is declared by hand in
+# cookbooks/dotfiles/templates/helix/languages.toml.erb; without the fetch/build
+# below, `.cr` files silently lose highlighting on a fresh machine.
+helix_languages = File.join(config_home, "helix", "languages.toml")
+grammar_root = File.join(config_home, "helix", "runtime", "grammars")
+crystal_source = File.join(grammar_root, "sources", "crystal")
+crystal_parser = File.join(crystal_source, "src", "parser.c")
+crystal_lib = File.join(grammar_root, "crystal.#{windows? ? "dll" : "so"}")
+
+# pinned rev of the crystal grammar as rendered into languages.toml
+crystal_rev = ""
+if File.exist?(helix_languages)
+  File.read(helix_languages).each_line do |line|
+    next unless line.include?("tree-sitter-crystal")
+
+    match = line.match(/rev = "([0-9a-f]+)"/)
+    crystal_rev = match[1] if match
+  end
+end
+
+rust_cargo_home = (node[:rust] || {})[:cargo_home].to_s
+hx_candidates = [
+  File.join(rust_cargo_home, "bin", "hx"),               # cargo build below
+  File.join(home, ".local", "bin", "hx"),                # mise shims / manual
+  File.join(home, ".local", "share", "mise", "shims", "hx")
+]
+hx_cmd = hx_candidates.find { |candidate| File.exist?(candidate) } || ""
+
+if hx_cmd.empty?
+  MItamae.logger.warn "helix: hx not found in #{hx_candidates.inspect}, skipping grammar install"
+else
+  crystal_source_pinned = if crystal_rev.empty? || !File.directory?(crystal_source)
+    false
+  else
+    run_command("git -C #{crystal_source} rev-parse HEAD", error: false).stdout.strip == crystal_rev
+  end
+
+  # mruby has no File.mtime, but File.stat(path).mtime works
+  crystal_lib_current = if File.exist?(crystal_lib) && File.exist?(crystal_parser)
+    File.stat(crystal_lib).mtime >= File.stat(crystal_parser).mtime
+  else
+    false
+  end
+
+  # fetch is all-or-nothing: it clones every grammar in the merged config, so
+  # it only runs when the pinned crystal rev is not checked out (first install
+  # or after a rev bump in the template).
+  execute "helix fetch grammars" do
+    command "#{hx_cmd} --grammar fetch"
+    user node[:user]
+    not_if { crystal_source_pinned }
+  end
+
+  # build is incremental (helix compares parser.c/scanner.c mtimes) but still
+  # sweeps every grammar, so skip it when crystal's library is already newer
+  # than its sources.
+  execute "helix build grammars" do
+    command "#{hx_cmd} --grammar build"
+    user node[:user]
+    only_if { File.exist?(crystal_parser) }
+    not_if { crystal_lib_current }
+  end
+end
+
 # share_dir = "#{home}/.local/share"
 
 # mydir share_dir
