@@ -39,6 +39,8 @@ end
 
 # Keep user config directories but fix ownership
 mydir "#{home_}/.config/mise"
+mydir "#{home_}/.local/share/mise"
+mydir "#{home_}/.cache/mise"
 mydir node[:user_bin]
 
 # Update shell integration to use system-installed mise
@@ -55,10 +57,18 @@ define :mise, version: nil, backend: nil, exe: nil, rename: nil do
     "mise use -g #{tool_name}@#{version}"
   end
   exe = params[:exe] || tool_name
+
+  # MItamae switches to the user through `sudo -H`, which resets PATH to
+  # sudo's secure_path. That hides the user's rust/cargo install, so the
+  # `cargo:` backend fails with `cargo install ... No such file or
+  # directory (os error 2)`. Export the user's PATH explicitly so mise
+  # always runs as the user (never root) and can find cargo.
+  user_env = %(export PATH="#{home_}/.cargo/bin:#{home_}/.local/share/mise/shims:#{home_}/.local/bin:/usr/local/bin:/usr/bin:/bin:$PATH")
+
   execute "installing #{tool_name}@#{version}" do
-    user user_  # Change from node[:user] to local variable
-    command cmd
-    not_if "mise exec -- which #{exe}"
+    user user_
+    command "#{user_env} && #{cmd}"
+    not_if "#{user_env} && MISE_AUTO_INSTALL=0 mise which #{exe} >/dev/null 2>&1"
   end
 end
 

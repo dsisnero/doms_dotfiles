@@ -29,9 +29,9 @@ mise "watchexec"
 mise "zoxide"
 mise "rclone"
 include_cookbook "atuin"
-mise "mermaid" do
-  backend "npm"
-end
+# mise "mermaid" do
+#   backend "npm"
+# end
 mise "pandoc"
 mise "hyperfine"
 mise "broot" do

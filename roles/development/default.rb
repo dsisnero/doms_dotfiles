@@ -27,7 +27,9 @@ include_cookbook "swi-prolog"
 include_cookbook "z3"
 include_cookbook "codex"
 
-package "azure-cli"
+mise "azure-cli" do
+  exe "az"
+end
 
 mise "worktrunk" do
   backend "cargo"

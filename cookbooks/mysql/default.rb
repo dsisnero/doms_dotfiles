@@ -1,4 +1,5 @@
 include_recipe "dependency.rb"
+include_cookbook "uv"
 
 home = node[:home]
 user = node[:user]
@@ -164,9 +165,13 @@ execute "mysql user add for auth_socket" do
   EOL
 end
 
-%w[pip pip3].each do |pip|
-  execute "mise exec -- pip install mycli" do
-    not_if "mise exec -- which mycli"
-    only_if "mise exec -- which #{pip}>/dev/null"
-  end
+# mycli depends on sqlglotc, which has no wheel for Python 3.15 (mise's
+# global python). Installing it via pip therefore falls back to building the
+# sdist with mypyc, which fails with "Multiple inheritance is not supported".
+# Install it in an isolated uv tool environment pinned to Python 3.14, where
+# a prebuilt sqlglotc wheel exists.
+execute "install mycli" do
+  user user
+  command %(export PATH="#{node[:user_bin]}:/usr/local/bin:/usr/bin:/bin:$PATH"; mise exec -- uv tool install --force mycli --python 3.14)
+  not_if { File.exist?("#{node[:user_bin]}/mycli") }
 end

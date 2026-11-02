@@ -51,7 +51,7 @@ when "debian", "ubuntu", "mint", "pop"
   package "aria2"
 
   execute "download ollama" do
-    command "aria2c #{url} -d /tmp/ -o ollama-linux-amd64.tar.zst"
+    command "aria2c --allow-overwrite=true #{url} -d /tmp/ -o ollama-linux-amd64.tar.zst"
     user user_var
     notifies :run, "execute[unzip ollama]", :immediately
     only_if { needs_update }
