@@ -26,6 +26,7 @@ include_cookbook "language_servers"
 include_cookbook "swi-prolog"
 include_cookbook "z3"
 include_cookbook "codex"
+include_cookbook "opencode"
 
 mise "azure-cli" do
   exe "az"
