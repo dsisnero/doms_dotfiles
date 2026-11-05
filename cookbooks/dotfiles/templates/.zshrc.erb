@@ -4,9 +4,9 @@ source <%= node[:doms_dotfiles] %>/config/.zshrc
 <% if node[:platform] == 'osx' or node[:platform] == 'darwin' -%>
 source <%= node[:doms_dotfiles] %>/config/zsh/.zshrc_osx
 
-# macOS-only ollama launchctl aliases
-alias ollama_start='launchctl load ~/Library/LaunchAgents/com.ollama.serve.plist'
-alias ollama_stop='launchctl unload ~/Library/LaunchAgents/com.ollama.serve.plist'
+# macOS-only ollama aliases (Ollama.app owns the server on port 11434)
+alias ollama_start='launchctl kickstart -k gui/$(id -u)/com.ollama.ollama'
+alias ollama_stop='osascript -e "quit app \"Ollama\""'
 <% else -%>
 source <%= node[:doms_dotfiles] %>/config/zsh/.zshrc_unix
   <%- if node[:is_wsl] -%>
